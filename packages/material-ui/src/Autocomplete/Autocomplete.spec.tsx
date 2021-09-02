@@ -2,14 +2,14 @@ import * as React from 'react';
 import Autocomplete, {
   AutocompleteProps,
   AutocompleteRenderGetTagProps,
-} from '@material-ui/core/Autocomplete';
-import { expectType } from '@material-ui/types';
+} from '@mui/material/Autocomplete';
+import { expectType } from '@mui/types';
 
 interface MyAutocompleteProps<
   T,
   Multiple extends boolean | undefined,
   DisableClearable extends boolean | undefined,
-  FreeSolo extends boolean | undefined
+  FreeSolo extends boolean | undefined,
 > extends AutocompleteProps<T, Multiple, DisableClearable, FreeSolo> {
   myProp?: string;
 }
@@ -18,7 +18,7 @@ function MyAutocomplete<
   T,
   Multiple extends boolean | undefined = undefined,
   DisableClearable extends boolean | undefined = undefined,
-  FreeSolo extends boolean | undefined = undefined
+  FreeSolo extends boolean | undefined = undefined,
 >(props: MyAutocompleteProps<T, Multiple, DisableClearable, FreeSolo>) {
   return <Autocomplete {...props} />;
 }

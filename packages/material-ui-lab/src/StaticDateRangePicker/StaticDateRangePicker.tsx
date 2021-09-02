@@ -1,31 +1,33 @@
 import * as React from 'react';
 import PropTypes from 'prop-types';
-import { unstable_useThemeProps as useThemeProps } from '@material-ui/core/styles';
+import { useThemeProps } from '@mui/material/styles';
 import StaticWrapper, { StaticWrapperProps } from '../internal/pickers/wrappers/StaticWrapper';
-import { useUtils } from '../internal/pickers/hooks/useUtils';
-import { useParsedDate } from '../internal/pickers/hooks/date-helpers-hooks';
-import { defaultMinDate, defaultMaxDate } from '../internal/pickers/constants/prop-types';
+import { useDefaultDates, useUtils } from '../internal/pickers/hooks/useUtils';
 import { RangeInput, DateRange } from '../DateRangePicker/RangeTypes';
-import { makeValidationHook, ValidationProps } from '../internal/pickers/hooks/useValidation';
+import {
+  DateRangeValidationError,
+  useDateRangeValidation,
+  ValidationProps,
+} from '../internal/pickers/hooks/useValidation';
 import { usePickerState, PickerStateValueManager } from '../internal/pickers/hooks/usePickerState';
 import {
   DateRangePickerView,
   ExportedDateRangePickerViewProps,
 } from '../DateRangePicker/DateRangePickerView';
-import DateRangePickerInput, {
-  ExportedDateRangePickerInputProps,
-} from '../DateRangePicker/DateRangePickerInput';
-import {
-  parseRangeInputValue,
-  validateDateRange,
-  DateRangeValidationError,
-} from '../internal/pickers/date-utils';
-import { DateInputPropsLike } from '../internal/pickers/wrappers/WrapperProps';
+import { ExportedDateRangePickerInputProps } from '../DateRangePicker/DateRangePickerInput';
+import { parseRangeInputValue } from '../internal/pickers/date-utils';
 
 interface BaseDateRangePickerProps<TDate>
   extends ExportedDateRangePickerViewProps<TDate>,
     ValidationProps<DateRangeValidationError, RangeInput<TDate>>,
     ExportedDateRangePickerInputProps {
+  /**
+   * The components used for each slot.
+   * Either a string to use a HTML element or a component.
+   * @default {}
+   */
+  components?: ExportedDateRangePickerViewProps<TDate>['components'] &
+    ExportedDateRangePickerInputProps['components'];
   /**
    * Text for end input label and toolbar placeholder.
    * @default 'End'
@@ -38,12 +40,10 @@ interface BaseDateRangePickerProps<TDate>
   mask?: ExportedDateRangePickerInputProps['mask'];
   /**
    * Min selectable date. @DateIOType
-   * @default defaultMinDate
    */
   minDate?: TDate;
   /**
    * Max selectable date. @DateIOType
-   * @default defaultMaxDate
    */
   maxDate?: TDate;
   /**
@@ -61,17 +61,6 @@ interface BaseDateRangePickerProps<TDate>
   value: RangeInput<TDate>;
 }
 
-const useDateRangeValidation = makeValidationHook<
-  DateRangeValidationError,
-  RangeInput<unknown>,
-  BaseDateRangePickerProps<any>
->(validateDateRange, {
-  isSameError: (a, b) => b !== null && a[1] === b[1] && a[0] === b[0],
-});
-
-const KeyboardDateInputComponent = DateRangePickerInput as React.FC<DateInputPropsLike>;
-const PureDateInputComponent = DateRangePickerInput as React.FC<DateInputPropsLike>;
-
 const rangePickerValueManager: PickerStateValueManager<any, any> = {
   emptyValue: [null, null],
   parseInput: parseRangeInputValue,
@@ -79,8 +68,13 @@ const rangePickerValueManager: PickerStateValueManager<any, any> = {
 };
 
 export interface StaticDateRangePickerProps<TDate = unknown>
-  extends BaseDateRangePickerProps<TDate>,
-    StaticWrapperProps {}
+  extends BaseDateRangePickerProps<TDate> {
+  /**
+   * Force static wrapper inner components to be rendered in mobile or desktop mode.
+   * @default 'mobile'
+   */
+  displayStaticWrapperAs?: StaticWrapperProps['displayStaticWrapperAs'];
+}
 
 type StaticDateRangePickerComponent = (<TDate>(
   props: StaticDateRangePickerProps<TDate> & React.RefAttributes<HTMLDivElement>,
@@ -104,20 +98,22 @@ const StaticDateRangePicker = React.forwardRef(function StaticDateRangePicker<TD
 
   const {
     calendars = 2,
+    displayStaticWrapperAs = 'mobile',
     value,
     onChange,
     mask = '__/__/____',
     startText = 'Start',
     endText = 'End',
     inputFormat: passedInputFormat,
-    minDate: minDateProp = defaultMinDate as TDate,
-    maxDate: maxDateProp = defaultMaxDate as TDate,
+    minDate: minDateProp,
+    maxDate: maxDateProp,
     ...other
   } = props;
 
   const utils = useUtils();
-  const minDate = useParsedDate(minDateProp);
-  const maxDate = useParsedDate(maxDateProp);
+  const defaultDates = useDefaultDates<TDate>();
+  const minDate = minDateProp ?? defaultDates.minDate;
+  const maxDate = maxDateProp ?? defaultDates.maxDate;
   const [currentlySelectingRangeEnd, setCurrentlySelectingRangeEnd] = React.useState<
     'start' | 'end'
   >('start');
@@ -126,7 +122,6 @@ const StaticDateRangePicker = React.forwardRef(function StaticDateRangePicker<TD
     ...other,
     value,
     onChange,
-    inputFormat: passedInputFormat || utils.formats.keyboardDate,
   };
 
   const restProps = {
@@ -140,12 +135,13 @@ const StaticDateRangePicker = React.forwardRef(function StaticDateRangePicker<TD
     DateRange<TDate>
   >(pickerStateProps, rangePickerValueManager);
 
-  const validationError = useDateRangeValidation(value, props);
+  const validationError = useDateRangeValidation(props);
 
   const DateInputProps = {
     ...inputProps,
     ...restProps,
     currentlySelectingRangeEnd,
+    inputFormat: passedInputFormat || utils.formats.keyboardDate,
     setCurrentlySelectingRangeEnd,
     startText,
     endText,
@@ -155,13 +151,7 @@ const StaticDateRangePicker = React.forwardRef(function StaticDateRangePicker<TD
   };
 
   return (
-    <StaticWrapper
-      {...restProps}
-      {...wrapperProps}
-      DateInputProps={DateInputProps}
-      KeyboardDateInputComponent={KeyboardDateInputComponent}
-      PureDateInputComponent={PureDateInputComponent}
-    >
+    <StaticWrapper displayStaticWrapperAs={displayStaticWrapperAs}>
       <DateRangePickerView<any>
         open={wrapperProps.open}
         DateInputProps={DateInputProps}
@@ -188,24 +178,19 @@ StaticDateRangePicker.propTypes /* remove-proptypes */ = {
    */
   acceptRegex: PropTypes.instanceOf(RegExp),
   /**
-   * Enables keyboard listener for moving between days in calendar.
-   * Defaults to `true` unless the `ClockPicker` is used inside a `Static*` picker component.
-   */
-  allowKeyboardControl: PropTypes.bool,
-  /**
    * If `true`, `onChange` is fired on click even if the same date is selected.
    * @default false
    */
   allowSameDateSelection: PropTypes.bool,
   /**
+   * @ignore
+   */
+  autoFocus: PropTypes.bool,
+  /**
    * The number of calendars that render on **desktop**.
    * @default 2
    */
   calendars: PropTypes.oneOf([1, 2, 3]),
-  /**
-   * @ignore
-   */
-  children: PropTypes.node,
   /**
    * className applied to the root component.
    */
@@ -218,6 +203,7 @@ StaticDateRangePicker.propTypes /* remove-proptypes */ = {
   components: PropTypes.shape({
     LeftArrowButton: PropTypes.elementType,
     LeftArrowIcon: PropTypes.elementType,
+    OpenPickerIcon: PropTypes.elementType,
     RightArrowButton: PropTypes.elementType,
     RightArrowIcon: PropTypes.elementType,
     SwitchViewButton: PropTypes.elementType,
@@ -271,7 +257,7 @@ StaticDateRangePicker.propTypes /* remove-proptypes */ = {
   disablePast: PropTypes.bool,
   /**
    * Force static wrapper inner components to be rendered in mobile or desktop mode.
-   * @default "static"
+   * @default 'mobile'
    */
   displayStaticWrapperAs: PropTypes.oneOf(['desktop', 'mobile']),
   /**
@@ -338,12 +324,10 @@ StaticDateRangePicker.propTypes /* remove-proptypes */ = {
   mask: PropTypes.string,
   /**
    * Max selectable date. @DateIOType
-   * @default defaultMaxDate
    */
   maxDate: PropTypes.any,
   /**
    * Min selectable date. @DateIOType
-   * @default defaultMinDate
    */
   minDate: PropTypes.any,
   /**
@@ -389,10 +373,6 @@ StaticDateRangePicker.propTypes /* remove-proptypes */ = {
    * Props to pass to keyboard adornment button.
    */
   OpenPickerButtonProps: PropTypes.object,
-  /**
-   * Icon displaying for open picker button.
-   */
-  openPickerIcon: PropTypes.node,
   /**
    * Force rendering in particular orientation.
    */
@@ -476,12 +456,12 @@ StaticDateRangePicker.propTypes /* remove-proptypes */ = {
   toolbarFormat: PropTypes.string,
   /**
    * Mobile picker date value placeholder, displaying if `value` === `null`.
-   * @default "–"
+   * @default '–'
    */
   toolbarPlaceholder: PropTypes.node,
   /**
    * Mobile picker title, displaying in the toolbar.
-   * @default "SELECT DATE"
+   * @default 'Select date range'
    */
   toolbarTitle: PropTypes.node,
   /**

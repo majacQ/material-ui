@@ -17,7 +17,7 @@ async function includeFileInBuild(file) {
 /**
  * Puts a package.json into every immediate child directory of rootDir.
  * That package.json contains information about esm for bundlers so that imports
- * like import Typography from '@material-ui/core/Typography' are tree-shakeable.
+ * like import Typography from '@mui/material/Typography' are tree-shakeable.
  *
  * It also tests that an this import can be used in TypeScript by checking
  * if an index.d.ts is present at that path.
@@ -86,9 +86,8 @@ async function typescriptCopy({ from, to }) {
 
 async function createPackageFile() {
   const packageData = await fse.readFile(path.resolve(packagePath, './package.json'), 'utf8');
-  const { nyc, scripts, devDependencies, workspaces, ...packageDataOther } = JSON.parse(
-    packageData,
-  );
+  const { nyc, scripts, devDependencies, workspaces, ...packageDataOther } =
+    JSON.parse(packageData);
 
   const newPackageData = {
     ...packageDataOther,
@@ -154,8 +153,8 @@ async function run() {
 
     await Promise.all(
       [
-        // use enhanced readme from workspace root for `@material-ui/core`
-        packageData.name === '@material-ui/core' ? '../../README.md' : './README.md',
+        // use enhanced readme from workspace root for `@mui/material`
+        packageData.name === '@mui/material' ? '../../README.md' : './README.md',
         '../../CHANGELOG.md',
         '../../LICENSE',
       ].map((file) => includeFileInBuild(file)),

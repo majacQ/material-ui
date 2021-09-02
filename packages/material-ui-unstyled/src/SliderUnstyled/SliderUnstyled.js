@@ -10,7 +10,7 @@ import {
   unstable_useForkRef as useForkRef,
   unstable_useControlled as useControlled,
   visuallyHidden,
-} from '@material-ui/utils';
+} from '@mui/utils';
 import isHostComponent from '../utils/isHostComponent';
 import composeClasses from '../composeClasses';
 import { getSliderUtilityClass } from './sliderUnstyledClasses';
@@ -140,20 +140,24 @@ const Identity = (x) => x;
 // Safari, on iOS, supports touch action since v13.
 // Over 80% of the iOS phones are compatible
 // in August 2020.
+// Utilizing the CSS.supports method to check if touch-action is supported.
+// Since CSS.supports is supported on all but Edge@12 and IE and touch-action
+// is supported on both Edge@12 and IE if CSS.supports is not available that means that
+// touch-action will be supported
 let cachedSupportsTouchActionNone;
 function doesSupportTouchActionNone() {
   if (cachedSupportsTouchActionNone === undefined) {
-    const element = document.createElement('div');
-    element.style.touchAction = 'none';
-    document.body.appendChild(element);
-    cachedSupportsTouchActionNone = window.getComputedStyle(element).touchAction === 'none';
-    element.parentElement.removeChild(element);
+    if (typeof CSS !== 'undefined' && typeof CSS.supports === 'function') {
+      cachedSupportsTouchActionNone = CSS.supports('touch-action', 'none');
+    } else {
+      cachedSupportsTouchActionNone = true;
+    }
   }
   return cachedSupportsTouchActionNone;
 }
 
-const useUtilityClasses = (styleProps) => {
-  const { disabled, dragging, marked, orientation, track, classes } = styleProps;
+const useUtilityClasses = (ownerState) => {
+  const { disabled, dragging, marked, orientation, track, classes } = ownerState;
 
   const slots = {
     root: [
@@ -214,8 +218,6 @@ const SliderUnstyled = React.forwardRef(function SliderUnstyled(props, ref) {
     isRtl = false,
     components = {},
     componentsProps = {},
-    /* eslint-disable-next-line react/prop-types */
-    theme,
     ...other
   } = props;
 
@@ -615,7 +617,7 @@ const SliderUnstyled = React.forwardRef(function SliderUnstyled(props, ref) {
 
   // all props with defaults
   // consider extracting to hook an reusing the lint rule for the varints
-  const styleProps = {
+  const ownerState = {
     ...props,
     classes: classesProp,
     disabled,
@@ -632,7 +634,7 @@ const SliderUnstyled = React.forwardRef(function SliderUnstyled(props, ref) {
     valueLabelFormat,
   };
 
-  const classes = useUtilityClasses(styleProps);
+  const classes = useUtilityClasses(ownerState);
 
   return (
     <Root
@@ -641,8 +643,7 @@ const SliderUnstyled = React.forwardRef(function SliderUnstyled(props, ref) {
       {...rootProps}
       {...(!isHostComponent(Root) && {
         as: component,
-        styleProps: { ...styleProps, ...rootProps.styleProps },
-        theme,
+        ownerState: { ...ownerState, ...rootProps.ownerState },
       })}
       {...other}
       className={clsx(classes.root, rootProps.className, className)}
@@ -650,16 +651,14 @@ const SliderUnstyled = React.forwardRef(function SliderUnstyled(props, ref) {
       <Rail
         {...railProps}
         {...(!isHostComponent(Rail) && {
-          styleProps: { ...styleProps, ...railProps.styleProps },
-          theme,
+          ownerState: { ...ownerState, ...railProps.ownerState },
         })}
         className={clsx(classes.rail, railProps.className)}
       />
       <Track
         {...trackProps}
         {...(!isHostComponent(Track) && {
-          styleProps: { ...styleProps, ...trackProps.styleProps },
-          theme,
+          ownerState: { ...ownerState, ...trackProps.ownerState },
         })}
         className={clsx(classes.track, trackProps.className)}
         style={{ ...trackStyle, ...trackProps.style }}
@@ -689,9 +688,9 @@ const SliderUnstyled = React.forwardRef(function SliderUnstyled(props, ref) {
               data-index={index}
               {...markProps}
               {...(!isHostComponent(Mark) && {
-                styleProps: { ...styleProps, ...markProps.styleProps, markActive },
-                theme,
+                ownerState: { ...ownerState, ...markProps.ownerState },
               })}
+              markActive={markActive}
               style={{ ...style, ...markProps.style }}
               className={clsx(classes.mark, markProps.className, {
                 [classes.markActive]: markActive,
@@ -703,13 +702,12 @@ const SliderUnstyled = React.forwardRef(function SliderUnstyled(props, ref) {
                 data-index={index}
                 {...markLabelProps}
                 {...(!isHostComponent(MarkLabel) && {
-                  styleProps: {
-                    ...styleProps,
-                    ...markLabelProps.styleProps,
-                    markLabelActive: markActive,
+                  ownerState: {
+                    ...ownerState,
+                    ...markLabelProps.ownerState,
                   },
-                  theme,
                 })}
+                markLabelActive={markActive}
                 style={{ ...style, ...markLabelProps.style }}
                 className={clsx(classes.markLabel, markLabelProps.className, {
                   [classes.markLabelActive]: markActive,
@@ -743,8 +741,7 @@ const SliderUnstyled = React.forwardRef(function SliderUnstyled(props, ref) {
               {...valueLabelProps}
               className={clsx(classes.valueLabel, valueLabelProps.className)}
               {...(!isHostComponent(ValueLabel) && {
-                styleProps: { ...styleProps, ...valueLabelProps.styleProps },
-                theme,
+                ownerState: { ...ownerState, ...valueLabelProps.ownerState },
               })}
             >
               <Thumb
@@ -757,8 +754,7 @@ const SliderUnstyled = React.forwardRef(function SliderUnstyled(props, ref) {
                   [classes.focusVisible]: focusVisible === index,
                 })}
                 {...(!isHostComponent(Thumb) && {
-                  styleProps: { ...styleProps, ...thumbProps.styleProps },
-                  theme,
+                  ownerState: { ...ownerState, ...thumbProps.ownerState },
                 })}
                 style={{
                   ...style,
@@ -894,14 +890,14 @@ SliderUnstyled.propTypes /* remove-proptypes */ = {
   disableSwap: PropTypes.bool,
   /**
    * Accepts a function which returns a string value that provides a user-friendly name for the thumb labels of the slider.
-   *
+   * This is important for screen reader users.
    * @param {number} index The thumb label's index to format.
    * @returns {string}
    */
   getAriaLabel: PropTypes.func,
   /**
    * Accepts a function which returns a string value that provides a user-friendly name for the current value of the slider.
-   *
+   * This is important for screen reader users.
    * @param {number} value The thumb label's value to format.
    * @param {number} index The thumb label's index to format.
    * @returns {string}
@@ -946,7 +942,7 @@ SliderUnstyled.propTypes /* remove-proptypes */ = {
   /**
    * Callback function that is fired when the slider's value changed.
    *
-   * @param {object} event The event source of the callback.
+   * @param {Event} event The event source of the callback.
    * You can pull out the new value by accessing `event.target.value` (any).
    * **Warning**: This is a generic event not a change event.
    * @param {number | number[]} value The new value.
@@ -956,7 +952,7 @@ SliderUnstyled.propTypes /* remove-proptypes */ = {
   /**
    * Callback function that is fired when the `mouseup` is triggered.
    *
-   * @param {object} event The event source of the callback. **Warning**: This is a generic event not a change event.
+   * @param {React.SyntheticEvent | Event} event The event source of the callback. **Warning**: This is a generic event not a change event.
    * @param {number | number[]} value The new value.
    */
   onChangeCommitted: PropTypes.func,

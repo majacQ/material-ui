@@ -1,18 +1,18 @@
 import * as React from 'react';
 import { expect } from 'chai';
-import { createMount, describeConformanceV5, createClientRender, screen } from 'test/utils';
-import { createTheme, ThemeProvider } from '@material-ui/core/styles';
-import Grid, { gridClasses as classes } from '@material-ui/core/Grid';
+import { describeConformance, createClientRender, screen } from 'test/utils';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
+import defaultTheme from '@mui/material/styles/defaultTheme';
+import Grid, { gridClasses as classes } from '@mui/material/Grid';
+import { generateRowGap, generateColumnGap } from './Grid';
 
 describe('<Grid />', () => {
   const render = createClientRender();
-  const mount = createMount();
 
-  describeConformanceV5(<Grid />, () => ({
+  describeConformance(<Grid />, () => ({
     classes,
     inheritComponent: 'div',
     render,
-    mount,
     refInstanceof: window.HTMLDivElement,
     muiName: 'MuiGrid',
     testVariantProps: { container: true, spacing: 5 },
@@ -23,7 +23,6 @@ describe('<Grid />', () => {
   describe('prop: container', () => {
     it('should apply the container class', () => {
       const { container } = render(<Grid container />);
-
       expect(container.firstChild).to.have.class(classes.container);
     });
   });
@@ -31,7 +30,6 @@ describe('<Grid />', () => {
   describe('prop: item', () => {
     it('should apply the item class', () => {
       const { container } = render(<Grid item />);
-
       expect(container.firstChild).to.have.class(classes.item);
     });
   });
@@ -39,27 +37,46 @@ describe('<Grid />', () => {
   describe('prop: xs', () => {
     it('should apply the flex-grow class', () => {
       const { container } = render(<Grid item xs />);
-
       expect(container.firstChild).to.have.class(classes['grid-xs-true']);
     });
 
     it('should apply the flex size class', () => {
       const { container } = render(<Grid item xs={3} />);
-
       expect(container.firstChild).to.have.class(classes['grid-xs-3']);
     });
 
     it('should apply the flex auto class', () => {
       const { container } = render(<Grid item xs="auto" />);
-
       expect(container.firstChild).to.have.class(classes['grid-xs-auto']);
+    });
+
+    it('should apply the styles necessary for variable width nested item when set to auto', function test() {
+      if (/jsdom/.test(window.navigator.userAgent)) {
+        // Need full CSS resolution
+        this.skip();
+      }
+
+      render(
+        <Grid container>
+          <Grid container item xs="auto" data-testid="auto">
+            <div style={{ width: '300px' }} />
+          </Grid>
+          <Grid item xs={11} />
+        </Grid>,
+      );
+      expect(screen.getByTestId('auto')).toHaveComputedStyle({
+        flexBasis: 'auto',
+        flexGrow: '0',
+        flexShrink: '0',
+        maxWidth: 'none',
+        width: '300px',
+      });
     });
   });
 
   describe('prop: spacing', () => {
     it('should have a spacing', () => {
       const { container } = render(<Grid container spacing={1} />);
-
       expect(container.firstChild).to.have.class(classes['spacing-xs-1']);
     });
 
@@ -69,9 +86,7 @@ describe('<Grid />', () => {
           <Grid item data-testid="child" />
         </Grid>,
       );
-
       expect(container.firstChild).to.have.class('MuiGrid-spacing-xs-1.5');
-
       expect(screen.getByTestId('child')).toHaveComputedStyle({
         paddingTop: '12px',
         paddingLeft: '12px',
@@ -79,9 +94,62 @@ describe('<Grid />', () => {
     });
   });
 
-  describe('gutter', () => {
+  it('should generate responsive styles', () => {
+    const theme = createTheme();
+    expect(
+      generateRowGap({
+        ownerState: {
+          container: true,
+          rowSpacing: { xs: 1, sm: 2 },
+        },
+        theme,
+      }),
+    ).to.deep.equal({
+      '@media (min-width:0px)': {
+        '& > .MuiGrid-item': {
+          paddingTop: '8px',
+        },
+        marginTop: '-8px',
+      },
+      [`@media (min-width:${defaultTheme.breakpoints.values.sm}px)`]: {
+        '& > .MuiGrid-item': {
+          paddingTop: '16px',
+        },
+        marginTop: '-16px',
+      },
+    });
+
+    expect(
+      generateColumnGap({
+        ownerState: {
+          container: true,
+          columnSpacing: { xs: 1, sm: 2 },
+        },
+        theme,
+      }),
+    ).to.deep.equal({
+      '@media (min-width:0px)': {
+        '& > .MuiGrid-item': {
+          paddingLeft: '8px',
+        },
+        marginLeft: '-8px',
+        width: 'calc(100% + 8px)',
+      },
+      [`@media (min-width:${defaultTheme.breakpoints.values.sm}px)`]: {
+        '& > .MuiGrid-item': {
+          paddingLeft: '16px',
+        },
+        marginLeft: '-16px',
+        width: 'calc(100% + 16px)',
+      },
+    });
+  });
+
+  describe('spacing', () => {
     it('should generate the right values', function test() {
-      if (/jsdom/.test(window.navigator.userAgent)) this.skip();
+      if (/jsdom/.test(window.navigator.userAgent)) {
+        this.skip();
+      }
 
       const parentWidth = 500;
       const remValue = 16;

@@ -1,16 +1,16 @@
 import * as React from 'react';
 import PropTypes from 'prop-types';
 import clsx from 'clsx';
-import { unstable_composeClasses as composeClasses } from '@material-ui/unstyled';
+import { unstable_composeClasses as composeClasses } from '@mui/core';
 import formControlState from '../FormControl/formControlState';
 import useFormControl from '../FormControl/useFormControl';
-import experimentalStyled from '../styles/experimentalStyled';
+import styled from '../styles/styled';
 import capitalize from '../utils/capitalize';
 import formHelperTextClasses, { getFormHelperTextUtilityClasses } from './formHelperTextClasses';
 import useThemeProps from '../styles/useThemeProps';
 
-const useUtilityClasses = (styleProps) => {
-  const { classes, contained, size, disabled, error, filled, focused, required } = styleProps;
+const useUtilityClasses = (ownerState) => {
+  const { classes, contained, size, disabled, error, filled, focused, required } = ownerState;
   const slots = {
     root: [
       'root',
@@ -27,24 +27,20 @@ const useUtilityClasses = (styleProps) => {
   return composeClasses(slots, getFormHelperTextUtilityClasses, classes);
 };
 
-const FormHelperTextRoot = experimentalStyled(
-  'p',
-  {},
-  {
-    name: 'MuiFormHelperText',
-    slot: 'Root',
-    overridesResolver: (props, styles) => {
-      const { styleProps } = props;
+const FormHelperTextRoot = styled('p', {
+  name: 'MuiFormHelperText',
+  slot: 'Root',
+  overridesResolver: (props, styles) => {
+    const { ownerState } = props;
 
-      return {
-        ...styles.root,
-        ...(styleProps.size && styles[`size${capitalize(styleProps.size)}`]),
-        ...(styleProps.contained && styles.contained),
-        ...(styleProps.filled && styles.filled),
-      };
-    },
+    return [
+      styles.root,
+      ownerState.size && styles[`size${capitalize(ownerState.size)}`],
+      ownerState.contained && styles.contained,
+      ownerState.filled && styles.filled,
+    ];
   },
-)(({ theme, styleProps }) => ({
+})(({ theme, ownerState }) => ({
   color: theme.palette.text.secondary,
   ...theme.typography.caption,
   textAlign: 'left',
@@ -58,10 +54,10 @@ const FormHelperTextRoot = experimentalStyled(
   [`&.${formHelperTextClasses.error}`]: {
     color: theme.palette.error.main,
   },
-  ...(styleProps.size === 'small' && {
+  ...(ownerState.size === 'small' && {
     marginTop: 4,
   }),
-  ...(styleProps.contained && {
+  ...(ownerState.contained && {
     marginLeft: 14,
     marginRight: 14,
   }),
@@ -90,7 +86,7 @@ const FormHelperText = React.forwardRef(function FormHelperText(inProps, ref) {
     states: ['variant', 'size', 'disabled', 'error', 'filled', 'focused', 'required'],
   });
 
-  const styleProps = {
+  const ownerState = {
     ...props,
     component,
     contained: fcs.variant === 'filled' || fcs.variant === 'outlined',
@@ -103,12 +99,12 @@ const FormHelperText = React.forwardRef(function FormHelperText(inProps, ref) {
     required: fcs.required,
   };
 
-  const classes = useUtilityClasses(styleProps);
+  const classes = useUtilityClasses(ownerState);
 
   return (
     <FormHelperTextRoot
       as={component}
-      styleProps={styleProps}
+      ownerState={ownerState}
       className={clsx(classes.root, className)}
       ref={ref}
       {...other}

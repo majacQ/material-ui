@@ -1,19 +1,19 @@
 import * as React from 'react';
 import PropTypes from 'prop-types';
-import { refType } from '@material-ui/utils';
-import { unstable_composeClasses as composeClasses } from '@material-ui/unstyled';
+import { refType } from '@mui/utils';
+import { unstable_composeClasses as composeClasses } from '@mui/core';
+import { alpha } from '@mui/system';
 import SwitchBase from '../internal/SwitchBase';
 import useThemeProps from '../styles/useThemeProps';
 import RadioButtonIcon from './RadioButtonIcon';
-import { alpha } from '../styles/colorManipulator';
 import capitalize from '../utils/capitalize';
 import createChainedFunction from '../utils/createChainedFunction';
 import useRadioGroup from '../RadioGroup/useRadioGroup';
 import radioClasses, { getRadioUtilityClass } from './radioClasses';
-import experimentalStyled, { rootShouldForwardProp } from '../styles/experimentalStyled';
+import styled, { rootShouldForwardProp } from '../styles/styled';
 
-const useUtilityClasses = (styleProps) => {
-  const { classes, color } = styleProps;
+const useUtilityClasses = (ownerState) => {
+  const { classes, color } = ownerState;
 
   const slots = {
     root: ['root', `color${capitalize(color)}`],
@@ -25,38 +25,32 @@ const useUtilityClasses = (styleProps) => {
   };
 };
 
-const RadioRoot = experimentalStyled(
-  SwitchBase,
-  { shouldForwardProp: (prop) => rootShouldForwardProp(prop) || prop === 'classes' },
-  {
-    name: 'MuiRadio',
-    slot: 'Root',
-    overridesResolver: (props, styles) => {
-      const { styleProps } = props;
+const RadioRoot = styled(SwitchBase, {
+  shouldForwardProp: (prop) => rootShouldForwardProp(prop) || prop === 'classes',
+  name: 'MuiRadio',
+  slot: 'Root',
+  overridesResolver: (props, styles) => {
+    const { ownerState } = props;
 
-      return {
-        ...styles.root,
-        ...styles[`color${capitalize(styleProps.color)}`],
-      };
+    return [styles.root, styles[`color${capitalize(ownerState.color)}`]];
+  },
+})(({ theme, ownerState }) => ({
+  color: theme.palette.text.secondary,
+  '&:hover': {
+    backgroundColor: alpha(
+      ownerState.color === 'default'
+        ? theme.palette.action.active
+        : theme.palette[ownerState.color].main,
+      theme.palette.action.hoverOpacity,
+    ),
+    // Reset on touch devices, it doesn't add specificity
+    '@media (hover: none)': {
+      backgroundColor: 'transparent',
     },
   },
-)(({ theme, styleProps }) => ({
-  /* Styles applied to the root element. */
-  color: theme.palette.text.secondary,
-  /* Styles applied to the root element unless `color="default"`. */
-  ...(styleProps.color !== 'default' && {
+  ...(ownerState.color !== 'default' && {
     [`&.${radioClasses.checked}`]: {
-      color: theme.palette[styleProps.color].main,
-      '&:hover': {
-        backgroundColor: alpha(
-          theme.palette[styleProps.color].main,
-          theme.palette.action.hoverOpacity,
-        ),
-        // Reset on touch devices, it doesn't add specificity
-        '@media (hover: none)': {
-          backgroundColor: 'transparent',
-        },
-      },
+      color: theme.palette[ownerState.color].main,
     },
   }),
   [`&.${radioClasses.disabled}`]: {
@@ -71,19 +65,21 @@ const Radio = React.forwardRef(function Radio(inProps, ref) {
   const props = useThemeProps({ props: inProps, name: 'MuiRadio' });
   const {
     checked: checkedProp,
-    color = 'secondary',
+    checkedIcon = defaultCheckedIcon,
+    color = 'primary',
+    icon = defaultIcon,
     name: nameProp,
     onChange: onChangeProp,
     size = 'medium',
     ...other
   } = props;
-  const styleProps = {
+  const ownerState = {
     ...props,
     color,
     size,
   };
 
-  const classes = useUtilityClasses(styleProps);
+  const classes = useUtilityClasses(ownerState);
   const radioGroup = useRadioGroup();
 
   let checked = checkedProp;
@@ -101,13 +97,12 @@ const Radio = React.forwardRef(function Radio(inProps, ref) {
 
   return (
     <RadioRoot
-      color={color}
       type="radio"
-      icon={React.cloneElement(defaultIcon, { fontSize: size === 'small' ? 'small' : 'medium' })}
-      checkedIcon={React.cloneElement(defaultCheckedIcon, {
-        fontSize: size === 'small' ? 'small' : 'medium',
+      icon={React.cloneElement(icon, { fontSize: defaultIcon.props.fontSize ?? size })}
+      checkedIcon={React.cloneElement(checkedIcon, {
+        fontSize: defaultCheckedIcon.props.fontSize ?? size,
       })}
-      styleProps={styleProps}
+      ownerState={ownerState}
       classes={classes}
       name={name}
       checked={checked}
@@ -129,6 +124,7 @@ Radio.propTypes /* remove-proptypes */ = {
   checked: PropTypes.bool,
   /**
    * The icon to display when the component is checked.
+   * @default <RadioButtonIcon checked />
    */
   checkedIcon: PropTypes.node,
   /**
@@ -137,10 +133,10 @@ Radio.propTypes /* remove-proptypes */ = {
   classes: PropTypes.object,
   /**
    * The color of the component. It supports those theme colors that make sense for this component.
-   * @default 'secondary'
+   * @default 'primary'
    */
   color: PropTypes /* @typescript-to-proptypes-ignore */.oneOfType([
-    PropTypes.oneOf(['default', 'primary', 'secondary']),
+    PropTypes.oneOf(['default', 'primary', 'secondary', 'error', 'info', 'success', 'warning']),
     PropTypes.string,
   ]),
   /**
@@ -153,6 +149,7 @@ Radio.propTypes /* remove-proptypes */ = {
   disableRipple: PropTypes.bool,
   /**
    * The icon to display when the component is unchecked.
+   * @default <RadioButtonIcon />
    */
   icon: PropTypes.node,
   /**
@@ -174,7 +171,7 @@ Radio.propTypes /* remove-proptypes */ = {
   /**
    * Callback fired when the state is changed.
    *
-   * @param {object} event The event source of the callback.
+   * @param {React.ChangeEvent<HTMLInputElement>} event The event source of the callback.
    * You can pull out the new value by accessing `event.target.value` (string).
    * You can pull out the new checked state by accessing `event.target.checked` (boolean).
    */

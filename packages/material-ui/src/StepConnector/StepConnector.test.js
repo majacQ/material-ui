@@ -1,19 +1,17 @@
 import * as React from 'react';
 import { expect } from 'chai';
-import { createClientRender, createMount, describeConformanceV5 } from 'test/utils';
-import Stepper from '@material-ui/core/Stepper';
-import Step from '@material-ui/core/Step';
-import StepConnector, { stepConnectorClasses as classes } from '@material-ui/core/StepConnector';
+import { createClientRender, describeConformance } from 'test/utils';
+import Stepper from '@mui/material/Stepper';
+import Step from '@mui/material/Step';
+import StepConnector, { stepConnectorClasses as classes } from '@mui/material/StepConnector';
 
 describe('<StepConnector />', () => {
   const render = createClientRender();
-  const mount = createMount();
 
-  describeConformanceV5(<StepConnector />, () => ({
+  describeConformance(<StepConnector />, () => ({
     classes,
     inheritComponent: 'div',
     render,
-    mount,
     muiName: 'MuiStepConnector',
     refInstanceof: window.HTMLDivElement,
     skip: ['componentProp', 'componentsProp', 'themeVariants'],

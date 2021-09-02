@@ -1,9 +1,9 @@
 import * as React from 'react';
 import PropTypes from 'prop-types';
 import clsx from 'clsx';
-import { chainPropTypes, integerPropType } from '@material-ui/utils';
-import { unstable_composeClasses as composeClasses, isHostComponent } from '@material-ui/unstyled';
-import experimentalStyled from '../styles/experimentalStyled';
+import { chainPropTypes, integerPropType } from '@mui/utils';
+import { unstable_composeClasses as composeClasses, isHostComponent } from '@mui/core';
+import styled from '../styles/styled';
 import useThemeProps from '../styles/useThemeProps';
 import InputBase from '../InputBase';
 import MenuItem from '../MenuItem';
@@ -14,15 +14,11 @@ import TablePaginationActions from './TablePaginationActions';
 import useId from '../utils/useId';
 import tablePaginationClasses, { getTablePaginationUtilityClass } from './tablePaginationClasses';
 
-const TablePaginationRoot = experimentalStyled(
-  TableCell,
-  {},
-  {
-    name: 'MuiTablePagination',
-    slot: 'Root',
-    overridesResolver: (props, styles) => styles.root,
-  },
-)(({ theme }) => ({
+const TablePaginationRoot = styled(TableCell, {
+  name: 'MuiTablePagination',
+  slot: 'Root',
+  overridesResolver: (props, styles) => styles.root,
+})(({ theme }) => ({
   overflow: 'auto',
   color: theme.palette.text.primary,
   fontSize: theme.typography.pxToRem(14),
@@ -32,18 +28,14 @@ const TablePaginationRoot = experimentalStyled(
   },
 }));
 
-const TablePaginationToolbar = experimentalStyled(
-  Toolbar,
-  {},
-  {
-    name: 'MuiTablePagination',
-    slot: 'Toolbar',
-    overridesResolver: (props, styles) => ({
-      [`& .${tablePaginationClasses.actions}`]: styles.actions,
-      ...styles.toolbar,
-    }),
-  },
-)(({ theme }) => ({
+const TablePaginationToolbar = styled(Toolbar, {
+  name: 'MuiTablePagination',
+  slot: 'Toolbar',
+  overridesResolver: (props, styles) => ({
+    [`& .${tablePaginationClasses.actions}`]: styles.actions,
+    ...styles.toolbar,
+  }),
+})(({ theme }) => ({
   minHeight: 52,
   paddingRight: 2,
   [`${theme.breakpoints.up('xs')} and (orientation: landscape)`]: {
@@ -59,51 +51,39 @@ const TablePaginationToolbar = experimentalStyled(
   },
 }));
 
-const TablePaginationSpacer = experimentalStyled(
-  'div',
-  {},
-  {
-    name: 'MuiTablePagination',
-    slot: 'Spacer',
-    overridesResolver: (props, styles) => styles.spacer,
-  },
-)({
+const TablePaginationSpacer = styled('div', {
+  name: 'MuiTablePagination',
+  slot: 'Spacer',
+  overridesResolver: (props, styles) => styles.spacer,
+})({
   flex: '1 1 100%',
 });
 
-const TablePaginationSelectLabel = experimentalStyled(
-  'p',
-  {},
-  {
-    name: 'MuiTablePagination',
-    slot: 'SelectLabel',
-    overridesResolver: (props, styles) => styles.selectLabel,
-  },
-)(({ theme }) => ({
+const TablePaginationSelectLabel = styled('p', {
+  name: 'MuiTablePagination',
+  slot: 'SelectLabel',
+  overridesResolver: (props, styles) => styles.selectLabel,
+})(({ theme }) => ({
   ...theme.typography.body2,
   flexShrink: 0,
 }));
 
-const TablePaginationSelect = experimentalStyled(
-  Select,
-  {},
-  {
-    name: 'MuiTablePagination',
-    slot: 'Select',
-    overridesResolver: (props, styles) => ({
-      [`& .${tablePaginationClasses.selectIcon}`]: styles.selectIcon,
-      [`& .${tablePaginationClasses.select}`]: styles.select,
-      ...styles.input,
-      ...styles.selectRoot,
-    }),
-  },
-)({
+const TablePaginationSelect = styled(Select, {
+  name: 'MuiTablePagination',
+  slot: 'Select',
+  overridesResolver: (props, styles) => ({
+    [`& .${tablePaginationClasses.selectIcon}`]: styles.selectIcon,
+    [`& .${tablePaginationClasses.select}`]: styles.select,
+    ...styles.input,
+    ...styles.selectRoot,
+  }),
+})({
   color: 'inherit',
   fontSize: 'inherit',
   flexShrink: 0,
   marginRight: 32,
   marginLeft: 8,
-  [`& .${tablePaginationClasses.input}`]: {
+  [`& .${tablePaginationClasses.select}`]: {
     paddingLeft: 8,
     paddingRight: 24,
     textAlign: 'right',
@@ -111,25 +91,17 @@ const TablePaginationSelect = experimentalStyled(
   },
 });
 
-const TablePaginationMenuItem = experimentalStyled(
-  MenuItem,
-  {},
-  {
-    name: 'MuiTablePagination',
-    slot: 'MenuItem',
-    overridesResolver: (props, styles) => styles.menuItem,
-  },
-)();
+const TablePaginationMenuItem = styled(MenuItem, {
+  name: 'MuiTablePagination',
+  slot: 'MenuItem',
+  overridesResolver: (props, styles) => styles.menuItem,
+})({});
 
-const TablePaginationDisplayedRows = experimentalStyled(
-  'p',
-  {},
-  {
-    name: 'MuiTablePagination',
-    slot: 'DisplayedRows',
-    overridesResolver: (props, styles) => styles.displayedRows,
-  },
-)(({ theme }) => ({
+const TablePaginationDisplayedRows = styled('p', {
+  name: 'MuiTablePagination',
+  slot: 'DisplayedRows',
+  overridesResolver: (props, styles) => styles.displayedRows,
+})(({ theme }) => ({
   ...theme.typography.body2,
   flexShrink: 0,
 }));
@@ -142,8 +114,8 @@ function defaultGetAriaLabel(type) {
   return `Go to ${type} page`;
 }
 
-const useUtilityClasses = (styleProps) => {
-  const { classes } = styleProps;
+const useUtilityClasses = (ownerState) => {
+  const { classes } = ownerState;
   const slots = {
     root: ['root'],
     toolbar: ['toolbar'],
@@ -187,10 +159,8 @@ const TablePagination = React.forwardRef(function TablePagination(inProps, ref) 
     ...other
   } = props;
 
-  // TODO: convert to simple assignment after the type error in defaultPropsHandler.js:60:6 is fixed
-  const styleProps = { ...props };
-
-  const classes = useUtilityClasses(styleProps);
+  const ownerState = props;
+  const classes = useUtilityClasses(ownerState);
 
   const MenuItemComponent = SelectProps.native ? 'option' : TablePaginationMenuItem;
 
@@ -203,7 +173,9 @@ const TablePagination = React.forwardRef(function TablePagination(inProps, ref) 
   const labelId = useId(SelectProps.labelId);
 
   const getLabelDisplayedRowsTo = () => {
-    if (count === -1) return (page + 1) * rowsPerPage;
+    if (count === -1) {
+      return (page + 1) * rowsPerPage;
+    }
     return rowsPerPage === -1 ? count : Math.min(count, (page + 1) * rowsPerPage);
   };
 
@@ -212,7 +184,7 @@ const TablePagination = React.forwardRef(function TablePagination(inProps, ref) 
       colSpan={colSpan}
       ref={ref}
       as={component}
-      styleProps={styleProps}
+      ownerState={ownerState}
       className={clsx(classes.root, className)}
       {...other}
     >
@@ -245,7 +217,7 @@ const TablePagination = React.forwardRef(function TablePagination(inProps, ref) 
             {rowsPerPageOptions.map((rowsPerPageOption) => (
               <MenuItemComponent
                 {...(!isHostComponent(MenuItemComponent) && {
-                  styleProps,
+                  ownerState,
                 })}
                 className={classes.menuItem}
                 key={rowsPerPageOption.label ? rowsPerPageOption.label : rowsPerPageOption}
@@ -322,9 +294,9 @@ TablePagination.propTypes /* remove-proptypes */ = {
   count: integerPropType.isRequired,
   /**
    * Accepts a function which returns a string value that provides a user-friendly name for the current page.
+   * This is important for screen reader users.
    *
    * For localization purposes, you can use the provided [translations](/guides/localization/).
-   *
    * @param {string} type The link or button type to format ('first' | 'last' | 'next' | 'previous').
    * @returns {string}
    * @default function defaultGetAriaLabel(type) {
@@ -356,14 +328,14 @@ TablePagination.propTypes /* remove-proptypes */ = {
   /**
    * Callback fired when the page is changed.
    *
-   * @param {object} event The event source of the callback.
+   * @param {React.MouseEvent<HTMLButtonElement> | null} event The event source of the callback.
    * @param {number} page The page selected.
    */
   onPageChange: PropTypes.func.isRequired,
   /**
    * Callback fired when the number of rows per page is changed.
    *
-   * @param {object} event The event source of the callback.
+   * @param {React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>} event The event source of the callback.
    */
   onRowsPerPageChange: PropTypes.func,
   /**

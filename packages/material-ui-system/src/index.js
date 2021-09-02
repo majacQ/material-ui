@@ -1,7 +1,12 @@
+export { css, keyframes, GlobalStyles, StyledEngineProvider } from '@mui/styled-engine';
 export { default as borders } from './borders';
 export * from './borders';
 export { default as breakpoints } from './breakpoints';
-export { handleBreakpoints, mergeBreakpointsInOrder } from './breakpoints';
+export {
+  handleBreakpoints,
+  mergeBreakpointsInOrder,
+  resolveBreakpointValues as unstable_resolveBreakpointValues,
+} from './breakpoints';
 export { default as compose } from './compose';
 export { default as display } from './display';
 export { default as flexbox } from './flexbox';
@@ -17,7 +22,7 @@ export { default as sizing } from './sizing';
 export * from './sizing';
 export { default as spacing } from './spacing';
 export * from './spacing';
-export { default as style } from './style';
+export { default as style, getPath } from './style';
 export { default as typography } from './typography';
 export * from './typography';
 export {
@@ -25,3 +30,17 @@ export {
   extendSxProp as unstable_extendSxProp,
 } from './styleFunctionSx';
 export { default as unstable_getThemeValue } from './getThemeValue';
+export { default as Box } from './Box';
+export { default as createBox } from './createBox';
+export { default as createStyled } from './createStyled';
+export * from './createStyled';
+export { default as styled } from './styled';
+export { default as createTheme } from './createTheme';
+export { default as createBreakpoints } from './createTheme/createBreakpoints';
+export { default as createSpacing } from './createTheme/createSpacing';
+export { default as shape } from './createTheme/shape';
+export { default as useThemeProps, getThemeProps } from './useThemeProps';
+export { default as useTheme } from './useTheme';
+export { default as useThemeWithoutDefault } from './useThemeWithoutDefault';
+export * from './colorManipulator';
+export { default as ThemeProvider } from './ThemeProvider';

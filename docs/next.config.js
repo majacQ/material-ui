@@ -6,30 +6,33 @@ const { LANGUAGES, LANGUAGES_SSR } = require('./src/modules/constants');
 
 const workspaceRoot = path.join(__dirname, '../');
 
-/**
- * https://github.com/zeit/next.js/blob/287961ed9142a53f8e9a23bafb2f31257339ea98/packages/next/next-server/server/config.ts#L10
- * @typedef {'legacy' | 'blocking' | 'concurrent'} ReactRenderMode
- *
- * Values explained:
- * - legacy - `ReactDOM.render(<App />)`
- * - legacy-strict - `ReactDOM.render(<React.StrictMode><App /></React.StrictMode>, Element)`
- * - blocking - `ReactDOM.createSyncRoot(Element).render(<App />)`
- * - concurrent - `ReactDOM.createRoot(Element).render(<App />)`
- *
- * @type {ReactRenderMode | 'legacy-strict'}
- */
-const reactMode = 'legacy';
-// eslint-disable-next-line no-console
-console.log(`Using React '${reactMode}' mode.`);
+const reactStrictMode = true;
+if (reactStrictMode) {
+  // eslint-disable-next-line no-console
+  console.log(`Using React.StrictMode.`);
+}
 const l10nPRInNetlify = /^l10n_/.test(process.env.HEAD) && process.env.NETLIFY === 'true';
 const vercelDeploy = Boolean(process.env.VERCEL);
 
+const staging =
+  process.env.REPOSITORY_URL === undefined ||
+  /mui-org\/material-ui$/.test(process.env.REPOSITORY_URL);
+if (staging) {
+  // eslint-disable-next-line no-console
+  console.log(`Staging deploy of ${process.env.REPOSITORY_URL || 'local repository'}`);
+}
+
 module.exports = {
+  eslint: {
+    // TODO: https://github.com/mui-org/material-ui/issues/25966
+    ignoreDuringBuilds: true,
+  },
   typescript: {
     // Motivated by https://github.com/zeit/next.js/issues/7687
     ignoreDevErrors: true,
     ignoreBuildErrors: true,
   },
+  webpack5: true,
   webpack: (config, options) => {
     const plugins = config.plugins.slice();
 
@@ -59,7 +62,8 @@ module.exports = {
       }
 
       config.externals = [
-        (context, request, callback) => {
+        (ctx, callback) => {
+          const { request } = ctx;
           const hasDependencyOnRepoPackages = ['notistack', '@material-ui/data-grid'].includes(
             request,
           );
@@ -67,7 +71,7 @@ module.exports = {
           if (hasDependencyOnRepoPackages) {
             return callback(null);
           }
-          return nextExternals(context, request, callback);
+          return nextExternals(ctx, callback);
         },
       ];
     }
@@ -83,16 +87,21 @@ module.exports = {
           ...config.resolve.extensions.filter((extension) => extension !== '.tsx'),
         ],
       },
-      node: {
-        fs: 'empty',
-      },
       module: {
         ...config.module,
         rules: config.module.rules.concat([
-          // used in some /getting-started/templates
           {
             test: /\.md$/,
-            loader: 'raw-loader',
+            oneOf: [
+              {
+                resourceQuery: /@mui\/markdown/,
+                use: require.resolve('@mui/markdown/loader'),
+              },
+              {
+                // used in some /getting-started/templates
+                type: 'asset/source',
+              },
+            ],
           },
           // transpile 3rd party packages with dependencies in this repository
           {
@@ -110,19 +119,29 @@ module.exports = {
                     {
                       alias: {
                         // all packages in this monorepo
+                        '@mui/material': '../packages/material-ui/src',
+                        '@mui/docs': '../packages/material-ui-docs/src',
+                        '@mui/icons-material': '../packages/material-ui-icons/lib',
+                        '@mui/lab': '../packages/material-ui-lab/src',
+                        '@mui/styled-engine': '../packages/material-ui-styled-engine/src',
+                        '@mui/styles': '../packages/material-ui-styles/src',
+                        '@mui/system': '../packages/material-ui-system/src',
+                        '@mui/private-theming': '../packages/material-ui-private-theming/src',
+                        '@mui/utils': '../packages/material-ui-utils/src',
+                        '@mui/core': '../packages/material-ui-unstyled/src',
+                        // all legacy package names in this monorepo
                         '@material-ui/core': '../packages/material-ui/src',
                         '@material-ui/docs': '../packages/material-ui-docs/src',
-                        '@material-ui/icons': '../packages/material-ui-icons/src',
+                        '@material-ui/icons': '../packages/material-ui-icons/lib',
                         '@material-ui/lab': '../packages/material-ui-lab/src',
                         '@material-ui/styled-engine': '../packages/material-ui-styled-engine/src',
-                        '@material-ui/styled-engine-sc':
-                          '../packages/material-ui-styled-engine-sc/src',
                         '@material-ui/styles': '../packages/material-ui-styles/src',
                         '@material-ui/system': '../packages/material-ui-system/src',
                         '@material-ui/private-theming':
                           '../packages/material-ui-private-theming/src',
                         '@material-ui/utils': '../packages/material-ui-utils/src',
                         '@material-ui/unstyled': '../packages/material-ui-unstyled/src',
+                        '@material-ui/core/*': '../packages/material-ui/src/*',
                       },
                       transformFunctions: ['require'],
                     },
@@ -135,7 +154,7 @@ module.exports = {
           {
             test: /\.(js|mjs|tsx|ts)$/,
             include: [workspaceRoot],
-            exclude: /node_modules/,
+            exclude: /(node_modules|material-ui-icons)/,
             use: options.defaultLoaders.babel,
           },
         ]),
@@ -147,13 +166,17 @@ module.exports = {
     COMMIT_REF: process.env.COMMIT_REF,
     ENABLE_AD: process.env.ENABLE_AD,
     GITHUB_AUTH: process.env.GITHUB_AUTH,
+    GIT_REVIEW_ID: process.env.REVIEW_ID,
     LIB_VERSION: pkg.version,
+    NETLIFY_DEPLOY_URL: process.env.DEPLOY_URL || 'http://localhost:3000',
+    NETLIFY_SITE_NAME: process.env.SITE_NAME || 'material-ui',
     PULL_REQUEST: process.env.PULL_REQUEST === 'true',
-    REACT_MODE: reactMode,
+    REACT_STRICT_MODE: reactStrictMode,
     FEEDBACK_URL: process.env.FEEDBACK_URL,
     // #default-branch-switch
     SOURCE_CODE_ROOT_URL: 'https://github.com/mui-org/material-ui/blob/next',
     SOURCE_CODE_REPO: 'https://github.com/mui-org/material-ui',
+    STAGING: staging,
   },
   // Next.js provides a `defaultPathMap` argument, we could simplify the logic.
   // However, we don't in order to prevent any regression in the `findPages()` method.
@@ -195,10 +218,7 @@ module.exports = {
 
     return map;
   },
-  experimental: {
-    reactMode: reactMode.startsWith('legacy') ? 'legacy' : reactMode,
-  },
-  reactStrictMode: reactMode === 'legacy-strict',
+  reactStrictMode,
   async rewrites() {
     return [{ source: `/:lang(${LANGUAGES.join('|')})?/:rest*`, destination: '/:rest*' }];
   },

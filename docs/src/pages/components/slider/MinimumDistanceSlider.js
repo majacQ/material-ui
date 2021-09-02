@@ -1,7 +1,6 @@
 import * as React from 'react';
-import Box from '@material-ui/core/Box';
-import Typography from '@material-ui/core/Typography';
-import Slider from '@material-ui/core/Slider';
+import Box from '@mui/material/Box';
+import Slider from '@mui/material/Slider';
 
 function valuetext(value) {
   return `${value}°C`;
@@ -46,25 +45,19 @@ export default function MinimumDistanceSlider() {
 
   return (
     <Box sx={{ width: 300 }}>
-      <Typography id="minimum-distance-demo" gutterBottom>
-        Minimum distance
-      </Typography>
       <Slider
+        getAriaLabel={() => 'Minimum distance'}
         value={value1}
         onChange={handleChange1}
         valueLabelDisplay="auto"
-        aria-labelledby="minimum-distance-demo"
         getAriaValueText={valuetext}
         disableSwap
       />
-      <Typography id="minimum-distance-shift-demo" gutterBottom>
-        Minimum distance shift
-      </Typography>
       <Slider
+        getAriaLabel={() => 'Minimum distance shift'}
         value={value2}
         onChange={handleChange2}
         valueLabelDisplay="auto"
-        aria-labelledby="minimum-distance-shift-demo"
         getAriaValueText={valuetext}
         disableSwap
       />

@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { addPropertyControls, ControlType } from 'framer';
-import * as Icons from '@material-ui/icons';
-import { SvgIconProps } from '@material-ui/core/SvgIcon';
+import * as Icons from '@mui/icons-material';
+import { SvgIconProps } from '@mui/material/SvgIcon';
 import { pascalCase } from './utils';
 
 interface Props extends SvgIconProps {
@@ -14,9 +14,7 @@ interface Props extends SvgIconProps {
 
 export function Icon(props: Props): JSX.Element | null {
   const { height, icon: iconProp, theme, width, ...other } = props;
-  const iconName = `${iconProp && pascalCase(iconProp)}${
-    theme === 'Filled' ? '' : theme
-  }` as keyof typeof Icons;
+  const iconName = `${iconProp && pascalCase(iconProp)}${theme === 'Filled' ? '' : theme}`;
   const MuiIcon = Object.keys(Icons).indexOf(iconName) !== -1 ? Icons[iconName] : undefined;
 
   return MuiIcon ? <MuiIcon style={{ width, height }} {...other} /> : null;

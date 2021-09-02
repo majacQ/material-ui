@@ -1,26 +1,30 @@
 import * as React from 'react';
 import PropTypes from 'prop-types';
 import clsx from 'clsx';
-import { usePreviousProps } from '@material-ui/utils';
-import { generateUtilityClasses, isHostComponent } from '@material-ui/unstyled';
-import BadgeUnstyled, {
-  badgeUnstyledClasses,
-  getBadgeUtilityClass,
-} from '@material-ui/unstyled/BadgeUnstyled';
-import styled from '../styles/experimentalStyled';
+import { usePreviousProps } from '@mui/utils';
+import { generateUtilityClasses, isHostComponent } from '@mui/core';
+import BadgeUnstyled, { badgeUnstyledClasses, getBadgeUtilityClass } from '@mui/core/BadgeUnstyled';
+import styled from '../styles/styled';
 import useThemeProps from '../styles/useThemeProps';
 import capitalize from '../utils/capitalize';
 
 export const badgeClasses = {
   ...badgeUnstyledClasses,
-  ...generateUtilityClasses('MuiBadge', ['colorError', 'colorPrimary', 'colorSecondary']),
+  ...generateUtilityClasses('MuiBadge', [
+    'colorError',
+    'colorInfo',
+    'colorPrimary',
+    'colorSecondary',
+    'colorSuccess',
+    'colorWarning',
+  ]),
 };
 
 const RADIUS_STANDARD = 10;
 const RADIUS_DOT = 4;
 
-const extendUtilityClasses = (styleProps) => {
-  const { color, classes = {} } = styleProps;
+const extendUtilityClasses = (ownerState) => {
+  const { color, classes = {} } = ownerState;
 
   return {
     ...classes,
@@ -31,15 +35,11 @@ const extendUtilityClasses = (styleProps) => {
   };
 };
 
-const BadgeRoot = styled(
-  'span',
-  {},
-  {
-    name: 'MuiBadge',
-    slot: 'Root',
-    overridesResolver: (props, styles) => styles.root,
-  },
-)({
+const BadgeRoot = styled('span', {
+  name: 'MuiBadge',
+  slot: 'Root',
+  overridesResolver: (props, styles) => styles.root,
+})({
   position: 'relative',
   display: 'inline-flex',
   // For correct alignment with the text.
@@ -47,29 +47,25 @@ const BadgeRoot = styled(
   flexShrink: 0,
 });
 
-const BadgeBadge = styled(
-  'span',
-  {},
-  {
-    name: 'MuiBadge',
-    slot: 'Badge',
-    overridesResolver: (props, styles) => {
-      const { styleProps } = props;
+const BadgeBadge = styled('span', {
+  name: 'MuiBadge',
+  slot: 'Badge',
+  overridesResolver: (props, styles) => {
+    const { ownerState } = props;
 
-      return {
-        ...styles.badge,
-        ...styles[styleProps.variant],
-        ...styles[
-          `anchorOrigin${capitalize(styleProps.anchorOrigin.vertical)}${capitalize(
-            styleProps.anchorOrigin.horizontal,
-          )}${capitalize(styleProps.overlap)}`
-        ],
-        ...(styleProps.color !== 'default' && styles[`color${capitalize(styleProps.color)}`]),
-        ...(styleProps.invisible && styles.invisible),
-      };
-    },
+    return [
+      styles.badge,
+      styles[ownerState.variant],
+      styles[
+        `anchorOrigin${capitalize(ownerState.anchorOrigin.vertical)}${capitalize(
+          ownerState.anchorOrigin.horizontal,
+        )}${capitalize(ownerState.overlap)}`
+      ],
+      ownerState.color !== 'default' && styles[`color${capitalize(ownerState.color)}`],
+      ownerState.invisible && styles.invisible,
+    ];
   },
-)(({ theme, styleProps }) => ({
+})(({ theme, ownerState }) => ({
   display: 'flex',
   flexDirection: 'row',
   flexWrap: 'wrap',
@@ -91,19 +87,19 @@ const BadgeBadge = styled(
     easing: theme.transitions.easing.easeInOut,
     duration: theme.transitions.duration.enteringScreen,
   }),
-  ...(styleProps.color !== 'default' && {
-    backgroundColor: theme.palette[styleProps.color].main,
-    color: theme.palette[styleProps.color].contrastText,
+  ...(ownerState.color !== 'default' && {
+    backgroundColor: theme.palette[ownerState.color].main,
+    color: theme.palette[ownerState.color].contrastText,
   }),
-  ...(styleProps.variant === 'dot' && {
+  ...(ownerState.variant === 'dot' && {
     borderRadius: RADIUS_DOT,
     height: RADIUS_DOT * 2,
     minWidth: RADIUS_DOT * 2,
     padding: 0,
   }),
-  ...(styleProps.anchorOrigin.vertical === 'top' &&
-    styleProps.anchorOrigin.horizontal === 'right' &&
-    styleProps.overlap === 'rectangular' && {
+  ...(ownerState.anchorOrigin.vertical === 'top' &&
+    ownerState.anchorOrigin.horizontal === 'right' &&
+    ownerState.overlap === 'rectangular' && {
       top: 0,
       right: 0,
       transform: 'scale(1) translate(50%, -50%)',
@@ -112,9 +108,9 @@ const BadgeBadge = styled(
         transform: 'scale(0) translate(50%, -50%)',
       },
     }),
-  ...(styleProps.anchorOrigin.vertical === 'bottom' &&
-    styleProps.anchorOrigin.horizontal === 'right' &&
-    styleProps.overlap === 'rectangular' && {
+  ...(ownerState.anchorOrigin.vertical === 'bottom' &&
+    ownerState.anchorOrigin.horizontal === 'right' &&
+    ownerState.overlap === 'rectangular' && {
       bottom: 0,
       right: 0,
       transform: 'scale(1) translate(50%, 50%)',
@@ -123,9 +119,9 @@ const BadgeBadge = styled(
         transform: 'scale(0) translate(50%, 50%)',
       },
     }),
-  ...(styleProps.anchorOrigin.vertical === 'top' &&
-    styleProps.anchorOrigin.horizontal === 'left' &&
-    styleProps.overlap === 'rectangular' && {
+  ...(ownerState.anchorOrigin.vertical === 'top' &&
+    ownerState.anchorOrigin.horizontal === 'left' &&
+    ownerState.overlap === 'rectangular' && {
       top: 0,
       left: 0,
       transform: 'scale(1) translate(-50%, -50%)',
@@ -134,9 +130,9 @@ const BadgeBadge = styled(
         transform: 'scale(0) translate(-50%, -50%)',
       },
     }),
-  ...(styleProps.anchorOrigin.vertical === 'bottom' &&
-    styleProps.anchorOrigin.horizontal === 'left' &&
-    styleProps.overlap === 'rectangular' && {
+  ...(ownerState.anchorOrigin.vertical === 'bottom' &&
+    ownerState.anchorOrigin.horizontal === 'left' &&
+    ownerState.overlap === 'rectangular' && {
       bottom: 0,
       left: 0,
       transform: 'scale(1) translate(-50%, 50%)',
@@ -145,9 +141,9 @@ const BadgeBadge = styled(
         transform: 'scale(0) translate(-50%, 50%)',
       },
     }),
-  ...(styleProps.anchorOrigin.vertical === 'top' &&
-    styleProps.anchorOrigin.horizontal === 'right' &&
-    styleProps.overlap === 'circular' && {
+  ...(ownerState.anchorOrigin.vertical === 'top' &&
+    ownerState.anchorOrigin.horizontal === 'right' &&
+    ownerState.overlap === 'circular' && {
       top: '14%',
       right: '14%',
       transform: 'scale(1) translate(50%, -50%)',
@@ -156,9 +152,9 @@ const BadgeBadge = styled(
         transform: 'scale(0) translate(50%, -50%)',
       },
     }),
-  ...(styleProps.anchorOrigin.vertical === 'bottom' &&
-    styleProps.anchorOrigin.horizontal === 'right' &&
-    styleProps.overlap === 'circular' && {
+  ...(ownerState.anchorOrigin.vertical === 'bottom' &&
+    ownerState.anchorOrigin.horizontal === 'right' &&
+    ownerState.overlap === 'circular' && {
       bottom: '14%',
       right: '14%',
       transform: 'scale(1) translate(50%, 50%)',
@@ -167,9 +163,9 @@ const BadgeBadge = styled(
         transform: 'scale(0) translate(50%, 50%)',
       },
     }),
-  ...(styleProps.anchorOrigin.vertical === 'top' &&
-    styleProps.anchorOrigin.horizontal === 'left' &&
-    styleProps.overlap === 'circular' && {
+  ...(ownerState.anchorOrigin.vertical === 'top' &&
+    ownerState.anchorOrigin.horizontal === 'left' &&
+    ownerState.overlap === 'circular' && {
       top: '14%',
       left: '14%',
       transform: 'scale(1) translate(-50%, -50%)',
@@ -178,9 +174,9 @@ const BadgeBadge = styled(
         transform: 'scale(0) translate(-50%, -50%)',
       },
     }),
-  ...(styleProps.anchorOrigin.vertical === 'bottom' &&
-    styleProps.anchorOrigin.horizontal === 'left' &&
-    styleProps.overlap === 'circular' && {
+  ...(ownerState.anchorOrigin.vertical === 'bottom' &&
+    ownerState.anchorOrigin.horizontal === 'left' &&
+    ownerState.overlap === 'circular' && {
       bottom: '14%',
       left: '14%',
       transform: 'scale(1) translate(-50%, 50%)',
@@ -189,7 +185,7 @@ const BadgeBadge = styled(
         transform: 'scale(0) translate(-50%, 50%)',
       },
     }),
-  ...(styleProps.invisible && {
+  ...(ownerState.invisible && {
     transition: theme.transitions.create('transform', {
       easing: theme.transitions.easing.easeInOut,
       duration: theme.transitions.duration.leavingScreen,
@@ -198,7 +194,7 @@ const BadgeBadge = styled(
 }));
 
 const Badge = React.forwardRef(function Badge(inProps, ref) {
-  const { isRtl, ...props } = useThemeProps({ props: inProps, name: 'MuiBadge' });
+  const props = useThemeProps({ props: inProps, name: 'MuiBadge' });
   const {
     components = {},
     componentsProps = {},
@@ -225,8 +221,8 @@ const Badge = React.forwardRef(function Badge(inProps, ref) {
 
   const { color = colorProp } = invisible ? prevProps : props;
 
-  const styleProps = { ...props, invisible, color };
-  const classes = extendUtilityClasses(styleProps);
+  const ownerState = { ...props, invisible, color };
+  const classes = extendUtilityClasses(ownerState);
 
   return (
     <BadgeUnstyled
@@ -244,13 +240,13 @@ const Badge = React.forwardRef(function Badge(inProps, ref) {
         root: {
           ...componentsProps.root,
           ...((!components.Root || !isHostComponent(components.Root)) && {
-            styleProps: { ...componentsProps.root?.styleProps, color },
+            ownerState: { ...componentsProps.root?.ownerState, color },
           }),
         },
         badge: {
           ...componentsProps.badge,
           ...((!components.Thumb || !isHostComponent(components.Thumb)) && {
-            styleProps: { ...componentsProps.badge?.styleProps, color },
+            ownerState: { ...componentsProps.badge?.ownerState, color },
           }),
         },
       }}
@@ -293,7 +289,7 @@ Badge.propTypes /* remove-proptypes */ = {
    * @default 'default'
    */
   color: PropTypes /* @typescript-to-proptypes-ignore */.oneOfType([
-    PropTypes.oneOf(['default', 'error', 'primary', 'secondary']),
+    PropTypes.oneOf(['default', 'primary', 'secondary', 'error', 'info', 'success', 'warning']),
     PropTypes.string,
   ]),
   /**

@@ -2,17 +2,10 @@ import * as React from 'react';
 import PropTypes from 'prop-types';
 import { spy, stub } from 'sinon';
 import { expect } from 'chai';
-import {
-  createMount,
-  describeConformanceV5,
-  act,
-  createClientRender,
-  fireEvent,
-  screen,
-} from 'test/utils';
-import { ThemeProvider, createTheme } from '@material-ui/core/styles';
-import { SliderUnstyled } from '@material-ui/unstyled';
-import Slider, { sliderClasses as classes } from '@material-ui/core/Slider';
+import { describeConformance, act, createClientRender, fireEvent, screen } from 'test/utils';
+import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { SliderUnstyled } from '@mui/core';
+import Slider, { sliderClasses as classes } from '@mui/material/Slider';
 
 function createTouches(touches) {
   return {
@@ -35,17 +28,15 @@ describe('<Slider />', () => {
   });
 
   const render = createClientRender();
-  const mount = createMount();
 
-  describeConformanceV5(<Slider value={0} />, () => ({
+  describeConformance(<Slider value={0} />, () => ({
     classes,
     inheritComponent: SliderUnstyled,
     render,
-    mount,
     refInstanceof: window.HTMLSpanElement,
     muiName: 'MuiSlider',
     testDeepOverrides: { slotName: 'thumb', slotClassName: classes.thumb },
-    testVariantProps: { color: 'primary', orientation: 'vertical' },
+    testVariantProps: { color: 'primary', orientation: 'vertical', size: 'small' },
     testStateOverrides: { prop: 'color', value: 'secondary', styleKey: 'colorSecondary' },
   }));
 
@@ -76,7 +67,9 @@ describe('<Slider />', () => {
     expect(handleChangeCommitted.callCount).to.equal(1);
     expect(handleChangeCommitted.args[0][1]).to.equal(10);
 
-    slider.focus();
+    act(() => {
+      slider.focus();
+    });
     fireEvent.change(slider, { target: { value: 23 } });
     expect(handleChange.callCount).to.equal(2);
     expect(handleChangeCommitted.callCount).to.equal(2);
@@ -181,8 +174,8 @@ describe('<Slider />', () => {
 
       act(() => {
         slider1.focus();
-        fireEvent.change(slider1, { target: { value: '21' } });
       });
+      fireEvent.change(slider1, { target: { value: '21' } });
 
       expect(slider1.getAttribute('aria-valuenow')).to.equal('21');
       expect(slider2.getAttribute('aria-valuenow')).to.equal('30');
@@ -197,8 +190,8 @@ describe('<Slider />', () => {
 
       act(() => {
         slider1.focus();
-        fireEvent.change(slider1, { target: { value: '31' } });
       });
+      fireEvent.change(slider1, { target: { value: '31' } });
 
       expect(slider1.getAttribute('aria-valuenow')).to.equal('31');
       expect(slider2.getAttribute('aria-valuenow')).to.equal('31');
@@ -206,8 +199,8 @@ describe('<Slider />', () => {
 
       act(() => {
         slider1.focus();
-        fireEvent.change(slider1, { target: { value: '32' } });
       });
+      fireEvent.change(slider1, { target: { value: '32' } });
 
       expect(slider1.getAttribute('aria-valuenow')).to.equal('31');
       expect(slider2.getAttribute('aria-valuenow')).to.equal('32');
@@ -968,11 +961,11 @@ describe('<Slider />', () => {
 
     act(() => {
       slider.focus();
-      fireEvent.change(slider, {
-        target: {
-          value: 4,
-        },
-      });
+    });
+    fireEvent.change(slider, {
+      target: {
+        value: 4,
+      },
     });
 
     expect(handleChange.callCount).to.equal(1);
@@ -1138,8 +1131,8 @@ describe('<Slider />', () => {
 
       act(() => {
         slider1.focus();
-        fireEvent.change(slider2, { target: { value: '19' } });
       });
+      fireEvent.change(slider2, { target: { value: '19' } });
       expect(handleChange.args[0][1]).to.deep.equal([20, 20]);
       expect(document.activeElement).to.have.attribute('data-index', '1');
     });
@@ -1168,6 +1161,26 @@ describe('<Slider />', () => {
       expect(handleChange.args[0][1]).to.deep.equal([20, 35]);
       expect(handleChange.args[1][1]).to.deep.equal([20, 20]);
       expect(document.activeElement).to.have.attribute('data-index', '1');
+    });
+  });
+
+  describe('prop: size', () => {
+    it('should render default slider', () => {
+      render(<Slider />);
+
+      const root = document.querySelector(`.${classes.root}`);
+      const thumb = document.querySelector(`.${classes.thumb}`);
+      expect(root).not.to.have.class(classes.sizeSmall);
+      expect(thumb).not.to.have.class(classes.thumbSizeSmall);
+    });
+
+    it('should render small slider', () => {
+      render(<Slider size="small" />);
+
+      const root = document.querySelector(`.${classes.root}`);
+      const thumb = document.querySelector(`.${classes.thumb}`);
+      expect(root).to.have.class(classes.sizeSmall);
+      expect(thumb).to.have.class(classes.thumbSizeSmall);
     });
   });
 });

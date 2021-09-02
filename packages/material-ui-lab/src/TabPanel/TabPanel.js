@@ -1,16 +1,13 @@
 import * as React from 'react';
 import PropTypes from 'prop-types';
 import clsx from 'clsx';
-import {
-  experimentalStyled,
-  unstable_useThemeProps as useThemeProps,
-} from '@material-ui/core/styles';
-import { unstable_composeClasses as composeClasses } from '@material-ui/unstyled';
+import { styled, useThemeProps } from '@mui/material/styles';
+import { unstable_composeClasses as composeClasses } from '@mui/core';
 import { getTabPanelUtilityClass } from './tabPanelClasses';
 import { getPanelId, getTabId, useTabContext } from '../TabContext';
 
-const useUtilityClasses = (styleProps) => {
-  const { classes } = styleProps;
+const useUtilityClasses = (ownerState) => {
+  const { classes } = ownerState;
 
   const slots = {
     root: ['root'],
@@ -19,15 +16,11 @@ const useUtilityClasses = (styleProps) => {
   return composeClasses(slots, getTabPanelUtilityClass, classes);
 };
 
-const TabPanelRoot = experimentalStyled(
-  'div',
-  {},
-  {
-    name: 'MuiTabPanel',
-    slot: 'Root',
-    overridesResolver: (props, styles) => styles.root,
-  },
-)(({ theme }) => ({
+const TabPanelRoot = styled('div', {
+  name: 'MuiTabPanel',
+  slot: 'Root',
+  overridesResolver: (props, styles) => styles.root,
+})(({ theme }) => ({
   padding: theme.spacing(3),
 }));
 
@@ -36,11 +29,11 @@ const TabPanel = React.forwardRef(function TabPanel(inProps, ref) {
 
   const { children, className, value, ...other } = props;
 
-  const styleProps = {
+  const ownerState = {
     ...props,
   };
 
-  const classes = useUtilityClasses(styleProps);
+  const classes = useUtilityClasses(ownerState);
 
   const context = useTabContext();
   if (context === null) {
@@ -57,7 +50,7 @@ const TabPanel = React.forwardRef(function TabPanel(inProps, ref) {
       id={id}
       ref={ref}
       role="tabpanel"
-      styleProps={styleProps}
+      ownerState={ownerState}
       {...other}
     >
       {value === context.value && children}

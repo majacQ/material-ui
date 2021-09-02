@@ -1,4 +1,4 @@
-import { DefaultTheme } from '@material-ui/private-theming';
+import { DefaultTheme } from '@mui/system';
 
 export interface ThemeProviderProps<Theme = DefaultTheme> {
   children?: React.ReactNode;

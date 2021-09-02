@@ -1,12 +1,24 @@
 import * as React from 'react';
 import clsx from 'clsx';
 import PropTypes from 'prop-types';
+import { unstable_composeClasses as composeClasses } from '@mui/core';
 import NativeSelectInput from './NativeSelectInput';
 import formControlState from '../FormControl/formControlState';
 import useFormControl from '../FormControl/useFormControl';
 import ArrowDropDownIcon from '../internal/svg-icons/ArrowDropDown';
 import Input from '../Input';
 import useThemeProps from '../styles/useThemeProps';
+import { getNativeSelectUtilityClasses } from './nativeSelectClasses';
+
+const useUtilityClasses = (ownerState) => {
+  const { classes } = ownerState;
+
+  const slots = {
+    root: ['root'],
+  };
+
+  return composeClasses(slots, getNativeSelectUtilityClasses, classes);
+};
 
 const defaultInput = <Input />;
 /**
@@ -17,7 +29,7 @@ const NativeSelect = React.forwardRef(function NativeSelect(inProps, ref) {
   const {
     className,
     children,
-    classes,
+    classes: classesProp = {},
     IconComponent = ArrowDropDownIcon,
     input = defaultInput,
     inputProps,
@@ -32,13 +44,17 @@ const NativeSelect = React.forwardRef(function NativeSelect(inProps, ref) {
     states: ['variant'],
   });
 
+  const ownerState = { ...props, classes: classesProp };
+  const classes = useUtilityClasses(ownerState);
+  const { root, ...otherClasses } = classesProp;
+
   return React.cloneElement(input, {
     // Most of the logic is implemented in `NativeSelectInput`.
     // The `Select` component is a simple API wrapper to expose something better to play with.
     inputComponent: NativeSelectInput,
     inputProps: {
       children,
-      classes,
+      classes: otherClasses,
       IconComponent,
       variant: fcs.variant,
       type: undefined, // We render a select. We can ignore the type provided by the `Input`.
@@ -47,7 +63,7 @@ const NativeSelect = React.forwardRef(function NativeSelect(inProps, ref) {
     },
     ref,
     ...other,
-    className: clsx(className, input.props.className),
+    className: clsx(classes.root, input.props.className, className),
   });
 });
 
@@ -63,6 +79,7 @@ NativeSelect.propTypes /* remove-proptypes */ = {
   children: PropTypes.node,
   /**
    * Override or extend the styles applied to the component.
+   * @default {}
    */
   classes: PropTypes.object,
   /**
@@ -86,7 +103,7 @@ NativeSelect.propTypes /* remove-proptypes */ = {
   /**
    * Callback fired when a menu item is selected.
    *
-   * @param {object} event The event source of the callback.
+   * @param {React.ChangeEvent<HTMLSelectElement>} event The event source of the callback.
    * You can pull out the new value by accessing `event.target.value` (string).
    */
   onChange: PropTypes.func,

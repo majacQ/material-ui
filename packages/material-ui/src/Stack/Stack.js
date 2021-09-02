@@ -5,9 +5,10 @@ import {
   getValue,
   handleBreakpoints,
   unstable_extendSxProp as extendSxProp,
-} from '@material-ui/system';
-import { deepmerge } from '@material-ui/utils';
-import experimentalStyled from '../styles/experimentalStyled';
+  unstable_resolveBreakpointValues as resolveBreakpointValues,
+} from '@mui/system';
+import { deepmerge } from '@mui/utils';
+import styled from '../styles/styled';
 import useThemeProps from '../styles/useThemeProps';
 
 /**
@@ -31,26 +32,6 @@ function joinChildren(children, separator) {
   }, []);
 }
 
-function resolveBreakpointValues({ values, base }) {
-  const keys = Object.keys(base);
-
-  if (keys.length === 0) {
-    return values;
-  }
-
-  let previous;
-
-  return keys.reduce((acc, breakpoint) => {
-    if (typeof values === 'object') {
-      acc[breakpoint] = values[breakpoint] != null ? values[breakpoint] : values[previous];
-    } else {
-      acc[breakpoint] = values;
-    }
-    previous = breakpoint;
-    return acc;
-  }, {});
-}
-
 const getSideFromDirection = (direction) => {
   return {
     row: 'Left',
@@ -60,33 +41,33 @@ const getSideFromDirection = (direction) => {
   }[direction];
 };
 
-export const style = ({ styleProps, theme }) => {
+export const style = ({ ownerState, theme }) => {
   let styles = {
     display: 'flex',
-    ...handleBreakpoints({ theme }, styleProps.direction, (propValue) => ({
+    ...handleBreakpoints({ theme }, ownerState.direction, (propValue) => ({
       flexDirection: propValue,
     })),
   };
 
-  if (styleProps.spacing) {
+  if (ownerState.spacing) {
     const transformer = createUnarySpacing(theme);
 
     const base = Object.keys(theme.breakpoints.values).reduce((acc, breakpoint) => {
-      if (styleProps.spacing[breakpoint] != null || styleProps.direction[breakpoint] != null) {
+      if (ownerState.spacing[breakpoint] != null || ownerState.direction[breakpoint] != null) {
         acc[breakpoint] = true;
       }
       return acc;
     }, {});
 
-    const directionValues = resolveBreakpointValues({ values: styleProps.direction, base });
-    const spacingValues = resolveBreakpointValues({ values: styleProps.spacing, base });
+    const directionValues = resolveBreakpointValues({ values: ownerState.direction, base });
+    const spacingValues = resolveBreakpointValues({ values: ownerState.spacing, base });
 
     const styleFromPropValue = (propValue, breakpoint) => {
       return {
         '& > :not(style) + :not(style)': {
           margin: 0,
           [`margin${getSideFromDirection(
-            breakpoint ? directionValues[breakpoint] : styleProps.direction,
+            breakpoint ? directionValues[breakpoint] : ownerState.direction,
           )}`]: getValue(transformer, propValue),
         },
       };
@@ -97,7 +78,13 @@ export const style = ({ styleProps, theme }) => {
   return styles;
 };
 
-const StackRoot = experimentalStyled('div', {}, { name: 'Stack' })(style);
+const StackRoot = styled('div', {
+  name: 'MuiStack',
+  slot: 'Root',
+  overridesResolver: (props, styles) => {
+    return [styles.root];
+  },
+})(style);
 
 const Stack = React.forwardRef(function Stack(inProps, ref) {
   const themeProps = useThemeProps({ props: inProps, name: 'MuiStack' });
@@ -110,13 +97,13 @@ const Stack = React.forwardRef(function Stack(inProps, ref) {
     children,
     ...other
   } = props;
-  const styleProps = {
+  const ownerState = {
     direction,
     spacing,
   };
 
   return (
-    <StackRoot as={component} styleProps={styleProps} ref={ref} {...other}>
+    <StackRoot as={component} ownerState={ownerState} ref={ref} {...other}>
       {divider ? joinChildren(children, divider) : children}
     </StackRoot>
   );

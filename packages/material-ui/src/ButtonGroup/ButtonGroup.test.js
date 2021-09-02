@@ -1,14 +1,13 @@
 import * as React from 'react';
 import { expect } from 'chai';
-import { createMount, createClientRender, describeConformanceV5 } from 'test/utils';
-import ButtonGroup, { buttonGroupClasses as classes } from '@material-ui/core/ButtonGroup';
-import Button from '@material-ui/core/Button';
+import { createClientRender, describeConformance } from 'test/utils';
+import ButtonGroup, { buttonGroupClasses as classes } from '@mui/material/ButtonGroup';
+import Button from '@mui/material/Button';
 
 describe('<ButtonGroup />', () => {
   const render = createClientRender();
-  const mount = createMount();
 
-  describeConformanceV5(
+  describeConformance(
     <ButtonGroup>
       <Button>Conformance?</Button>
     </ButtonGroup>,
@@ -16,7 +15,6 @@ describe('<ButtonGroup />', () => {
       classes,
       inheritComponent: 'div',
       render,
-      mount,
       refInstanceof: window.HTMLDivElement,
       testComponentPropWith: 'span',
       muiName: 'MuiButtonGroup',

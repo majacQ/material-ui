@@ -2,12 +2,13 @@ import * as React from 'react';
 import { isFragment } from 'react-is';
 import PropTypes from 'prop-types';
 import clsx from 'clsx';
-import { unstable_composeClasses as composeClasses } from '@material-ui/unstyled';
-import { HTMLElementType } from '@material-ui/utils';
+import { unstable_composeClasses as composeClasses } from '@mui/core';
+import { HTMLElementType } from '@mui/utils';
 import MenuList from '../MenuList';
 import Paper from '../Paper';
 import Popover from '../Popover';
-import experimentalStyled, { rootShouldForwardProp } from '../styles/experimentalStyled';
+import styled, { rootShouldForwardProp } from '../styles/styled';
+import useTheme from '../styles/useTheme';
 import useThemeProps from '../styles/useThemeProps';
 import { getMenuUtilityClass } from './menuClasses';
 
@@ -21,8 +22,8 @@ const LTR_ORIGIN = {
   horizontal: 'left',
 };
 
-const useUtilityClasses = (styleProps) => {
-  const { classes } = styleProps;
+const useUtilityClasses = (ownerState) => {
+  const { classes } = ownerState;
 
   const slots = {
     root: ['root'],
@@ -33,48 +34,37 @@ const useUtilityClasses = (styleProps) => {
   return composeClasses(slots, getMenuUtilityClass, classes);
 };
 
-const MenuRoot = experimentalStyled(
-  Popover,
-  { shouldForwardProp: (prop) => rootShouldForwardProp(prop) || prop === 'classes' },
-  {
-    name: 'MuiMenu',
-    slot: 'Root',
-    overridesResolver: (props, styles) => styles.root,
-  },
-)({});
+const MenuRoot = styled(Popover, {
+  shouldForwardProp: (prop) => rootShouldForwardProp(prop) || prop === 'classes',
+  name: 'MuiMenu',
+  slot: 'Root',
+  overridesResolver: (props, styles) => styles.root,
+})({});
 
-const MenuPaper = experimentalStyled(
-  Paper,
-  {},
-  {
-    name: 'MuiMenu',
-    slot: 'Paper',
-    overridesResolver: (props, styles) => styles.paper,
-  },
-)({
+const MenuPaper = styled(Paper, {
+  name: 'MuiMenu',
+  slot: 'Paper',
+  overridesResolver: (props, styles) => styles.paper,
+})({
   // specZ: The maximum height of a simple menu should be one or more rows less than the view
   // height. This ensures a tapable area outside of the simple menu with which to dismiss
   // the menu.
   maxHeight: 'calc(100% - 96px)',
-  // Add iOS momentum scrolling.
+  // Add iOS momentum scrolling for iOS < 13.0
   WebkitOverflowScrolling: 'touch',
 });
 
-const MenuMenuList = experimentalStyled(
-  MenuList,
-  {},
-  {
-    name: 'MuiMenu',
-    slot: 'List',
-    overridesResolver: (props, styles) => styles.list,
-  },
-)({
+const MenuMenuList = styled(MenuList, {
+  name: 'MuiMenu',
+  slot: 'List',
+  overridesResolver: (props, styles) => styles.list,
+})({
   // We disable the focus ring for mouse, touch and keyboard users.
   outline: 0,
 });
 
 const Menu = React.forwardRef(function Menu(inProps, ref) {
-  const { isRtl, theme, ...props } = useThemeProps({ props: inProps, name: 'MuiMenu' });
+  const props = useThemeProps({ props: inProps, name: 'MuiMenu' });
 
   const {
     autoFocus = true,
@@ -83,7 +73,6 @@ const Menu = React.forwardRef(function Menu(inProps, ref) {
     MenuListProps = {},
     onClose,
     open,
-    // eslint-disable-next-line react/prop-types
     PaperProps = {},
     PopoverClasses,
     transitionDuration = 'auto',
@@ -92,7 +81,10 @@ const Menu = React.forwardRef(function Menu(inProps, ref) {
     ...other
   } = props;
 
-  const styleProps = {
+  const theme = useTheme();
+  const isRtl = theme.direction === 'rtl';
+
+  const ownerState = {
     ...props,
     autoFocus,
     disableAutoFocusItem,
@@ -104,7 +96,7 @@ const Menu = React.forwardRef(function Menu(inProps, ref) {
     variant,
   };
 
-  const classes = useUtilityClasses(styleProps);
+  const classes = useUtilityClasses(ownerState);
 
   const autoFocusItem = autoFocus && !disableAutoFocusItem && open;
 
@@ -168,7 +160,10 @@ const Menu = React.forwardRef(function Menu(inProps, ref) {
     <MenuRoot
       classes={PopoverClasses}
       onClose={onClose}
-      anchorOrigin={isRtl ? RTL_ORIGIN : LTR_ORIGIN}
+      anchorOrigin={{
+        vertical: 'bottom',
+        horizontal: isRtl ? 'right' : 'left',
+      }}
       transformOrigin={isRtl ? RTL_ORIGIN : LTR_ORIGIN}
       PaperProps={{
         component: MenuPaper,
@@ -183,7 +178,7 @@ const Menu = React.forwardRef(function Menu(inProps, ref) {
       ref={ref}
       transitionDuration={transitionDuration}
       TransitionProps={{ onEntering: handleEntering, ...TransitionProps }}
-      styleProps={styleProps}
+      ownerState={ownerState}
       {...other}
     >
       <MenuMenuList
@@ -254,6 +249,10 @@ Menu.propTypes /* remove-proptypes */ = {
    * If `true`, the component is shown.
    */
   open: PropTypes.bool.isRequired,
+  /**
+   * @ignore
+   */
+  PaperProps: PropTypes.object,
   /**
    * `classes` prop applied to the [`Popover`](/api/popover/) element.
    */

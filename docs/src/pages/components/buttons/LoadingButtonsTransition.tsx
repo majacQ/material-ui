@@ -1,10 +1,10 @@
 import * as React from 'react';
-import LoadingButton from '@material-ui/lab/LoadingButton';
-import Box from '@material-ui/core/Box';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import Switch from '@material-ui/core/Switch';
-import SaveIcon from '@material-ui/icons/Save';
-import SendIcon from '@material-ui/icons/Send';
+import LoadingButton from '@mui/lab/LoadingButton';
+import Box from '@mui/material/Box';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Switch from '@mui/material/Switch';
+import SaveIcon from '@mui/icons-material/Save';
+import SendIcon from '@mui/icons-material/Send';
 
 export default function LoadingButtonsTransition() {
   const [loading, setLoading] = React.useState(false);
@@ -13,13 +13,7 @@ export default function LoadingButtonsTransition() {
   }
 
   return (
-    <Box
-      sx={{
-        '& > button': {
-          m: 1,
-        },
-      }}
-    >
+    <Box sx={{ '& > button': { m: 1 } }}>
       <FormControlLabel
         sx={{
           display: 'block',
@@ -34,8 +28,13 @@ export default function LoadingButtonsTransition() {
         }
         label="Loading"
       />
-      <LoadingButton onClick={handleClick} loading={loading} variant="outlined">
-        Submit
+      <LoadingButton
+        onClick={handleClick}
+        loading={loading}
+        variant="outlined"
+        disabled
+      >
+        disabled
       </LoadingButton>
       <LoadingButton
         onClick={handleClick}

@@ -1,29 +1,23 @@
 import * as React from 'react';
-import { SxProps } from '@material-ui/system';
+import { SxProps } from '@mui/system';
 import { InternalStandardProps as StandardProps, Theme } from '..';
+import { ListItemIconClasses } from './listItemIconClasses';
 
 export interface ListItemIconProps extends StandardProps<React.HTMLAttributes<HTMLDivElement>> {
   /**
    * The content of the component, normally `Icon`, `SvgIcon`,
-   * or a `@material-ui/icons` SVG icon element.
+   * or a `@mui/icons-material` SVG icon element.
    */
   children?: React.ReactNode;
   /**
    * Override or extend the styles applied to the component.
    */
-  classes?: {
-    /** Styles applied to the root element. */
-    root?: string;
-    /** Styles applied to the root element when the parent `ListItem` uses `alignItems="flex-start"`. */
-    alignItemsFlexStart?: string;
-  };
+  classes?: Partial<ListItemIconClasses>;
   /**
    * The system prop that allows defining system overrides as well as additional CSS styles.
    */
   sx?: SxProps<Theme>;
 }
-
-export type ListItemIconClassKey = keyof NonNullable<ListItemIconProps['classes']>;
 
 /**
  * A simple wrapper to apply `List` styles to an `Icon` or `SvgIcon`.

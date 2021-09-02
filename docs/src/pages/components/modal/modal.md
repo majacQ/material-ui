@@ -18,7 +18,6 @@ The `Modal` offers important features:
 - ♿️ It properly manages focus; moving to the modal content,
   and keeping it there until the modal is closed.
 - ♿️ Adds the appropriate ARIA roles automatically.
-- 📦 [5 kB gzipped](/size-snapshot).
 
 {{"component": "modules/components/ComponentLinkHeader.js", "design": false}}
 
@@ -42,11 +41,13 @@ Notice that you can disable the outline (often blue or gold) with the `outline: 
 
 ## Unstyled
 
+- 📦 [4.7 kB gzipped](https://bundlephobia.com/result?p=@mui/core@next)
+
 The modal also comes with an unstyled version.
 It's ideal for doing heavy customizations and minimizing bundle size.
 
 ```js
-import ModalUnstyled from '@material-ui/unstyled/ModalUnstyled';
+import ModalUnstyled from '@mui/core/ModalUnstyled';
 ```
 
 {{"demo": "pages/components/modal/ModalUnstyled.js"}}

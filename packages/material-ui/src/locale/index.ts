@@ -21,7 +21,7 @@ export interface Localization {
         'clearText' | 'closeText' | 'loadingText' | 'noOptionsText' | 'openText'
       >;
     };
-    // The core package has no dependencies on the @material-ui/lab components.
+    // The core package has no dependencies on the @mui/lab components.
     // We can't use ComponentsPropsList, we have to duplicate and inline the definitions.
     MuiPagination?: {
       defaultProps: Pick<ComponentsPropsList['MuiPagination'], 'aria-label' | 'getItemAriaLabel'>;
@@ -30,6 +30,77 @@ export interface Localization {
 }
 
 export const arEG: Localization = {
+  components: {
+    MuiBreadcrumbs: {
+      defaultProps: {
+        expandText: 'ظهر العنوان',
+      },
+    },
+    MuiTablePagination: {
+      defaultProps: {
+        getItemAriaLabel: (type) => {
+          if (type === 'first') {
+            return 'امش للصفحة الأولى';
+          }
+          if (type === 'last') {
+            return 'امش للصفحة الأخيرة';
+          }
+          if (type === 'next') {
+            return 'امش للصفحة التالية';
+          }
+          // if (type === 'previous') {
+          return 'امش للصفحة السابقة';
+        },
+        labelRowsPerPage: 'عدد الصفوف في الصفحة:',
+        labelDisplayedRows: ({ from, to, count }) =>
+          `${from}-${to} من ${count !== -1 ? count : ` أكثر من${to}`}`,
+      },
+    },
+    MuiRating: {
+      defaultProps: {
+        getLabelText: (value) => `${value} ${value !== 1 ? 'نجوم' : 'نجمة'}`,
+        emptyLabelText: 'فارغ',
+      },
+    },
+    MuiAutocomplete: {
+      defaultProps: {
+        clearText: 'مسح',
+        closeText: 'إغلاق',
+        loadingText: 'يتم التحميل…',
+        noOptionsText: 'لا يوجد خيارات',
+        openText: 'فتح',
+      },
+    },
+    MuiAlert: {
+      defaultProps: {
+        closeText: 'إغلاق',
+      },
+    },
+    MuiPagination: {
+      defaultProps: {
+        'aria-label': 'التنقل عبر الصفحات',
+        getItemAriaLabel: (type, page, selected) => {
+          if (type === 'page') {
+            return `${selected ? '' : 'امش إلى '} صفحة ${page}`;
+          }
+          if (type === 'first') {
+            return 'امش للصفحة الأولى';
+          }
+          if (type === 'last') {
+            return 'امش للصفحة الأخيرة';
+          }
+          if (type === 'next') {
+            return 'امش للصفحة التالية';
+          }
+          // if (type === 'previous') {
+          return 'امش  للصفحة السابقة';
+        },
+      },
+    },
+  },
+};
+
+export const arSD: Localization = {
   components: {
     MuiBreadcrumbs: {
       defaultProps: {
@@ -1606,6 +1677,77 @@ export const jaJP: Localization = {
   },
 };
 
+export const khKH: Localization = {
+  components: {
+    MuiBreadcrumbs: {
+      defaultProps: {
+        expandText: 'បង្ហាញផ្លូវ',
+      },
+    },
+    MuiTablePagination: {
+      defaultProps: {
+        getItemAriaLabel: (type) => {
+          if (type === 'first') {
+            return 'ទៅទំព័រដំបូង';
+          }
+          if (type === 'last') {
+            return 'ទៅទំព័រចុងក្រោយ';
+          }
+          if (type === 'next') {
+            return 'ទៅទំព័របន្ទាប់';
+          }
+          // if (type === 'previous') {
+          return 'ទៅទំព័រមុន';
+        },
+        labelRowsPerPage: 'ចំនួនជួរដេកក្នុងមួយទំព័រ:',
+        labelDisplayedRows: ({ from, to, count }) =>
+          `${from} - ${to} នៃ ${count !== -1 ? count : `ច្រើនជាង ${to}`}`,
+      },
+    },
+    MuiRating: {
+      defaultProps: {
+        getLabelText: (value) => `${value} ផ្កាយ${value !== 1 ? '' : ''}`,
+        emptyLabelText: 'ទទេ',
+      },
+    },
+    MuiAutocomplete: {
+      defaultProps: {
+        clearText: 'លុបចោល',
+        closeText: 'បិទ',
+        loadingText: 'កំពុងលោត…',
+        noOptionsText: 'គ្មានជម្រើស',
+        openText: 'បើក',
+      },
+    },
+    MuiAlert: {
+      defaultProps: {
+        closeText: 'បិទ',
+      },
+    },
+    MuiPagination: {
+      defaultProps: {
+        'aria-label': 'រុករកទំព័រ',
+        getItemAriaLabel: (type, page, selected) => {
+          if (type === 'page') {
+            return `${selected ? '' : 'ទៅ '}ទំព័រ ${page}`;
+          }
+          if (type === 'first') {
+            return 'ទៅទំព័រដំបូង';
+          }
+          if (type === 'last') {
+            return 'ទៅទំព័រចុងក្រោយ';
+          }
+          if (type === 'next') {
+            return 'ទៅទំព័របន្ទាប់';
+          }
+          // if (type === 'previous') {
+          return 'ទៅទំព័រមុន';
+        },
+      },
+    },
+  },
+};
+
 export const koKR: Localization = {
   components: {
     MuiBreadcrumbs: {
@@ -1729,7 +1871,9 @@ export const kzKZ: Localization = {
         'aria-label': 'Беттерді шарлау',
         getItemAriaLabel: (type, page, selected) => {
           if (type === 'page') {
-            if (selected) return `${page} — бет`;
+            if (selected) {
+              return `${page} — бет`;
+            }
             return `${page} — бетке өту`;
           }
           if (type === 'first') {
@@ -2178,7 +2322,9 @@ export const ruRU: Localization = {
         'aria-label': 'Навигация по страницам',
         getItemAriaLabel: (type, page, selected) => {
           if (type === 'page') {
-            if (selected) return `${page} страница`;
+            if (selected) {
+              return `${page} страница`;
+            }
             return `Перейти на ${page} страницу`;
           }
           if (type === 'first') {
@@ -2192,6 +2338,77 @@ export const ruRU: Localization = {
           }
           // if (type === 'previous') {
           return 'Перейти на предыдущую страницу';
+        },
+      },
+    },
+  },
+};
+
+export const siLK: Localization = {
+  components: {
+    MuiBreadcrumbs: {
+      defaultProps: {
+        expandText: 'ගමන් මඟ පෙන්වන්න',
+      },
+    },
+    MuiTablePagination: {
+      defaultProps: {
+        getItemAriaLabel: (type) => {
+          if (type === 'first') {
+            return 'පළමු පිටුවට යන්න';
+          }
+          if (type === 'last') {
+            return 'අවසාන පිටුවට යන්න';
+          }
+          if (type === 'next') {
+            return 'මීළඟ පිටුවට යන්න';
+          }
+          // if (type === 'previous') {
+          return 'පෙර පිටුවට යන්න';
+        },
+        labelRowsPerPage: 'පිටුවක පේළි:',
+        labelDisplayedRows: ({ from, to, count }) =>
+          `${from}-${to} දක්වා ${count !== -1 ? count : `${to} ට වැඩි ප්‍රමාණයකින්`}`,
+      },
+    },
+    MuiRating: {
+      defaultProps: {
+        getLabelText: (value) => `තරු ${value}`,
+        emptyLabelText: 'හිස්',
+      },
+    },
+    MuiAutocomplete: {
+      defaultProps: {
+        clearText: 'මකන්න',
+        closeText: 'වසන්න',
+        loadingText: 'නැංවෙමින්…',
+        noOptionsText: 'විකල්ප නැත',
+        openText: 'විවෘත කරන්න',
+      },
+    },
+    MuiAlert: {
+      defaultProps: {
+        closeText: 'වසන්න',
+      },
+    },
+    MuiPagination: {
+      defaultProps: {
+        'aria-label': 'පිටු අතර සංචරණය',
+        getItemAriaLabel: (type, page, selected) => {
+          if (type === 'page') {
+            return `පිටුව ${page} ${selected ? '' : 'ට යන්න'}`;
+          }
+          if (type === 'first') {
+            return 'පළමු පිටුවට යන්න';
+          }
+          if (type === 'last') {
+            return 'අවසාන පිටුවට යන්න';
+          }
+          if (type === 'next') {
+            return 'මීළඟ පිටුවට යන්න';
+          }
+          // if (type === 'previous') {
+          return 'පෙර පිටුවට යන්න';
         },
       },
     },
@@ -2687,6 +2904,55 @@ export const zhCN: Localization = {
     MuiAlert: {
       defaultProps: {
         closeText: '关闭',
+      },
+    },
+  },
+};
+
+export const zhHK: Localization = {
+  components: {
+    MuiBreadcrumbs: {
+      defaultProps: {
+        expandText: '展開',
+      },
+    },
+    MuiTablePagination: {
+      defaultProps: {
+        getItemAriaLabel: (type) => {
+          if (type === 'first') {
+            return '第一頁';
+          }
+          if (type === 'last') {
+            return '最後一頁';
+          }
+          if (type === 'next') {
+            return '下一頁';
+          }
+          return '上一頁';
+        },
+        labelRowsPerPage: '每頁行數:',
+        labelDisplayedRows: ({ from, to, count }) =>
+          `第 ${from} 項至第 ${to} 項，${count !== -1 ? `共 ${count} 項` : `超過 ${to} 項`}`,
+      },
+    },
+    MuiRating: {
+      defaultProps: {
+        getLabelText: (value) => `${value} 粒星`,
+        emptyLabelText: '無標籤',
+      },
+    },
+    MuiAutocomplete: {
+      defaultProps: {
+        clearText: '清除',
+        closeText: '關閉',
+        loadingText: '載入中……',
+        noOptionsText: '沒有可用選項',
+        openText: '開啟',
+      },
+    },
+    MuiAlert: {
+      defaultProps: {
+        closeText: '關閉',
       },
     },
   },

@@ -1,12 +1,10 @@
 import * as React from 'react';
-import TextField from '@material-ui/core/TextField';
+import TextField from '@mui/material/TextField';
 import { describeConformance } from 'test/utils';
 import TimePicker from './TimePicker';
-import { createPickerMount } from '../internal/pickers/test-utils';
+import { wrapPickerMount } from '../internal/pickers/test-utils';
 
 describe('<TimePicker />', () => {
-  const mount = createPickerMount();
-
   describeConformance(
     <TimePicker
       onChange={() => {}}
@@ -15,9 +13,20 @@ describe('<TimePicker />', () => {
     />,
     () => ({
       classes: {},
-      mount,
+      muiName: 'MuiTimePicker',
+      wrapMount: wrapPickerMount,
       refInstanceof: window.HTMLDivElement,
-      skip: ['componentProp', 'mergeClassName', 'propsSpread', 'rootClass', 'reactTestRenderer'],
+      skip: [
+        'componentProp',
+        'componentsProp',
+        'themeDefaultProps',
+        'themeStyleOverrides',
+        'themeVariants',
+        'mergeClassName',
+        'propsSpread',
+        'rootClass',
+        'reactTestRenderer',
+      ],
     }),
   );
 });

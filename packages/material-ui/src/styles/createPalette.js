@@ -1,14 +1,14 @@
-import { deepmerge } from '@material-ui/utils';
-import MuiError from '@material-ui/utils/macros/MuiError.macro';
+import { deepmerge } from '@mui/utils';
+import MuiError from '@mui/utils/macros/MuiError.macro';
+import { darken, getContrastRatio, lighten } from '@mui/system';
 import common from '../colors/common';
 import grey from '../colors/grey';
-import indigo from '../colors/indigo';
-import pink from '../colors/pink';
+import purple from '../colors/purple';
 import red from '../colors/red';
 import orange from '../colors/orange';
 import blue from '../colors/blue';
+import lightBlue from '../colors/lightBlue';
 import green from '../colors/green';
-import { darken, getContrastRatio, lighten } from './colorManipulator';
 
 export const light = {
   // The colors used to style the text.
@@ -91,43 +91,105 @@ function addLightOrDark(intent, direction, shade, tonalOffset) {
   }
 }
 
-export default function createPalette(palette) {
-  const {
-    primary = {
-      light: indigo[300],
-      main: indigo[500],
-      dark: indigo[700],
-    },
-    secondary = {
-      light: pink.A200,
-      main: pink.A400,
-      dark: pink.A700,
-    },
-    error = {
-      light: red[300],
+function getDefaultPrimary(mode = 'light') {
+  if (mode === 'dark') {
+    return {
+      main: blue[200],
+      light: blue[50],
+      dark: blue[400],
+    };
+  }
+  return {
+    main: blue[700],
+    light: blue[400],
+    dark: blue[800],
+  };
+}
+
+function getDefaultSecondary(mode = 'light') {
+  if (mode === 'dark') {
+    return {
+      main: purple[200],
+      light: purple[50],
+      dark: purple[400],
+    };
+  }
+  return {
+    main: purple[500],
+    light: purple[300],
+    dark: purple[700],
+  };
+}
+
+function getDefaultError(mode = 'light') {
+  if (mode === 'dark') {
+    return {
       main: red[500],
+      light: red[300],
       dark: red[700],
-    },
-    warning = {
-      light: orange[300],
-      main: orange[500],
-      dark: orange[700],
-    },
-    info = {
-      light: blue[300],
-      main: blue[500],
-      dark: blue[700],
-    },
-    success = {
+    };
+  }
+  return {
+    main: red[700],
+    light: red[400],
+    dark: red[800],
+  };
+}
+
+function getDefaultInfo(mode = 'light') {
+  if (mode === 'dark') {
+    return {
+      main: lightBlue[400],
+      light: lightBlue[300],
+      dark: lightBlue[700],
+    };
+  }
+  return {
+    main: lightBlue[700],
+    light: lightBlue[500],
+    dark: lightBlue[900],
+  };
+}
+
+function getDefaultSuccess(mode = 'light') {
+  if (mode === 'dark') {
+    return {
+      main: green[400],
       light: green[300],
-      main: green[500],
       dark: green[700],
-    },
-    mode = 'light',
-    contrastThreshold = 3,
-    tonalOffset = 0.2,
-    ...other
-  } = palette;
+    };
+  }
+  return {
+    main: green[800],
+    light: green[500],
+    dark: green[900],
+  };
+}
+
+function getDefaultWarning(mode = 'light') {
+  if (mode === 'dark') {
+    return {
+      main: orange[400],
+      light: orange[300],
+      dark: orange[700],
+    };
+  }
+  return {
+    main: '#ED6C02', // closest to orange[800] that pass 3:1.
+    light: orange[500],
+    dark: orange[900],
+  };
+}
+
+export default function createPalette(palette) {
+  const { mode = 'light', contrastThreshold = 3, tonalOffset = 0.2, ...other } = palette;
+
+  const primary = palette.primary || getDefaultPrimary(mode);
+  const secondary = palette.secondary || getDefaultSecondary(mode);
+  const error = palette.error || getDefaultError(mode);
+  const info = palette.info || getDefaultInfo(mode);
+  const success = palette.success || getDefaultSuccess(mode);
+  const warning = palette.warning || getDefaultWarning(mode);
 
   // Use the same logic as
   // Bootstrap: https://github.com/twbs/bootstrap/blob/1d6e3710dd447de1a200f29e8fa521f8a0908f70/scss/_functions.scss#L59
@@ -176,7 +238,7 @@ export default function createPalette(palette) {
           '\n' +
           'Did you intend to use one of the following approaches?\n' +
           '\n' +
-          'import { green } from "@material-ui/core/colors";\n' +
+          'import { green } from "@mui/material/colors";\n' +
           '\n' +
           'const theme1 = createTheme({ palette: {\n' +
           '  primary: green,\n' +

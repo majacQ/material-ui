@@ -1,59 +1,52 @@
-import { deepmerge } from '@material-ui/utils';
-import { generateUtilityClass } from '@material-ui/unstyled';
-import createBreakpoints from './createBreakpoints';
+import { deepmerge } from '@mui/utils';
+import { generateUtilityClass } from '@mui/core';
+import { createTheme as systemCreateTheme } from '@mui/system';
 import createMixins from './createMixins';
 import createPalette from './createPalette';
 import createTypography from './createTypography';
 import shadows from './shadows';
-import shape from './shape';
-import createSpacing from './createSpacing';
-import { duration, easing, create, getAutoHeightDuration } from './transitions';
+import createTransitions from './createTransitions';
 import zIndex from './zIndex';
 
 function createTheme(options = {}, ...args) {
   const {
-    breakpoints: breakpointsInput = {},
+    breakpoints: breakpointsInput,
     mixins: mixinsInput = {},
-    palette: paletteInput = {},
     spacing: spacingInput,
+    palette: paletteInput = {},
+    transitions: transitionsInput = {},
     typography: typographyInput = {},
+    shape: shapeInput,
     ...other
   } = options;
 
   const palette = createPalette(paletteInput);
-  const breakpoints = createBreakpoints(breakpointsInput);
-  const spacing = createSpacing(spacingInput);
+  const systemTheme = systemCreateTheme(options);
 
-  let muiTheme = deepmerge(
-    {
-      breakpoints,
-      direction: 'ltr',
-      mixins: createMixins(breakpoints, spacing, mixinsInput),
-      components: {}, // Inject component definitions
-      palette,
-      // Don't use [...shadows] until you've verified its transpiled code is not invoking the iterator protocol.
-      shadows: shadows.slice(),
-      typography: createTypography(palette, typographyInput),
-      spacing,
-      shape: { ...shape },
-      transitions: { duration, easing, create, getAutoHeightDuration },
-      zIndex: { ...zIndex },
-    },
-    other,
-  );
+  let muiTheme = deepmerge(systemTheme, {
+    mixins: createMixins(systemTheme.breakpoints, systemTheme.spacing, mixinsInput),
+    palette,
+    // Don't use [...shadows] until you've verified its transpiled code is not invoking the iterator protocol.
+    shadows: shadows.slice(),
+    typography: createTypography(palette, typographyInput),
+    transitions: createTransitions(transitionsInput),
+    zIndex: { ...zIndex },
+  });
 
+  muiTheme = deepmerge(muiTheme, other);
   muiTheme = args.reduce((acc, argument) => deepmerge(acc, argument), muiTheme);
 
   if (process.env.NODE_ENV !== 'production') {
-    const pseudoClasses = [
+    const stateClasses = [
       'active',
       'checked',
+      'completed',
       'disabled',
       'error',
+      'expanded',
       'focused',
       'focusVisible',
       'required',
-      'expanded',
       'selected',
     ];
 
@@ -63,9 +56,9 @@ function createTheme(options = {}, ...args) {
       // eslint-disable-next-line guard-for-in, no-restricted-syntax
       for (key in node) {
         const child = node[key];
-        if (pseudoClasses.indexOf(key) !== -1 && Object.keys(child).length > 0) {
+        if (stateClasses.indexOf(key) !== -1 && Object.keys(child).length > 0) {
           if (process.env.NODE_ENV !== 'production') {
-            const pseudoClass = generateUtilityClass('', key);
+            const stateClass = generateUtilityClass('', key);
             console.error(
               [
                 `Material-UI: The \`${component}\` component increases ` +
@@ -73,18 +66,18 @@ function createTheme(options = {}, ...args) {
                 'You can not override it like this: ',
                 JSON.stringify(node, null, 2),
                 '',
-                `Instead, you need to use the '&.${pseudoClass}' syntax:`,
+                `Instead, you need to use the '&.${stateClass}' syntax:`,
                 JSON.stringify(
                   {
                     root: {
-                      [`&.${pseudoClass}`]: child,
+                      [`&.${stateClass}`]: child,
                     },
                   },
                   null,
                   2,
                 ),
                 '',
-                'https://material-ui.com/r/pseudo-classes-guide',
+                'https://material-ui.com/r/state-classes-guide',
               ].join('\n'),
             );
           }
@@ -116,7 +109,7 @@ export function createMuiTheme(...args) {
         [
           'Material-UI: the createMuiTheme function was renamed to createTheme.',
           '',
-          "You should use `import { createTheme } from '@material-ui/core/styles'`",
+          "You should use `import { createTheme } from '@mui/material/styles'`",
         ].join('\n'),
       );
     }

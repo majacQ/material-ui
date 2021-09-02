@@ -1,16 +1,13 @@
 import * as React from 'react';
 import PropTypes from 'prop-types';
 import clsx from 'clsx';
-import {
-  experimentalStyled,
-  unstable_useThemeProps as useThemeProps,
-} from '@material-ui/core/styles';
-import { capitalize } from '@material-ui/core/utils';
-import { unstable_composeClasses as composeClasses } from '@material-ui/unstyled';
+import { styled, useThemeProps } from '@mui/material/styles';
+import { capitalize } from '@mui/material/utils';
+import { unstable_composeClasses as composeClasses } from '@mui/core';
 import { getTimelineDotUtilityClass } from './timelineDotClasses';
 
-const useUtilityClasses = (styleProps) => {
-  const { color, variant, classes } = styleProps;
+const useUtilityClasses = (ownerState) => {
+  const { color, variant, classes } = ownerState;
 
   const slots = {
     root: ['root', variant, color !== 'inherit' && `${variant}${capitalize(color)}`],
@@ -19,26 +16,21 @@ const useUtilityClasses = (styleProps) => {
   return composeClasses(slots, getTimelineDotUtilityClass, classes);
 };
 
-const TimelineDotRoot = experimentalStyled(
-  'span',
-  {},
-  {
-    name: 'MuiTimelineDot',
-    slot: 'Root',
-    overridesResolver: (props, styles) => {
-      const { styleProps } = props;
+const TimelineDotRoot = styled('span', {
+  name: 'MuiTimelineDot',
+  slot: 'Root',
+  overridesResolver: (props, styles) => {
+    const { ownerState } = props;
 
-      return {
-        ...styles.root,
-        ...styles[
-          styleProps.color !== 'inherit' && `${styleProps.variant}${capitalize(styleProps.color)}`
-        ],
-        ...styles[styleProps.variant],
-      };
-    },
+    return [
+      styles.root,
+      styles[
+        ownerState.color !== 'inherit' && `${ownerState.variant}${capitalize(ownerState.color)}`
+      ],
+      styles[ownerState.variant],
+    ];
   },
-)(({ styleProps, theme }) => ({
-  /* Styles applied to the root element. */
+})(({ ownerState, theme }) => ({
   display: 'flex',
   alignSelf: 'baseline',
   borderStyle: 'solid',
@@ -47,67 +39,51 @@ const TimelineDotRoot = experimentalStyled(
   borderRadius: '50%',
   boxShadow: theme.shadows[1],
   margin: '11.5px 0',
-  /* Styles applied to the root element if `color="grey"` and `variant="filled"`. */
-  ...(styleProps.color === 'grey' &&
-    styleProps.variant === 'filled' && {
-      borderColor: 'transparent',
-      color: theme.palette.grey[50],
-      backgroundColor: theme.palette.grey[400],
+  ...(ownerState.variant === 'filled' && {
+    borderColor: 'transparent',
+    ...(ownerState.color !== 'inherit' && {
+      ...(ownerState.color === 'grey'
+        ? {
+            color: theme.palette.grey[50],
+            backgroundColor: theme.palette.grey[400],
+          }
+        : {
+            color: theme.palette[ownerState.color].contrastText,
+            backgroundColor: theme.palette[ownerState.color].main,
+          }),
     }),
-  /* Styles applied to the root element if `color="grey"` and `variant="outlined"`. */
-  ...(styleProps.color === 'grey' &&
-    styleProps.variant === 'outlined' && {
-      boxShadow: 'none',
-      color: theme.palette.grey.contrastText,
-      borderColor: theme.palette.grey[400],
-      backgroundColor: 'transparent',
+  }),
+  ...(ownerState.variant === 'outlined' && {
+    boxShadow: 'none',
+    backgroundColor: 'transparent',
+    ...(ownerState.color !== 'inherit' && {
+      ...(ownerState.color === 'grey'
+        ? {
+            borderColor: theme.palette.grey[400],
+          }
+        : {
+            borderColor: theme.palette[ownerState.color].main,
+          }),
     }),
-  /* Styles applied to the root element if `color="primary"` and `variant="filled"`. */
-  ...(styleProps.color === 'primary' &&
-    styleProps.variant === 'filled' && {
-      borderColor: 'transparent',
-      color: theme.palette.primary.contrastText,
-      backgroundColor: theme.palette.primary.main,
-    }),
-  /* Styles applied to the root element if `color="primary"` and `variant="outlined"`. */
-  ...(styleProps.color === 'primary' &&
-    styleProps.variant === 'outlined' && {
-      boxShadow: 'none',
-      backgroundColor: 'transparent',
-      borderColor: theme.palette.primary.main,
-    }),
-  /* Styles applied to the root element if `color="secondary"` and `variant="filled"`. */
-  ...(styleProps.color === 'secondary' &&
-    styleProps.variant === 'filled' && {
-      borderColor: 'transparent',
-      color: theme.palette.secondary.contrastText,
-      backgroundColor: theme.palette.secondary.main,
-    }),
-  /* Styles applied to the root element if `color="secondary"` and `variant="outlined"`. */
-  ...(styleProps.color === 'secondary' &&
-    styleProps.variant === 'outlined' && {
-      boxShadow: 'none',
-      backgroundColor: 'transparent',
-      borderColor: theme.palette.secondary.main,
-    }),
+  }),
 }));
 
 const TimelineDot = React.forwardRef(function TimelineDot(inProps, ref) {
   const props = useThemeProps({ props: inProps, name: 'MuiTimelineDot' });
   const { className, color = 'grey', variant = 'filled', ...other } = props;
 
-  const styleProps = {
+  const ownerState = {
     ...props,
     color,
     variant,
   };
 
-  const classes = useUtilityClasses(styleProps);
+  const classes = useUtilityClasses(ownerState);
 
   return (
     <TimelineDotRoot
       className={clsx(classes.root, className)}
-      styleProps={styleProps}
+      ownerState={ownerState}
       ref={ref}
       {...other}
     />
@@ -135,7 +111,16 @@ TimelineDot.propTypes /* remove-proptypes */ = {
    * The dot can have a different colors.
    * @default 'grey'
    */
-  color: PropTypes.oneOf(['grey', 'inherit', 'primary', 'secondary']),
+  color: PropTypes.oneOf([
+    'error',
+    'grey',
+    'info',
+    'inherit',
+    'primary',
+    'secondary',
+    'success',
+    'warning',
+  ]),
   /**
    * The system prop that allows defining system overrides as well as additional CSS styles.
    */

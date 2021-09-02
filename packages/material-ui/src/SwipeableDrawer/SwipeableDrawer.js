@@ -1,16 +1,16 @@
 import * as React from 'react';
 import PropTypes from 'prop-types';
-import { elementTypeAcceptingRef } from '@material-ui/utils';
-import getThemeProps from '../styles/getThemeProps';
+import { elementTypeAcceptingRef } from '@mui/utils';
+import { useThemeProps } from '@mui/system';
+import { NoSsr } from '@mui/core';
 import Drawer, { getAnchor, isHorizontal } from '../Drawer/Drawer';
 import ownerDocument from '../utils/ownerDocument';
 import ownerWindow from '../utils/ownerWindow';
 import useEventCallback from '../utils/useEventCallback';
 import useEnhancedEffect from '../utils/useEnhancedEffect';
-import { duration } from '../styles/transitions';
+import { duration } from '../styles/createTransitions';
 import useTheme from '../styles/useTheme';
 import { getTransitionProps } from '../transitions/utils';
-import NoSsr from '../NoSsr';
 import SwipeArea from './SwipeArea';
 
 // This value is closed to what browsers are using internally to
@@ -134,8 +134,8 @@ const iOS = typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigato
 const transitionDurationDefault = { enter: duration.enteringScreen, exit: duration.leavingScreen };
 
 const SwipeableDrawer = React.forwardRef(function SwipeableDrawer(inProps, ref) {
+  const props = useThemeProps({ name: 'MuiSwipeableDrawer', props: inProps });
   const theme = useTheme();
-  const props = getThemeProps({ name: 'MuiSwipeableDrawer', props: inProps, theme });
   const {
     anchor = 'left',
     disableBackdropTransition = false,
@@ -197,6 +197,8 @@ const SwipeableDrawer = React.forwardRef(function SwipeableDrawer(inProps, ref) 
           'all',
           getTransitionProps(
             {
+              easing: undefined,
+              style: undefined,
               timeout: transitionDuration,
             },
             {

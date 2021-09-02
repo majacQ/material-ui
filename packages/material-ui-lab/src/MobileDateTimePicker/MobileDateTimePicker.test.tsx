@@ -1,9 +1,9 @@
 import * as React from 'react';
-import TextField from '@material-ui/core/TextField';
+import TextField from '@mui/material/TextField';
 import { expect } from 'chai';
 import { spy, useFakeTimers, SinonSpy, SinonFakeTimers } from 'sinon';
 import { fireEvent, fireTouchChangedEvent, screen } from 'test/utils';
-import MobileDateTimePicker from '@material-ui/lab/MobileDateTimePicker';
+import MobileDateTimePicker from '@mui/lab/MobileDateTimePicker';
 import { adapterToUse, getByMuiTest, createPickerRender } from '../internal/pickers/test-utils';
 
 describe('<MobileDateTimePicker />', () => {
@@ -17,7 +17,7 @@ describe('<MobileDateTimePicker />', () => {
     clock.restore();
   });
 
-  const render = createPickerRender({ strict: false });
+  const render = createPickerRender();
 
   it('opens dialog on textField click for Mobile mode', () => {
     render(

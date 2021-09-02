@@ -1,17 +1,15 @@
 import * as React from 'react';
 import { expect } from 'chai';
-import { createMount, createClientRender, describeConformanceV5 } from 'test/utils';
-import Typography, { typographyClasses } from '@material-ui/core/Typography';
-import ListItemText, { listItemTextClasses as classes } from '@material-ui/core/ListItemText';
+import { createClientRender, describeConformance } from 'test/utils';
+import Typography, { typographyClasses } from '@mui/material/Typography';
+import ListItemText, { listItemTextClasses as classes } from '@mui/material/ListItemText';
 
 describe('<ListItemText />', () => {
   const render = createClientRender();
-  const mount = createMount();
 
-  describeConformanceV5(<ListItemText>Conformance?</ListItemText>, () => ({
+  describeConformance(<ListItemText>Conformance?</ListItemText>, () => ({
     classes,
     inheritComponent: 'div',
-    mount,
     render,
     muiName: 'MuiListItemText',
     testVariantProps: { inset: true },

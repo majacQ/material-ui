@@ -1,31 +1,30 @@
 import * as React from 'react';
 import PropTypes from 'prop-types';
 import clsx from 'clsx';
-import { integerPropType } from '@material-ui/utils';
-import { unstable_composeClasses as composeClasses } from '@material-ui/unstyled';
+import { integerPropType } from '@mui/utils';
+import { unstable_composeClasses as composeClasses } from '@mui/core';
 import Modal from '../Modal';
 import Slide from '../Slide';
 import Paper from '../Paper';
 import capitalize from '../utils/capitalize';
-import { duration } from '../styles/transitions';
+import { duration } from '../styles/createTransitions';
 import useTheme from '../styles/useTheme';
 import useThemeProps from '../styles/useThemeProps';
-import experimentalStyled, { rootShouldForwardProp } from '../styles/experimentalStyled';
+import styled, { rootShouldForwardProp } from '../styles/styled';
 import { getDrawerUtilityClass } from './drawerClasses';
 
 const overridesResolver = (props, styles) => {
-  const { styleProps } = props;
+  const { ownerState } = props;
 
-  return {
-    ...styles.root,
-    ...((styleProps.variant === 'permanent' || styleProps.variant === 'persistent') &&
-      styles.docked),
-    ...styles.modal,
-  };
+  return [
+    styles.root,
+    (ownerState.variant === 'permanent' || ownerState.variant === 'persistent') && styles.docked,
+    styles.modal,
+  ];
 };
 
-const useUtilityClasses = (styleProps) => {
-  const { classes, anchor, variant } = styleProps;
+const useUtilityClasses = (ownerState) => {
+  const { classes, anchor, variant } = ownerState;
 
   const slots = {
     root: ['root'],
@@ -41,58 +40,46 @@ const useUtilityClasses = (styleProps) => {
   return composeClasses(slots, getDrawerUtilityClass, classes);
 };
 
-const DrawerRoot = experimentalStyled(
-  Modal,
-  {},
-  {
-    name: 'MuiDrawer',
-    slot: 'Root',
-    overridesResolver,
-  },
-)({});
+const DrawerRoot = styled(Modal, {
+  name: 'MuiDrawer',
+  slot: 'Root',
+  overridesResolver,
+})(({ theme }) => ({
+  zIndex: theme.zIndex.drawer,
+}));
 
-const DrawerDockedRoot = experimentalStyled(
-  'div',
-  {
-    shouldForwardProp: rootShouldForwardProp,
-  },
-  {
-    name: 'MuiDrawer',
-    slot: 'Docked',
-    skipVariantsResolver: false,
-    overridesResolver,
-  },
-)({
-  /* Styles applied to the root element if `variant="permanent or persistent"`. */
+const DrawerDockedRoot = styled('div', {
+  shouldForwardProp: rootShouldForwardProp,
+  name: 'MuiDrawer',
+  slot: 'Docked',
+  skipVariantsResolver: false,
+  overridesResolver,
+})({
   flex: '0 0 auto',
 });
 
-const DrawerPaper = experimentalStyled(
-  Paper,
-  {},
-  {
-    name: 'MuiDrawer',
-    slot: 'Paper',
-    overridesResolver: (props, styles) => {
-      const { styleProps } = props;
+const DrawerPaper = styled(Paper, {
+  name: 'MuiDrawer',
+  slot: 'Paper',
+  overridesResolver: (props, styles) => {
+    const { ownerState } = props;
 
-      return {
-        ...styles.paper,
-        ...styles[`paperAnchor${capitalize(styleProps.anchor)}`],
-        ...(styleProps.variant !== 'temporary' &&
-          styles[`paperAnchorDocked${capitalize(styleProps.anchor)}`]),
-      };
-    },
+    return [
+      styles.paper,
+      styles[`paperAnchor${capitalize(ownerState.anchor)}`],
+      ownerState.variant !== 'temporary' &&
+        styles[`paperAnchorDocked${capitalize(ownerState.anchor)}`],
+    ];
   },
-)(({ theme, styleProps }) => ({
-  /* Styles applied to the Paper component. */
+})(({ theme, ownerState }) => ({
   overflowY: 'auto',
   display: 'flex',
   flexDirection: 'column',
   height: '100%',
   flex: '1 0 auto',
   zIndex: theme.zIndex.drawer,
-  WebkitOverflowScrolling: 'touch', // Add iOS momentum scrolling.
+  // Add iOS momentum scrolling for iOS < 13.0
+  WebkitOverflowScrolling: 'touch',
   // temporary style
   position: 'fixed',
   top: 0,
@@ -100,24 +87,20 @@ const DrawerPaper = experimentalStyled(
   // At some point, it would be better to keep it for keyboard users.
   // :focus-ring CSS pseudo-class will help.
   outline: 0,
-  ...(styleProps.anchor === 'left' && {
-    /* Styles applied to the Paper component if `anchor="left"`. */
+  ...(ownerState.anchor === 'left' && {
     left: 0,
   }),
-  ...(styleProps.anchor === 'top' && {
-    /* Styles applied to the Paper component if `anchor="top"`. */
+  ...(ownerState.anchor === 'top' && {
     top: 0,
     left: 0,
     right: 0,
     height: 'auto',
     maxHeight: '100%',
   }),
-  ...(styleProps.anchor === 'right' && {
-    /* Styles applied to the Paper component if `anchor="right"`. */
+  ...(ownerState.anchor === 'right' && {
     right: 0,
   }),
-  ...(styleProps.anchor === 'bottom' && {
-    /* Styles applied to the Paper component if `anchor="bottom"`. */
+  ...(ownerState.anchor === 'bottom' && {
     top: 'auto',
     left: 0,
     bottom: 0,
@@ -125,24 +108,20 @@ const DrawerPaper = experimentalStyled(
     height: 'auto',
     maxHeight: '100%',
   }),
-  ...(styleProps.anchor === 'left' &&
-    styleProps.variant !== 'temporary' && {
-      /* Styles applied to the Paper component if `anchor="left"` and `variant` is not "temporary". */
+  ...(ownerState.anchor === 'left' &&
+    ownerState.variant !== 'temporary' && {
       borderRight: `1px solid ${theme.palette.divider}`,
     }),
-  ...(styleProps.anchor === 'top' &&
-    styleProps.variant !== 'temporary' && {
-      /* Styles applied to the Paper component if `anchor="top"` and `variant` is not "temporary". */
+  ...(ownerState.anchor === 'top' &&
+    ownerState.variant !== 'temporary' && {
       borderBottom: `1px solid ${theme.palette.divider}`,
     }),
-  ...(styleProps.anchor === 'right' &&
-    styleProps.variant !== 'temporary' && {
-      /* Styles applied to the Paper component if `anchor="right"` and `variant` is not "temporary". */
+  ...(ownerState.anchor === 'right' &&
+    ownerState.variant !== 'temporary' && {
       borderLeft: `1px solid ${theme.palette.divider}`,
     }),
-  ...(styleProps.anchor === 'bottom' &&
-    styleProps.variant !== 'temporary' && {
-      /* Styles applied to the Paper component if `anchor="bottom"` and `variant` is not "temporary". */
+  ...(ownerState.anchor === 'bottom' &&
+    ownerState.variant !== 'temporary' && {
       borderTop: `1px solid ${theme.palette.divider}`,
     }),
 }));
@@ -200,7 +179,7 @@ const Drawer = React.forwardRef(function Drawer(inProps, ref) {
   const anchorInvariant = getAnchor(theme, anchorProp);
   const anchor = anchorProp;
 
-  const styleProps = {
+  const ownerState = {
     ...props,
     anchor,
     elevation,
@@ -209,7 +188,7 @@ const Drawer = React.forwardRef(function Drawer(inProps, ref) {
     ...other,
   };
 
-  const classes = useUtilityClasses(styleProps);
+  const classes = useUtilityClasses(ownerState);
 
   const drawer = (
     <DrawerPaper
@@ -217,7 +196,7 @@ const Drawer = React.forwardRef(function Drawer(inProps, ref) {
       square
       {...PaperProps}
       className={clsx(classes.paper, PaperProps.className)}
-      styleProps={styleProps}
+      ownerState={ownerState}
     >
       {children}
     </DrawerPaper>
@@ -227,7 +206,7 @@ const Drawer = React.forwardRef(function Drawer(inProps, ref) {
     return (
       <DrawerDockedRoot
         className={clsx(classes.root, classes.docked, className)}
-        styleProps={styleProps}
+        ownerState={ownerState}
         ref={ref}
         {...other}
       >
@@ -252,7 +231,7 @@ const Drawer = React.forwardRef(function Drawer(inProps, ref) {
     return (
       <DrawerDockedRoot
         className={clsx(classes.root, classes.docked, className)}
-        styleProps={styleProps}
+        ownerState={ownerState}
         ref={ref}
         {...other}
       >
@@ -271,7 +250,7 @@ const Drawer = React.forwardRef(function Drawer(inProps, ref) {
       }}
       className={clsx(classes.root, classes.modal, className)}
       open={open}
-      styleProps={styleProps}
+      ownerState={ownerState}
       onClose={onClose}
       hideBackdrop={hideBackdrop}
       ref={ref}

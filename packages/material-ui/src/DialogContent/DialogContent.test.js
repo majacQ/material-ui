@@ -1,16 +1,14 @@
 import * as React from 'react';
-import { createMount, describeConformanceV5, createClientRender } from 'test/utils';
-import DialogContent, { dialogContentClasses as classes } from '@material-ui/core/DialogContent';
+import { describeConformance, createClientRender } from 'test/utils';
+import DialogContent, { dialogContentClasses as classes } from '@mui/material/DialogContent';
 
 describe('<DialogContent />', () => {
   const render = createClientRender();
-  const mount = createMount();
 
-  describeConformanceV5(<DialogContent />, () => ({
+  describeConformance(<DialogContent />, () => ({
     classes,
     inheritComponent: 'div',
     render,
-    mount,
     muiName: 'MuiDialogContent',
     refInstanceof: window.HTMLDivElement,
     testVariantProps: { dividers: true },

@@ -1,22 +1,17 @@
 import * as React from 'react';
-import PropTypes from 'prop-types';
-import { withStyles } from '@material-ui/core/styles';
-import InputLabel from '@material-ui/core/InputLabel';
+import Box from '@mui/material/Box';
+import InputLabel from '@mui/material/InputLabel';
 
-const styles = {
-  container: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'flex-start',
-    padding: 20, // so transform doesn't let things get cut off
-  },
-};
-
-function InputLabels(props) {
-  const { classes } = props;
-
+function InputLabels() {
   return (
-    <div className={classes.container}>
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'flex-start',
+        padding: '20px', // so transform doesn't let things get cut off
+      }}
+    >
       <InputLabel shrink>First Name Shrunk</InputLabel>
       <InputLabel>First Name</InputLabel>
       <InputLabel focused>Required</InputLabel>
@@ -28,12 +23,8 @@ function InputLabels(props) {
       <InputLabel required error>
         Required Error
       </InputLabel>
-    </div>
+    </Box>
   );
 }
 
-InputLabels.propTypes = {
-  classes: PropTypes.object.isRequired,
-};
-
-export default withStyles(styles)(InputLabels);
+export default InputLabels;

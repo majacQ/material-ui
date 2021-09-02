@@ -1,13 +1,13 @@
 import * as React from 'react';
 import PropTypes from 'prop-types';
-import { unstable_useThemeProps as useThemeProps } from '@material-ui/core/styles';
-import { BaseTimePickerProps, timePickerConfig } from '../TimePicker/TimePicker';
+import { BaseTimePickerProps, useTimePickerDefaultizedProps } from '../TimePicker/shared';
+import TimePickerToolbar from '../TimePicker/TimePickerToolbar';
 import DesktopWrapper, { DesktopWrapperProps } from '../internal/pickers/wrappers/DesktopWrapper';
 import Picker from '../internal/pickers/Picker/Picker';
 import { MuiPickersAdapter } from '../internal/pickers/hooks/useUtils';
+import { useTimeValidation } from '../internal/pickers/hooks/useValidation';
 import { parsePickerInputValue } from '../internal/pickers/date-utils';
 import { KeyboardDateInput } from '../internal/pickers/KeyboardDateInput';
-import { PureDateInput } from '../internal/pickers/PureDateInput';
 import { usePickerState, PickerStateValueManager } from '../internal/pickers/hooks/usePickerState';
 
 const valueManager: PickerStateValueManager<unknown, unknown> = {
@@ -16,14 +16,12 @@ const valueManager: PickerStateValueManager<unknown, unknown> = {
   areValuesEqual: (utils: MuiPickersAdapter, a: unknown, b: unknown) => utils.isEqual(a, b),
 };
 
-const { DefaultToolbarComponent, useInterceptProps, useValidation } = timePickerConfig;
-
 export interface DesktopTimePickerProps<TDate = unknown>
   extends BaseTimePickerProps<TDate>,
     DesktopWrapperProps {}
 
 type DesktopTimePickerComponent = (<TDate>(
-  props: DesktopTimePickerProps<TDate> & React.RefAttributes<HTMLInputElement>,
+  props: DesktopTimePickerProps<TDate> & React.RefAttributes<HTMLDivElement>,
 ) => JSX.Element) & { propTypes?: any };
 
 /**
@@ -41,38 +39,39 @@ const DesktopTimePicker = React.forwardRef(function DesktopTimePicker<TDate>(
   ref: React.Ref<HTMLDivElement>,
 ) {
   // TODO: TDate needs to be instantiated at every usage.
-  const allProps = useInterceptProps(
+  const props = useTimePickerDefaultizedProps(
     inProps as DesktopTimePickerProps<unknown>,
-  ) as DesktopTimePickerProps<unknown>;
+    'MuiDesktopTimePicker',
+  );
 
-  // This is technically unsound if the type parameters appear in optional props.
-  // Optional props can be filled by `useThemeProps` with types that don't match the type parameters.
-  const props = useThemeProps({
-    props: allProps,
-    name: 'MuiDesktopTimePicker',
-  });
-
-  const validationError = useValidation(props.value, props) !== null;
+  const validationError = useTimeValidation(props) !== null;
   const { pickerProps, inputProps, wrapperProps } = usePickerState(props, valueManager);
 
-  // Note that we are passing down all the value without spread.
-  // It saves us >1kb gzip and make any prop available automatically on any level down.
-  const { value, onChange, ...other } = props;
-  const AllDateInputProps = { ...inputProps, ...other, ref, validationError };
+  const {
+    onChange,
+    PopperProps,
+    ToolbarComponent = TimePickerToolbar,
+    TransitionComponent,
+    value,
+    ...other
+  } = props;
+  const DateInputProps = { ...inputProps, ...other, ref, validationError };
 
   return (
     <DesktopWrapper
-      {...other}
       {...wrapperProps}
-      DateInputProps={AllDateInputProps}
+      DateInputProps={DateInputProps}
       KeyboardDateInputComponent={KeyboardDateInput}
-      PureDateInputComponent={PureDateInput}
+      PopperProps={PopperProps}
+      TransitionComponent={TransitionComponent}
     >
+      {/* @ts-ignore time picker has no component slot for the calendar header */}
       <Picker
         {...pickerProps}
+        autoFocus
         toolbarTitle={props.label || props.toolbarTitle}
-        ToolbarComponent={other.ToolbarComponent || DefaultToolbarComponent}
-        DateInputProps={AllDateInputProps}
+        ToolbarComponent={ToolbarComponent}
+        DateInputProps={DateInputProps}
         {...other}
       />
     </DesktopWrapper>
@@ -89,11 +88,6 @@ DesktopTimePicker.propTypes /* remove-proptypes */ = {
    * @default /\dap/gi
    */
   acceptRegex: PropTypes.instanceOf(RegExp),
-  /**
-   * Enables keyboard listener for moving between days in calendar.
-   * Defaults to `true` unless the `ClockPicker` is used inside a `Static*` picker component.
-   */
-  allowKeyboardControl: PropTypes.bool,
   /**
    * 12h/24h view for hour selection clock.
    * @default false
@@ -112,6 +106,13 @@ DesktopTimePicker.propTypes /* remove-proptypes */ = {
    * className applied to the root component.
    */
   className: PropTypes.string,
+  /**
+   * The components used for each slot.
+   * Either a string to use a HTML element or a component.
+   */
+  components: PropTypes.shape({
+    OpenPickerIcon: PropTypes.elementType,
+  }),
   /**
    * If `true` the popup or dialog will immediately close after submitting full date.
    * @default `true` for Desktop, `false` for Mobile (based on the chosen wrapper and `desktopModeMediaQuery` prop).
@@ -140,9 +141,12 @@ DesktopTimePicker.propTypes /* remove-proptypes */ = {
    * Accessible text that helps user to understand which time and view is selected.
    * @default <TDate extends any>(
    *   view: ClockView,
-   *   time: TDate,
+   *   time: TDate | null,
    *   adapter: MuiPickersAdapter<TDate>,
-   * ) => `Select ${view}. Selected time is ${adapter.format(time, 'fullTime')}`
+   * ) =>
+   *   `Select ${view}. ${
+   *     time === null ? 'No time selected' : `Selected time is ${adapter.format(time, 'fullTime')}`
+   *   }`
    */
   getClockLabelText: PropTypes.func,
   /**
@@ -188,23 +192,15 @@ DesktopTimePicker.propTypes /* remove-proptypes */ = {
    */
   mask: PropTypes.string,
   /**
-   * @ignore
+   * Max time acceptable time.
+   * For input validation date part of passed object will be ignored if `disableIgnoringDatePartForTimeValidation` not specified.
    */
-  maxTime: PropTypes.oneOfType([
-    PropTypes.any,
-    PropTypes.instanceOf(Date),
-    PropTypes.number,
-    PropTypes.string,
-  ]),
+  maxTime: PropTypes.any,
   /**
-   * @ignore
+   * Min time acceptable time.
+   * For input validation date part of passed object will be ignored if `disableIgnoringDatePartForTimeValidation` not specified.
    */
-  minTime: PropTypes.oneOfType([
-    PropTypes.any,
-    PropTypes.instanceOf(Date),
-    PropTypes.number,
-    PropTypes.string,
-  ]),
+  minTime: PropTypes.any,
   /**
    * Step over minutes.
    * @default 1
@@ -246,10 +242,6 @@ DesktopTimePicker.propTypes /* remove-proptypes */ = {
    */
   OpenPickerButtonProps: PropTypes.object,
   /**
-   * Icon displaying for open picker button.
-   */
-  openPickerIcon: PropTypes.node,
-  /**
    * First view to show.
    */
   openTo: PropTypes.oneOf(['hours', 'minutes', 'seconds']),
@@ -289,6 +281,7 @@ DesktopTimePicker.propTypes /* remove-proptypes */ = {
   showToolbar: PropTypes.bool,
   /**
    * Component that will replace default toolbar renderer.
+   * @default TimePickerToolbar
    */
   ToolbarComponent: PropTypes.elementType,
   /**
@@ -297,12 +290,12 @@ DesktopTimePicker.propTypes /* remove-proptypes */ = {
   toolbarFormat: PropTypes.string,
   /**
    * Mobile picker date value placeholder, displaying if `value` === `null`.
-   * @default "–"
+   * @default '–'
    */
   toolbarPlaceholder: PropTypes.node,
   /**
    * Mobile picker title, displaying in the toolbar.
-   * @default "SELECT DATE"
+   * @default 'Select time'
    */
   toolbarTitle: PropTypes.node,
   /**

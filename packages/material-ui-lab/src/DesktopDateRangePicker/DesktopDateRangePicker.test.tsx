@@ -1,13 +1,13 @@
 import * as React from 'react';
 import { expect } from 'chai';
-import { spy } from 'sinon';
+import { SinonFakeTimers, spy, useFakeTimers } from 'sinon';
 import { act, describeConformance, screen, fireEvent, userEvent } from 'test/utils';
-import { createTheme, ThemeProvider } from '@material-ui/core/styles';
-import TextField, { TextFieldProps } from '@material-ui/core/TextField';
-import { DateRange } from '@material-ui/lab/DateRangePicker';
-import DesktopDateRangePicker from '@material-ui/lab/DesktopDateRangePicker';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
+import TextField, { TextFieldProps } from '@mui/material/TextField';
+import { DateRange } from '@mui/lab/DateRangePicker';
+import DesktopDateRangePicker from '@mui/lab/DesktopDateRangePicker';
 import {
-  createPickerMount,
+  wrapPickerMount,
   createPickerRender,
   FakeTransitionComponent,
   adapterToUse,
@@ -23,15 +23,14 @@ const defaultRangeRenderInput = (startProps: TextFieldProps, endProps: TextField
 );
 
 describe('<DesktopDateRangePicker />', () => {
-  const render = createPickerRender({ strict: false });
-  const mount = createPickerMount();
-
-  before(function beforeHook() {
-    if (!/jsdom/.test(window.navigator.userAgent)) {
-      // FIXME This test suite is extremely flaky in test:karma
-      this.skip();
-    }
+  let clock: SinonFakeTimers;
+  beforeEach(() => {
+    clock = useFakeTimers();
   });
+  afterEach(() => {
+    clock.restore();
+  });
+  const render = createPickerRender();
 
   describeConformance(
     <DesktopDateRangePicker
@@ -41,9 +40,20 @@ describe('<DesktopDateRangePicker />', () => {
     />,
     () => ({
       classes: {},
-      mount,
+      muiName: 'MuiDesktopDateRangePicker',
+      wrapMount: wrapPickerMount,
       refInstanceof: window.HTMLDivElement,
-      skip: ['componentProp', 'mergeClassName', 'propsSpread', 'rootClass', 'reactTestRenderer'],
+      skip: [
+        'componentProp',
+        'componentsProp',
+        'themeDefaultProps',
+        'themeStyleOverrides',
+        'themeVariants',
+        'mergeClassName',
+        'propsSpread',
+        'rootClass',
+        'reactTestRenderer',
+      ],
     }),
   );
 
@@ -342,7 +352,7 @@ describe('<DesktopDateRangePicker />', () => {
     expect(screen.getByRole('tooltip')).toBeVisible();
   });
 
-  // TODO: remove once we use describeConformanceV5.
+  // TODO: remove once we use describeConformance.
   it("respect theme's defaultProps", () => {
     const theme = createTheme({
       components: {

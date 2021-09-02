@@ -2,7 +2,7 @@ import {
   unstable_ownerWindow as ownerWindow,
   unstable_ownerDocument as ownerDocument,
   unstable_getScrollbarSize as getScrollbarSize,
-} from '@material-ui/utils';
+} from '@mui/utils';
 
 export interface ManagedModalProps {
   disableScrollLock?: boolean;
@@ -107,11 +107,24 @@ function handleContainer(containerInfo: Container, props: ManagedModalProps) {
 
     // Block the scroll even if no scrollbar is visible to account for mobile keyboard
     // screensize shrink.
-    restoreStyle.push({
-      value: scrollContainer.style.overflow,
-      property: 'overflow',
-      el: scrollContainer,
-    });
+    restoreStyle.push(
+      {
+        value: scrollContainer.style.overflow,
+        property: 'overflow',
+        el: scrollContainer,
+      },
+      {
+        value: scrollContainer.style.overflowX,
+        property: 'overflow-x',
+        el: scrollContainer,
+      },
+      {
+        value: scrollContainer.style.overflowY,
+        property: 'overflow-y',
+        el: scrollContainer,
+      },
+    );
+
     scrollContainer.style.overflow = 'hidden';
   }
 

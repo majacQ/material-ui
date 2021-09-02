@@ -1,9 +1,9 @@
 import * as React from 'react';
 import PropTypes from 'prop-types';
 import clsx from 'clsx';
-import { unstable_composeClasses as composeClasses } from '@material-ui/unstyled';
-import { refType } from '@material-ui/utils';
-import experimentalStyled from '../styles/experimentalStyled';
+import { unstable_composeClasses as composeClasses } from '@mui/core';
+import { refType } from '@mui/utils';
+import styled from '../styles/styled';
 import useThemeProps from '../styles/useThemeProps';
 import Input from '../Input';
 import FilledInput from '../FilledInput';
@@ -20,8 +20,8 @@ const variantComponent = {
   outlined: OutlinedInput,
 };
 
-const useUtilityClasses = (styleProps) => {
-  const { classes } = styleProps;
+const useUtilityClasses = (ownerState) => {
+  const { classes } = ownerState;
 
   const slots = {
     root: ['root'],
@@ -30,15 +30,11 @@ const useUtilityClasses = (styleProps) => {
   return composeClasses(slots, getTextFieldUtilityClass, classes);
 };
 
-const TextFieldRoot = experimentalStyled(
-  FormControl,
-  {},
-  {
-    name: 'MuiTextField',
-    slot: 'Root',
-    overridesResolver: (props, styles) => styles.root,
-  },
-)({});
+const TextFieldRoot = styled(FormControl, {
+  name: 'MuiTextField',
+  slot: 'Root',
+  overridesResolver: (props, styles) => styles.root,
+})({});
 
 /**
  * The `TextField` is a convenience wrapper for the most common cases (80%).
@@ -110,7 +106,7 @@ const TextField = React.forwardRef(function TextField(inProps, ref) {
     ...other
   } = props;
 
-  const styleProps = {
+  const ownerState = {
     ...props,
     autoFocus,
     color,
@@ -123,7 +119,7 @@ const TextField = React.forwardRef(function TextField(inProps, ref) {
     variant,
   };
 
-  const classes = useUtilityClasses(styleProps);
+  const classes = useUtilityClasses(ownerState);
 
   if (process.env.NODE_ENV !== 'production') {
     if (select && !children) {
@@ -196,7 +192,7 @@ const TextField = React.forwardRef(function TextField(inProps, ref) {
       required={required}
       color={color}
       variant={variant}
-      styleProps={styleProps}
+      ownerState={ownerState}
       {...other}
     >
       {label && (
@@ -262,7 +258,7 @@ TextField.propTypes /* remove-proptypes */ = {
    * @default 'primary'
    */
   color: PropTypes /* @typescript-to-proptypes-ignore */.oneOfType([
-    PropTypes.oneOf(['primary', 'secondary']),
+    PropTypes.oneOf(['primary', 'secondary', 'error', 'info', 'success', 'warning']),
     PropTypes.string,
   ]),
   /**

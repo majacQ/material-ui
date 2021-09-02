@@ -1,16 +1,17 @@
 import * as React from 'react';
 import PropTypes from 'prop-types';
-import { withStyles } from '@material-ui/core/styles';
+import { createTheme } from '@mui/material/styles';
+import { withStyles } from '@mui/styles';
 import Head from 'docs/src/modules/components/Head';
 import AppFrame from 'docs/src/modules/components/AppFrame';
 import AppContainer from 'docs/src/modules/components/AppContainer';
 import { useRouter } from 'next/router';
-import Link from '@material-ui/core/Link';
-import Typography from '@material-ui/core/Typography';
-import Avatar from '@material-ui/core/Avatar';
-import Stack from '@material-ui/core/Stack';
+import Link from '@mui/material/Link';
+import Typography from '@mui/material/Typography';
+import Avatar from '@mui/material/Avatar';
+import Stack from '@mui/material/Stack';
 import AppFooter from 'docs/src/modules/components/AppFooter';
-import { exactProp } from '@material-ui/utils';
+import { exactProp } from '@mui/utils';
 import MarkdownElement from './MarkdownElement';
 
 const authors = {
@@ -96,7 +97,7 @@ function TopLayoutBlog(props) {
         }
       />
       <div className={classes.root}>
-        <AppContainer className={classes.container}>
+        <AppContainer component="main" className={classes.container}>
           <Link
             href="https://medium.com/material-ui"
             rel="nofollow"
@@ -149,4 +150,5 @@ if (process.env.NODE_ENV !== 'production') {
   TopLayoutBlog.propTypes = exactProp(TopLayoutBlog.propTypes);
 }
 
-export default withStyles(styles)(TopLayoutBlog);
+const defaultTheme = createTheme();
+export default withStyles(styles, { defaultTheme })(TopLayoutBlog);

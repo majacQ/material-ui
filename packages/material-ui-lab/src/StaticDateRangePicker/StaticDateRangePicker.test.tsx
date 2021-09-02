@@ -1,11 +1,12 @@
 import * as React from 'react';
 import { expect } from 'chai';
 import { isWeekend } from 'date-fns';
-import TextField, { TextFieldProps } from '@material-ui/core/TextField';
-import StaticDateRangePicker from '@material-ui/lab/StaticDateRangePicker';
+import { useFakeTimers } from 'sinon';
+import TextField, { TextFieldProps } from '@mui/material/TextField';
+import StaticDateRangePicker from '@mui/lab/StaticDateRangePicker';
 import { describeConformance } from 'test/utils';
 import {
-  createPickerMount,
+  wrapPickerMount,
   createPickerRender,
   adapterToUse,
   getAllByMuiTest,
@@ -19,7 +20,14 @@ const defaultRangeRenderInput = (startProps: TextFieldProps, endProps: TextField
 );
 
 describe('<StaticDateRangePicker />', () => {
-  const mount = createPickerMount();
+  let clock: ReturnType<typeof useFakeTimers>;
+  beforeEach(() => {
+    clock = useFakeTimers();
+  });
+  afterEach(() => {
+    clock.restore();
+  });
+
   const render = createPickerRender();
 
   describeConformance(
@@ -30,10 +38,15 @@ describe('<StaticDateRangePicker />', () => {
     />,
     () => ({
       classes: {},
-      mount,
+      muiName: 'MuiStaticDateRangePicker',
+      wrapMount: wrapPickerMount,
       refInstanceof: undefined,
       skip: [
         'componentProp',
+        'componentsProp',
+        'themeDefaultProps',
+        'themeStyleOverrides',
+        'themeVariants',
         'mergeClassName',
         'propsSpread',
         'refForwarding',

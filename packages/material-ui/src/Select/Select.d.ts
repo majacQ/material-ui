@@ -1,9 +1,12 @@
 import * as React from 'react';
-import { SxProps } from '@material-ui/system';
+import { SxProps } from '@mui/system';
 import { InternalStandardProps as StandardProps, Theme } from '..';
 import { InputProps } from '../Input';
 import { MenuProps } from '../Menu';
-import { SelectInputProps } from './SelectInput';
+import { SelectChangeEvent, SelectInputProps } from './SelectInput';
+import { SelectClasses } from './selectClasses';
+
+export { SelectChangeEvent };
 
 export interface SelectProps<T = unknown>
   extends StandardProps<InputProps, 'value' | 'onChange'>,
@@ -25,30 +28,7 @@ export interface SelectProps<T = unknown>
    * Override or extend the styles applied to the component.
    * @default {}
    */
-  classes?: {
-    /** Styles applied to the select component `root` class. */
-    root?: string;
-    /** Styles applied to the select component `select` class. */
-    select?: string;
-    /** Styles applied to the select component if `variant="filled"`. */
-    filled?: string;
-    /** Styles applied to the select component if `variant="outlined"`. */
-    outlined?: string;
-    /** Styles applied to the select component `selectMenu` class. */
-    selectMenu?: string;
-    /** Pseudo-class applied to the select component `disabled` class. */
-    disabled?: string;
-    /** Styles applied to the icon component. */
-    icon?: string;
-    /** Styles applied to the icon component if the popup is open. */
-    iconOpen?: string;
-    /** Styles applied to the icon component if `variant="filled"`. */
-    iconFilled?: string;
-    /** Styles applied to the icon component if `variant="outlined"`. */
-    iconOutlined?: string;
-    /** Styles applied to the underlying native input component. */
-    nativeInput?: string;
-  };
+  classes?: Partial<SelectClasses>;
   /**
    * The default value. Use when the component is not controlled.
    */
@@ -92,11 +72,6 @@ export interface SelectProps<T = unknown>
    */
   labelId?: string;
   /**
-   * See [OutlinedInput#label](/api/outlined-input/#props)
-   * @default 0
-   */
-  labelWidth?: number;
-  /**
    * Props applied to the [`Menu`](/api/menu/) element.
    */
   MenuProps?: Partial<MenuProps>;
@@ -113,9 +88,9 @@ export interface SelectProps<T = unknown>
   /**
    * Callback fired when a menu item is selected.
    *
-   * @param {object} event The event source of the callback.
+   * @param {SelectChangeEvent<T>} event The event source of the callback.
    * You can pull out the new value by accessing `event.target.value` (any).
-   * **Warning**: This is a generic event not a change event.
+   * **Warning**: This is a generic event not a change event unless the change event is caused by browser autofill.
    * @param {object} [child] The react element that was selected when `native` is `false` (default).
    */
   onChange?: SelectInputProps<T>['onChange'];
@@ -168,8 +143,6 @@ export interface SelectProps<T = unknown>
    */
   variant?: 'standard' | 'outlined' | 'filled';
 }
-
-export type SelectClassKey = keyof NonNullable<SelectProps['classes']>;
 
 /**
  *

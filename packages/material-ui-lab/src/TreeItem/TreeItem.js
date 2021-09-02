@@ -1,22 +1,18 @@
 import * as React from 'react';
 import clsx from 'clsx';
 import PropTypes from 'prop-types';
-import { elementTypeAcceptingRef } from '@material-ui/utils';
-import Collapse from '@material-ui/core/Collapse';
-import {
-  alpha,
-  experimentalStyled,
-  unstable_useThemeProps as useThemeProps,
-} from '@material-ui/core/styles';
-import { ownerDocument, useForkRef, unsupportedProp } from '@material-ui/core/utils';
-import { unstable_composeClasses as composeClasses } from '@material-ui/unstyled';
+import { elementTypeAcceptingRef } from '@mui/utils';
+import Collapse from '@mui/material/Collapse';
+import { alpha, styled, useThemeProps } from '@mui/material/styles';
+import { ownerDocument, useForkRef, unsupportedProp } from '@mui/material/utils';
+import { unstable_composeClasses as composeClasses } from '@mui/core';
 import TreeViewContext from '../TreeView/TreeViewContext';
 import { DescendantProvider, useDescendant } from '../TreeView/descendants';
 import TreeItemContent from './TreeItemContent';
 import treeItemClasses, { getTreeItemUtilityClass } from './treeItemClasses';
 
-const useUtilityClasses = (styleProps) => {
-  const { classes } = styleProps;
+const useUtilityClasses = (ownerState) => {
+  const { classes } = ownerState;
 
   const slots = {
     root: ['root'],
@@ -33,40 +29,32 @@ const useUtilityClasses = (styleProps) => {
   return composeClasses(slots, getTreeItemUtilityClass, classes);
 };
 
-const TreeItemRoot = experimentalStyled(
-  'li',
-  {},
-  {
-    name: 'MuiTreeItem',
-    slot: 'Root',
-    overridesResolver: (props, styles) => styles.root,
-  },
-)({
+const TreeItemRoot = styled('li', {
+  name: 'MuiTreeItem',
+  slot: 'Root',
+  overridesResolver: (props, styles) => styles.root,
+})({
   listStyle: 'none',
   margin: 0,
   padding: 0,
   outline: 0,
 });
 
-const StyledTreeItemContent = experimentalStyled(
-  TreeItemContent,
-  {},
-  {
-    name: 'MuiTreeItem',
-    slot: 'Content',
-    overridesResolver: (props, styles) => {
-      return {
-        ...styles.content,
-        ...(styles.iconContainer && {
-          [`& .${treeItemClasses.iconContainer}`]: styles.iconContainer,
-        }),
-        ...(styles.label && {
-          [`& .${treeItemClasses.label}`]: styles.label,
-        }),
-      };
-    },
+const StyledTreeItemContent = styled(TreeItemContent, {
+  name: 'MuiTreeItem',
+  slot: 'Content',
+  overridesResolver: (props, styles) => {
+    return [
+      styles.content,
+      styles.iconContainer && {
+        [`& .${treeItemClasses.iconContainer}`]: styles.iconContainer,
+      },
+      styles.label && {
+        [`& .${treeItemClasses.label}`]: styles.label,
+      },
+    ];
   },
-)(({ theme }) => ({
+})(({ theme }) => ({
   padding: '0 8px',
   width: '100%',
   display: 'flex',
@@ -118,21 +106,19 @@ const StyledTreeItemContent = experimentalStyled(
   },
   [`& .${treeItemClasses.label}`]: {
     width: '100%',
+    // fixes overflow - see https://github.com/mui-org/material-ui/issues/27372
+    minWidth: 0,
     paddingLeft: 4,
     position: 'relative',
     ...theme.typography.body1,
   },
 }));
 
-const TreeItemGroup = experimentalStyled(
-  Collapse,
-  {},
-  {
-    name: 'MuiTreeItem',
-    slot: 'Group',
-    overridesResolver: (props, styles) => styles.group,
-  },
-)({
+const TreeItemGroup = styled(Collapse, {
+  name: 'MuiTreeItem',
+  slot: 'Group',
+  overridesResolver: (props, styles) => styles.group,
+})({
   margin: 0,
   padding: 0,
   marginLeft: 17,
@@ -204,7 +190,7 @@ const TreeItem = React.forwardRef(function TreeItem(inProps, ref) {
   const selected = isSelected ? isSelected(nodeId) : false;
   const disabled = isDisabled ? isDisabled(nodeId) : false;
 
-  const styleProps = {
+  const ownerState = {
     ...props,
     expanded,
     focused,
@@ -212,7 +198,7 @@ const TreeItem = React.forwardRef(function TreeItem(inProps, ref) {
     disabled,
   };
 
-  const classes = useUtilityClasses(styleProps);
+  const classes = useUtilityClasses(ownerState);
 
   let displayIcon;
   let expansionIcon;
@@ -298,7 +284,7 @@ const TreeItem = React.forwardRef(function TreeItem(inProps, ref) {
       id={id}
       tabIndex={-1}
       {...other}
-      styleProps={styleProps}
+      ownerState={ownerState}
       onFocus={handleFocus}
     >
       <StyledTreeItemContent
@@ -320,7 +306,7 @@ const TreeItem = React.forwardRef(function TreeItem(inProps, ref) {
         icon={icon}
         expansionIcon={expansionIcon}
         displayIcon={displayIcon}
-        styleProps={styleProps}
+        ownerState={ownerState}
         {...ContentProps}
       />
       {children && (

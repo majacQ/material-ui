@@ -1,16 +1,16 @@
 import * as React from 'react';
 import PropTypes from 'prop-types';
 import clsx from 'clsx';
-import { unstable_composeClasses as composeClasses } from '@material-ui/unstyled';
+import { unstable_composeClasses as composeClasses } from '@mui/core';
 import capitalize from '../utils/capitalize';
-import experimentalStyled from '../styles/experimentalStyled';
+import styled from '../styles/styled';
 import useThemeProps from '../styles/useThemeProps';
 import StepperContext from '../Stepper/StepperContext';
 import StepContext from '../Step/StepContext';
 import { getStepConnectorUtilityClass } from './stepConnectorClasses';
 
-const useUtilityClasses = (styleProps) => {
-  const { classes, orientation, alternativeLabel, active, completed, disabled } = styleProps;
+const useUtilityClasses = (ownerState) => {
+  const { classes, orientation, alternativeLabel, active, completed, disabled } = ownerState;
 
   const slots = {
     root: [
@@ -27,32 +27,25 @@ const useUtilityClasses = (styleProps) => {
   return composeClasses(slots, getStepConnectorUtilityClass, classes);
 };
 
-const StepConnectorRoot = experimentalStyled(
-  'div',
-  {},
-  {
-    name: 'MuiStepConnector',
-    slot: 'Root',
-    overridesResolver: (props, styles) => {
-      const { styleProps } = props;
+const StepConnectorRoot = styled('div', {
+  name: 'MuiStepConnector',
+  slot: 'Root',
+  overridesResolver: (props, styles) => {
+    const { ownerState } = props;
 
-      return {
-        ...styles.root,
-        ...styles[styleProps.orientation],
-        ...(styleProps.alternativeLabel && styles.alternativeLabel),
-        ...(styleProps.completed && styles.completed),
-      };
-    },
+    return [
+      styles.root,
+      styles[ownerState.orientation],
+      ownerState.alternativeLabel && styles.alternativeLabel,
+      ownerState.completed && styles.completed,
+    ];
   },
-)(({ styleProps }) => ({
-  /* Styles applied to the root element. */
+})(({ ownerState }) => ({
   flex: '1 1 auto',
-  /* Styles applied to the root element if `orientation="vertical"`. */
-  ...(styleProps.orientation === 'vertical' && {
+  ...(ownerState.orientation === 'vertical' && {
     marginLeft: 12, // half icon
   }),
-  /* Styles applied to the root element if `alternativeLabel={true}`. */
-  ...(styleProps.alternativeLabel && {
+  ...(ownerState.alternativeLabel && {
     position: 'absolute',
     top: 8 + 4,
     left: 'calc(-50% + 20px)',
@@ -60,32 +53,22 @@ const StepConnectorRoot = experimentalStyled(
   }),
 }));
 
-const StepConnectorLine = experimentalStyled(
-  'span',
-  {},
-  {
-    name: 'MuiStepConnector',
-    slot: 'Line',
-    overridesResolver: (props, styles) => {
-      const { styleProps } = props;
+const StepConnectorLine = styled('span', {
+  name: 'MuiStepConnector',
+  slot: 'Line',
+  overridesResolver: (props, styles) => {
+    const { ownerState } = props;
 
-      return {
-        ...styles.line,
-        ...styles[`line${capitalize(styleProps.orientation)}`],
-      };
-    },
+    return [styles.line, styles[`line${capitalize(ownerState.orientation)}`]];
   },
-)(({ styleProps, theme }) => ({
-  /* Styles applied to the line element. */
+})(({ ownerState, theme }) => ({
   display: 'block',
   borderColor: theme.palette.mode === 'light' ? theme.palette.grey[400] : theme.palette.grey[600],
-  /* Styles applied to the root element if `orientation="horizontal"`. */
-  ...(styleProps.orientation === 'horizontal' && {
+  ...(ownerState.orientation === 'horizontal' && {
     borderTopStyle: 'solid',
     borderTopWidth: 1,
   }),
-  /* Styles applied to the root element if `orientation="vertical"`. */
-  ...(styleProps.orientation === 'vertical' && {
+  ...(ownerState.orientation === 'vertical' && {
     borderLeftStyle: 'solid',
     borderLeftWidth: 1,
     minHeight: 24,
@@ -99,17 +82,17 @@ const StepConnector = React.forwardRef(function StepConnector(inProps, ref) {
   const { alternativeLabel, orientation = 'horizontal' } = React.useContext(StepperContext);
   const { active, disabled, completed } = React.useContext(StepContext);
 
-  const styleProps = { ...props, alternativeLabel, orientation, active, completed, disabled };
-  const classes = useUtilityClasses(styleProps);
+  const ownerState = { ...props, alternativeLabel, orientation, active, completed, disabled };
+  const classes = useUtilityClasses(ownerState);
 
   return (
     <StepConnectorRoot
       className={clsx(classes.root, className)}
       ref={ref}
-      styleProps={styleProps}
+      ownerState={ownerState}
       {...other}
     >
-      <StepConnectorLine className={classes.line} styleProps={styleProps} />
+      <StepConnectorLine className={classes.line} ownerState={ownerState} />
     </StepConnectorRoot>
   );
 });

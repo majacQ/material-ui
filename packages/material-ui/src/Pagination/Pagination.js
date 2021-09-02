@@ -1,16 +1,16 @@
 import * as React from 'react';
 import PropTypes from 'prop-types';
 import clsx from 'clsx';
-import { unstable_composeClasses as composeClasses } from '@material-ui/unstyled';
-import { integerPropType } from '@material-ui/utils';
+import { unstable_composeClasses as composeClasses } from '@mui/core';
+import { integerPropType } from '@mui/utils';
 import useThemeProps from '../styles/useThemeProps';
 import { getPaginationUtilityClass } from './paginationClasses';
 import usePagination from '../usePagination';
 import PaginationItem from '../PaginationItem';
-import experimentalStyled from '../styles/experimentalStyled';
+import styled from '../styles/styled';
 
-const useUtilityClasses = (styleProps) => {
-  const { classes, variant } = styleProps;
+const useUtilityClasses = (ownerState) => {
+  const { classes, variant } = ownerState;
 
   const slots = {
     root: ['root', variant],
@@ -20,32 +20,21 @@ const useUtilityClasses = (styleProps) => {
   return composeClasses(slots, getPaginationUtilityClass, classes);
 };
 
-const PaginationRoot = experimentalStyled(
-  'nav',
-  {},
-  {
-    name: 'MuiPagination',
-    slot: 'Root',
-    overridesResolver: (props, styles) => {
-      const { styleProps } = props;
+const PaginationRoot = styled('nav', {
+  name: 'MuiPagination',
+  slot: 'Root',
+  overridesResolver: (props, styles) => {
+    const { ownerState } = props;
 
-      return {
-        ...styles.root,
-        ...styles[styleProps.variant],
-      };
-    },
+    return [styles.root, styles[ownerState.variant]];
   },
-)({});
+})({});
 
-const PaginationUl = experimentalStyled(
-  'ul',
-  {},
-  {
-    name: 'MuiPagination',
-    slot: 'Ul',
-    overridesResolver: (props, styles) => styles.ul,
-  },
-)({
+const PaginationUl = styled('ul', {
+  name: 'MuiPagination',
+  slot: 'Ul',
+  overridesResolver: (props, styles) => styles.ul,
+})({
   display: 'flex',
   flexWrap: 'wrap',
   alignItems: 'center',
@@ -87,7 +76,7 @@ const Pagination = React.forwardRef(function Pagination(inProps, ref) {
 
   const { items } = usePagination({ ...props, componentName: 'Pagination' });
 
-  const styleProps = {
+  const ownerState = {
     ...props,
     boundaryCount,
     color,
@@ -106,17 +95,17 @@ const Pagination = React.forwardRef(function Pagination(inProps, ref) {
     variant,
   };
 
-  const classes = useUtilityClasses(styleProps);
+  const classes = useUtilityClasses(ownerState);
 
   return (
     <PaginationRoot
       aria-label="pagination navigation"
       className={clsx(classes.root, className)}
-      styleProps={styleProps}
+      ownerState={ownerState}
       ref={ref}
       {...other}
     >
-      <PaginationUl className={classes.ul} styleProps={styleProps}>
+      <PaginationUl className={classes.ul} ownerState={ownerState}>
         {items.map((item, index) => (
           <li key={index}>
             {renderItem({
@@ -179,9 +168,9 @@ Pagination.propTypes /* remove-proptypes */ = {
   disabled: PropTypes.bool,
   /**
    * Accepts a function which returns a string value that provides a user-friendly name for the current page.
+   * This is important for screen reader users.
    *
    * For localization purposes, you can use the provided [translations](/guides/localization/).
-   *
    * @param {string} type The link or button type to format ('page' | 'first' | 'last' | 'next' | 'previous'). Defaults to 'page'.
    * @param {number} page The page number to format.
    * @param {bool} selected If true, the current page is selected.
@@ -201,7 +190,7 @@ Pagination.propTypes /* remove-proptypes */ = {
   /**
    * Callback fired when the page is changed.
    *
-   * @param {object} event The event source of the callback.
+   * @param {React.ChangeEvent<unknown>} event The event source of the callback.
    * @param {number} page The page selected.
    */
   onChange: PropTypes.func,
@@ -211,7 +200,6 @@ Pagination.propTypes /* remove-proptypes */ = {
   page: integerPropType,
   /**
    * Render the item.
-   *
    * @param {PaginationRenderItemParams} params The props to spread on a PaginationItem.
    * @returns {ReactNode}
    * @default (item) => <PaginationItem {...item} />
@@ -242,7 +230,7 @@ Pagination.propTypes /* remove-proptypes */ = {
    * @default 'medium'
    */
   size: PropTypes /* @typescript-to-proptypes-ignore */.oneOfType([
-    PropTypes.oneOf(['large', 'medium', 'small']),
+    PropTypes.oneOf(['small', 'medium', 'large']),
     PropTypes.string,
   ]),
   /**

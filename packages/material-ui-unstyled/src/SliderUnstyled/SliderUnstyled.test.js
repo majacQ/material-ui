@@ -1,9 +1,7 @@
 import * as React from 'react';
 import { expect } from 'chai';
-import { createMount, createClientRender, describeConformance, screen } from 'test/utils';
-import SliderUnstyled, {
-  sliderUnstyledClasses as classes,
-} from '@material-ui/unstyled/SliderUnstyled';
+import { createClientRender, createMount, describeConformance, screen } from 'test/utils';
+import SliderUnstyled, { sliderUnstyledClasses as classes } from '@mui/core/SliderUnstyled';
 
 describe('<SliderUnstyled />', () => {
   before(function beforeHook() {
@@ -18,19 +16,24 @@ describe('<SliderUnstyled />', () => {
   describeConformance(<SliderUnstyled value={0} />, () => ({
     classes,
     inheritComponent: 'span',
-    render,
     mount,
+    render,
     refInstanceof: window.HTMLSpanElement,
     testComponentPropWith: 'span',
+    skip: [
+      'themeDefaultProps', // unstyled
+      'themeStyleOverrides', // unstyled
+      'themeVariants', // unstyled
+    ],
   }));
 
   it('forwards style props on the Root component', () => {
-    let styleProps = null;
+    let ownerState = null;
     let theme = null;
 
     const Root = React.forwardRef(
-      ({ styleProps: stylePropsProp, theme: themeProp, ...other }, ref) => {
-        styleProps = stylePropsProp;
+      ({ ownerState: ownerStateProp, theme: themeProp, ...other }, ref) => {
+        ownerState = ownerStateProp;
         theme = themeProp;
         return <span ref={ref} {...other} />;
       },
@@ -38,7 +41,7 @@ describe('<SliderUnstyled />', () => {
 
     render(<SliderUnstyled components={{ Root }} />);
 
-    expect(styleProps).not.to.equal(null);
+    expect(ownerState).not.to.equal(null);
     expect(theme).not.to.equal(null);
   });
 
@@ -54,7 +57,7 @@ describe('<SliderUnstyled />', () => {
     );
 
     const { current: element } = elementRef;
-    expect(element.getAttribute('styleProps')).to.equal(null);
+    expect(element.getAttribute('ownerState')).to.equal(null);
     expect(element.getAttribute('theme')).to.equal(null);
   });
 

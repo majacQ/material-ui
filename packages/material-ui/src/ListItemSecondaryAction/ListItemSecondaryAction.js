@@ -1,14 +1,14 @@
 import * as React from 'react';
 import PropTypes from 'prop-types';
 import clsx from 'clsx';
-import { unstable_composeClasses as composeClasses } from '@material-ui/unstyled';
-import experimentalStyled from '../styles/experimentalStyled';
+import { unstable_composeClasses as composeClasses } from '@mui/core';
+import styled from '../styles/styled';
 import useThemeProps from '../styles/useThemeProps';
 import ListContext from '../List/ListContext';
 import { getListItemSecondaryActionClassesUtilityClass } from './listItemSecondaryActionClasses';
 
-const useUtilityClasses = (styleProps) => {
-  const { disableGutters, classes } = styleProps;
+const useUtilityClasses = (ownerState) => {
+  const { disableGutters, classes } = ownerState;
 
   const slots = {
     root: ['root', disableGutters && 'disableGutters'],
@@ -17,27 +17,20 @@ const useUtilityClasses = (styleProps) => {
   return composeClasses(slots, getListItemSecondaryActionClassesUtilityClass, classes);
 };
 
-const ListItemSecondaryActionRoot = experimentalStyled(
-  'div',
-  {},
-  {
-    name: 'MuiListItemSecondaryAction',
-    slot: 'Root',
-    overridesResolver: (props, styles) => {
-      const { styleProps } = props;
+const ListItemSecondaryActionRoot = styled('div', {
+  name: 'MuiListItemSecondaryAction',
+  slot: 'Root',
+  overridesResolver: (props, styles) => {
+    const { ownerState } = props;
 
-      return {
-        ...styles.root,
-        ...(styleProps.disableGutters && styles.disableGutters),
-      };
-    },
+    return [styles.root, ownerState.disableGutters && styles.disableGutters];
   },
-)(({ styleProps }) => ({
+})(({ ownerState }) => ({
   position: 'absolute',
   right: 16,
   top: '50%',
   transform: 'translateY(-50%)',
-  ...(styleProps.disableGutters && {
+  ...(ownerState.disableGutters && {
     right: 0,
   }),
 }));
@@ -49,13 +42,13 @@ const ListItemSecondaryAction = React.forwardRef(function ListItemSecondaryActio
   const props = useThemeProps({ props: inProps, name: 'MuiListItemSecondaryAction' });
   const { className, ...other } = props;
   const context = React.useContext(ListContext);
-  const styleProps = { ...props, disableGutters: context.disableGutters };
-  const classes = useUtilityClasses(styleProps);
+  const ownerState = { ...props, disableGutters: context.disableGutters };
+  const classes = useUtilityClasses(ownerState);
 
   return (
     <ListItemSecondaryActionRoot
       className={clsx(classes.root, className)}
-      styleProps={styleProps}
+      ownerState={ownerState}
       ref={ref}
       {...other}
     />

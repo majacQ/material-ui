@@ -1,47 +1,48 @@
 import * as React from 'react';
 import PropTypes from 'prop-types';
-import { isHostComponent } from '@material-ui/unstyled';
-import { elementAcceptingRef, HTMLElementType } from '@material-ui/utils';
-import ModalUnstyled, { modalUnstyledClasses } from '@material-ui/unstyled/ModalUnstyled';
-import experimentalStyled from '../styles/experimentalStyled';
+import { isHostComponent } from '@mui/core';
+import { elementAcceptingRef, HTMLElementType } from '@mui/utils';
+import ModalUnstyled, { modalUnstyledClasses } from '@mui/core/ModalUnstyled';
+import styled from '../styles/styled';
 import useThemeProps from '../styles/useThemeProps';
 import Backdrop from '../Backdrop';
 
 export const modalClasses = modalUnstyledClasses;
 
-const extendUtilityClasses = (styleProps) => {
-  return styleProps.classes;
+const extendUtilityClasses = (ownerState) => {
+  return ownerState.classes;
 };
 
-const ModalRoot = experimentalStyled(
-  'div',
-  {},
-  {
-    name: 'MuiModal',
-    slot: 'Root',
-    overridesResolver: (props, styles) => {
-      const { styleProps } = props;
+const ModalRoot = styled('div', {
+  name: 'MuiModal',
+  slot: 'Root',
+  overridesResolver: (props, styles) => {
+    const { ownerState } = props;
 
-      return {
-        ...styles.root,
-        ...(!styleProps.open && styleProps.exited && styles.hidden),
-      };
-    },
+    return [styles.root, !ownerState.open && ownerState.exited && styles.hidden];
   },
-)(({ theme, styleProps }) => ({
-  /* Styles applied to the root element. */
+})(({ theme, ownerState }) => ({
   position: 'fixed',
   zIndex: theme.zIndex.modal,
   right: 0,
   bottom: 0,
   top: 0,
   left: 0,
-  /* Styles applied to the root element if the `Modal` has exited. */
-  ...(!styleProps.open &&
-    styleProps.exited && {
+  ...(!ownerState.open &&
+    ownerState.exited && {
       visibility: 'hidden',
     }),
 }));
+
+const ModalBackdrop = styled(Backdrop, {
+  name: 'MuiModal',
+  slot: 'Backdrop',
+  overridesResolver: (props, styles) => {
+    return styles.backdrop;
+  },
+})({
+  zIndex: -1,
+});
 
 /**
  * Modal is a lower-level construct that is leveraged by the following components:
@@ -59,7 +60,7 @@ const ModalRoot = experimentalStyled(
 const Modal = React.forwardRef(function Modal(inProps, ref) {
   const props = useThemeProps({ name: 'MuiModal', props: inProps });
   const {
-    BackdropComponent = Backdrop,
+    BackdropComponent = ModalBackdrop,
     closeAfterTransition = false,
     children,
     components = {},
@@ -89,13 +90,13 @@ const Modal = React.forwardRef(function Modal(inProps, ref) {
     keepMounted,
   };
 
-  const styleProps = {
+  const ownerState = {
     ...props,
     ...commonProps,
     exited,
   };
 
-  const classes = extendUtilityClasses(styleProps);
+  const classes = extendUtilityClasses(ownerState);
 
   return (
     <ModalUnstyled
@@ -107,7 +108,7 @@ const Modal = React.forwardRef(function Modal(inProps, ref) {
         root: {
           ...componentsProps.root,
           ...((!components.Root || !isHostComponent(components.Root)) && {
-            styleProps: { ...componentsProps.root?.styleProps },
+            ownerState: { ...componentsProps.root?.ownerState },
           }),
         },
       }}
@@ -131,7 +132,15 @@ Modal.propTypes /* remove-proptypes */ = {
   // ----------------------------------------------------------------------
   /**
    * A backdrop component. This prop enables custom backdrop rendering.
-   * @default Backdrop
+   * @default styled(Backdrop, {
+   *   name: 'MuiModal',
+   *   slot: 'Backdrop',
+   *   overridesResolver: (props, styles) => {
+   *     return styles.backdrop;
+   *   },
+   * })({
+   *   zIndex: -1,
+   * })
    */
   BackdropComponent: PropTypes.elementType,
   /**

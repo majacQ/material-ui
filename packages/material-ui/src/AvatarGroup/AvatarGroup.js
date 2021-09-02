@@ -2,9 +2,9 @@ import * as React from 'react';
 import PropTypes from 'prop-types';
 import { isFragment } from 'react-is';
 import clsx from 'clsx';
-import { chainPropTypes } from '@material-ui/utils';
-import { unstable_composeClasses as composeClasses } from '@material-ui/unstyled';
-import experimentalStyled from '../styles/experimentalStyled';
+import { chainPropTypes } from '@mui/utils';
+import { unstable_composeClasses as composeClasses } from '@mui/core';
+import styled from '../styles/styled';
 import useThemeProps from '../styles/useThemeProps';
 import Avatar from '../Avatar';
 import avatarGroupClasses, { getAvatarGroupUtilityClass } from './avatarGroupClasses';
@@ -14,8 +14,8 @@ const SPACINGS = {
   medium: null,
 };
 
-const useUtilityClasses = (styleProps) => {
-  const { classes } = styleProps;
+const useUtilityClasses = (ownerState) => {
+  const { classes } = ownerState;
 
   const slots = {
     root: ['root'],
@@ -25,18 +25,14 @@ const useUtilityClasses = (styleProps) => {
   return composeClasses(slots, getAvatarGroupUtilityClass, classes);
 };
 
-const AvatarGroupRoot = experimentalStyled(
-  'div',
-  {},
-  {
-    name: 'MuiAvatarGroup',
-    slot: 'Root',
-    overridesResolver: (props, styles) => ({
-      [`& .${avatarGroupClasses.avatar}`]: styles.avatar,
-      ...styles.root,
-    }),
-  },
-)(({ theme }) => ({
+const AvatarGroupRoot = styled('div', {
+  name: 'MuiAvatarGroup',
+  slot: 'Root',
+  overridesResolver: (props, styles) => ({
+    [`& .${avatarGroupClasses.avatar}`]: styles.avatar,
+    ...styles.root,
+  }),
+})(({ theme }) => ({
   [`& .MuiAvatar-root`]: {
     border: `2px solid ${theme.palette.background.default}`,
     boxSizing: 'content-box',
@@ -45,20 +41,15 @@ const AvatarGroupRoot = experimentalStyled(
       marginLeft: 0,
     },
   },
-  /* Styles applied to the root element. */
   display: 'flex',
   flexDirection: 'row-reverse',
 }));
 
-const AvatarGroupAvatar = experimentalStyled(
-  Avatar,
-  {},
-  {
-    name: 'MuiAvatarGroup',
-    slot: 'Avatar',
-    overridesResolver: (props, styles) => styles.avatar,
-  },
-)(({ theme }) => ({
+const AvatarGroupAvatar = styled(Avatar, {
+  name: 'MuiAvatarGroup',
+  slot: 'Avatar',
+  overridesResolver: (props, styles) => styles.avatar,
+})(({ theme }) => ({
   border: `2px solid ${theme.palette.background.default}`,
   boxSizing: 'content-box',
   marginLeft: -8,
@@ -83,14 +74,14 @@ const AvatarGroup = React.forwardRef(function AvatarGroup(inProps, ref) {
   } = props;
   const clampedMax = max < 2 ? 2 : max;
 
-  const styleProps = {
+  const ownerState = {
     ...props,
     max,
     spacing,
     variant,
   };
 
-  const classes = useUtilityClasses(styleProps);
+  const classes = useUtilityClasses(ownerState);
 
   const children = React.Children.toArray(childrenProp).filter((child) => {
     if (process.env.NODE_ENV !== 'production') {
@@ -113,14 +104,14 @@ const AvatarGroup = React.forwardRef(function AvatarGroup(inProps, ref) {
 
   return (
     <AvatarGroupRoot
-      styleProps={styleProps}
+      ownerState={ownerState}
       className={clsx(classes.root, className)}
       ref={ref}
       {...other}
     >
       {extraAvatars ? (
         <AvatarGroupAvatar
-          styleProps={styleProps}
+          ownerState={ownerState}
           className={classes.avatar}
           style={{
             marginLeft,

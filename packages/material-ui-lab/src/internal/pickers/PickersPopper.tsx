@@ -1,14 +1,11 @@
 import * as React from 'react';
-import clsx from 'clsx';
-import Grow from '@material-ui/core/Grow';
-import Paper, { PaperProps as MuiPaperProps } from '@material-ui/core/Paper';
-import Popper, { PopperProps as MuiPopperProps } from '@material-ui/core/Popper';
-import TrapFocus, {
-  TrapFocusProps as MuiTrapFocusProps,
-} from '@material-ui/core/Unstable_TrapFocus';
-import { useForkRef, useEventCallback, ownerDocument } from '@material-ui/core/utils';
-import { MuiStyles, StyleRules, WithStyles, withStyles } from '@material-ui/core/styles';
-import { TransitionProps as MuiTransitionProps } from '@material-ui/core/transitions';
+import Grow from '@mui/material/Grow';
+import Paper, { PaperProps as MuiPaperProps } from '@mui/material/Paper';
+import Popper, { PopperProps as MuiPopperProps } from '@mui/material/Popper';
+import TrapFocus, { TrapFocusProps as MuiTrapFocusProps } from '@mui/material/Unstable_TrapFocus';
+import { useForkRef, useEventCallback, ownerDocument } from '@mui/material/utils';
+import { styled } from '@mui/material/styles';
+import { TransitionProps as MuiTransitionProps } from '@mui/material/transitions';
 
 export interface ExportedPickerPopperProps {
   /**
@@ -18,7 +15,7 @@ export interface ExportedPickerPopperProps {
   /**
    * Custom component for popper [Transition](https://material-ui.com/components/transitions/#transitioncomponent-prop).
    */
-  TransitionComponent?: React.ComponentType<MuiTransitionProps>;
+  TransitionComponent?: React.JSXElementConstructor<MuiTransitionProps>;
 }
 
 export interface PickerPopperProps extends ExportedPickerPopperProps, MuiPaperProps {
@@ -30,22 +27,21 @@ export interface PickerPopperProps extends ExportedPickerPopperProps, MuiPaperPr
   onClose: () => void;
 }
 
-export type PickersPopperClassKey = 'root' | 'paper' | 'topTransition';
-
-export const styles: MuiStyles<PickersPopperClassKey> = (
-  theme,
-): StyleRules<PickersPopperClassKey> => ({
-  root: {
+const PickersPopperRoot = styled(Popper, { skipSx: true })<{ ownerState: PickerPopperProps }>(
+  ({ theme }) => ({
     zIndex: theme.zIndex.modal,
-  },
-  paper: {
-    transformOrigin: 'top center',
-    outline: 0,
-  },
-  topTransition: {
+  }),
+);
+
+const PickersPopperPaper = styled(Paper, { skipSx: true })<{
+  ownerState: PickerPopperProps & Pick<MuiPopperProps, 'placement'>;
+}>(({ ownerState }) => ({
+  transformOrigin: 'top center',
+  outline: 0,
+  ...(ownerState.placement === 'top' && {
     transformOrigin: 'bottom center',
-  },
-});
+  }),
+}));
 
 function clickedRootScrollbar(event: MouseEvent, doc: Document) {
   return (
@@ -55,9 +51,8 @@ function clickedRootScrollbar(event: MouseEvent, doc: Document) {
 }
 
 /**
- * Based on @material-ui/core/ClickAwayListener without the customization.
+ * Based on @mui/material/ClickAwayListener without the customization.
  * We can probably strip away even more since children won't be portaled.
- *
  * @param onClickAway
  * @param onClick
  * @param onTouchStart
@@ -180,6 +175,8 @@ function useClickAwayListener(
 
       return () => {
         doc.removeEventListener('click', handleClickAway);
+        // cleanup `handleClickAway`
+        syntheticEventRef.current = false;
       };
     }
     return undefined;
@@ -188,11 +185,10 @@ function useClickAwayListener(
   return [nodeRef, handleSynthetic, handleSynthetic];
 }
 
-const PickersPopper: React.FC<PickerPopperProps & WithStyles<typeof styles>> = (props) => {
+const PickersPopper = (props: PickerPopperProps) => {
   const {
     anchorEl,
     children,
-    classes,
     containerRef = null,
     onClose,
     open,
@@ -238,13 +234,15 @@ const PickersPopper: React.FC<PickerPopperProps & WithStyles<typeof styles>> = (
   const handleRef = useForkRef(paperRef, containerRef);
   const handlePaperRef = useForkRef(handleRef, clickAwayRef as React.Ref<HTMLDivElement>);
 
+  const ownerState = props;
+
   return (
-    <Popper
+    <PickersPopperRoot
       transition
       role={role}
       open={open}
       anchorEl={anchorEl}
-      className={clsx(classes.root, PopperProps?.className)}
+      ownerState={ownerState}
       {...PopperProps}
     >
       {({ TransitionProps, placement }) => (
@@ -253,27 +251,24 @@ const PickersPopper: React.FC<PickerPopperProps & WithStyles<typeof styles>> = (
           disableAutoFocus
           disableEnforceFocus={role === 'tooltip'}
           isEnabled={() => true}
-          getDoc={() => paperRef.current?.ownerDocument ?? document}
           {...TrapFocusProps}
         >
           <TransitionComponent {...TransitionProps}>
-            <Paper
+            <PickersPopperPaper
               tabIndex={-1}
               elevation={8}
               ref={handlePaperRef}
-              className={clsx(classes.paper, {
-                [classes.topTransition]: placement === 'top',
-              })}
               onClick={onPaperClick}
               onTouchStart={onPaperTouchStart}
+              ownerState={{ ...ownerState, placement }}
             >
               {children}
-            </Paper>
+            </PickersPopperPaper>
           </TransitionComponent>
         </TrapFocus>
       )}
-    </Popper>
+    </PickersPopperRoot>
   );
 };
 
-export default withStyles(styles, { name: 'MuiPickersPopper' })(PickersPopper);
+export default PickersPopper;

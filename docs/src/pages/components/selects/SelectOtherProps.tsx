@@ -1,31 +1,20 @@
 import * as React from 'react';
-import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
-import InputLabel from '@material-ui/core/InputLabel';
-import MenuItem from '@material-ui/core/MenuItem';
-import FormHelperText from '@material-ui/core/FormHelperText';
-import FormControl from '@material-ui/core/FormControl';
-import Select from '@material-ui/core/Select';
-
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    formControl: {
-      margin: theme.spacing(1),
-      minWidth: 120,
-    },
-  }),
-);
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
+import FormHelperText from '@mui/material/FormHelperText';
+import FormControl from '@mui/material/FormControl';
+import Select, { SelectChangeEvent } from '@mui/material/Select';
 
 export default function SelectOtherProps() {
-  const classes = useStyles();
   const [age, setAge] = React.useState('');
 
-  const handleChange = (event: React.ChangeEvent<{ value: unknown }>) => {
-    setAge(event.target.value as string);
+  const handleChange = (event: SelectChangeEvent) => {
+    setAge(event.target.value);
   };
 
   return (
     <div>
-      <FormControl className={classes.formControl} disabled>
+      <FormControl sx={{ m: 1, minWidth: 120 }} disabled>
         <InputLabel id="demo-simple-select-disabled-label">Age</InputLabel>
         <Select
           labelId="demo-simple-select-disabled-label"
@@ -43,7 +32,7 @@ export default function SelectOtherProps() {
         </Select>
         <FormHelperText>Disabled</FormHelperText>
       </FormControl>
-      <FormControl className={classes.formControl} error>
+      <FormControl sx={{ m: 1, minWidth: 120 }} error>
         <InputLabel id="demo-simple-select-error-label">Age</InputLabel>
         <Select
           labelId="demo-simple-select-error-label"
@@ -62,7 +51,7 @@ export default function SelectOtherProps() {
         </Select>
         <FormHelperText>Error</FormHelperText>
       </FormControl>
-      <FormControl className={classes.formControl}>
+      <FormControl sx={{ m: 1, minWidth: 120 }}>
         <InputLabel id="demo-simple-select-readonly-label">Age</InputLabel>
         <Select
           labelId="demo-simple-select-readonly-label"
@@ -81,7 +70,7 @@ export default function SelectOtherProps() {
         </Select>
         <FormHelperText>Read only</FormHelperText>
       </FormControl>
-      <FormControl required className={classes.formControl}>
+      <FormControl required sx={{ m: 1, minWidth: 120 }}>
         <InputLabel id="demo-simple-select-required-label">Age</InputLabel>
         <Select
           labelId="demo-simple-select-required-label"

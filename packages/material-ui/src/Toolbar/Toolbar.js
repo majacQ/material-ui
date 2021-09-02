@@ -1,13 +1,13 @@
 import * as React from 'react';
 import PropTypes from 'prop-types';
 import clsx from 'clsx';
-import { unstable_composeClasses as composeClasses } from '@material-ui/unstyled';
+import { unstable_composeClasses as composeClasses } from '@mui/core';
 import useThemeProps from '../styles/useThemeProps';
-import experimentalStyled from '../styles/experimentalStyled';
+import styled from '../styles/styled';
 import { getToolbarUtilityClass } from './toolbarClasses';
 
-const useUtilityClasses = (styleProps) => {
-  const { classes, disableGutters, variant } = styleProps;
+const useUtilityClasses = (ownerState) => {
+  const { classes, disableGutters, variant } = ownerState;
 
   const slots = {
     root: ['root', !disableGutters && 'gutters', variant],
@@ -16,30 +16,20 @@ const useUtilityClasses = (styleProps) => {
   return composeClasses(slots, getToolbarUtilityClass, classes);
 };
 
-const ToolbarRoot = experimentalStyled(
-  'div',
-  {},
-  {
-    name: 'MuiToolbar',
-    slot: 'Root',
-    overridesResolver: (props, styles) => {
-      const { styleProps } = props;
+const ToolbarRoot = styled('div', {
+  name: 'MuiToolbar',
+  slot: 'Root',
+  overridesResolver: (props, styles) => {
+    const { ownerState } = props;
 
-      return {
-        ...styles.root,
-        ...(!styleProps.disableGutters && styles.gutters),
-        ...styles[styleProps.variant],
-      };
-    },
+    return [styles.root, !ownerState.disableGutters && styles.gutters, styles[ownerState.variant]];
   },
-)(
-  ({ theme, styleProps }) => ({
-    /* Styles applied to the root element. */
+})(
+  ({ theme, ownerState }) => ({
     position: 'relative',
     display: 'flex',
     alignItems: 'center',
-    /* Styles applied to the root element unless `disableGutters={true}`. */
-    ...(!styleProps.disableGutters && {
+    ...(!ownerState.disableGutters && {
       paddingLeft: theme.spacing(2),
       paddingRight: theme.spacing(2),
       [theme.breakpoints.up('sm')]: {
@@ -47,13 +37,11 @@ const ToolbarRoot = experimentalStyled(
         paddingRight: theme.spacing(3),
       },
     }),
-    /* Styles applied to the root element if `variant="dense"`. */
-    ...(styleProps.variant === 'dense' && {
+    ...(ownerState.variant === 'dense' && {
       minHeight: 48,
     }),
   }),
-  /* Styles applied to the root element if `variant="regular"`. */
-  ({ theme, styleProps }) => styleProps.variant === 'regular' && theme.mixins.toolbar,
+  ({ theme, ownerState }) => ownerState.variant === 'regular' && theme.mixins.toolbar,
 );
 
 const Toolbar = React.forwardRef(function Toolbar(inProps, ref) {
@@ -66,21 +54,21 @@ const Toolbar = React.forwardRef(function Toolbar(inProps, ref) {
     ...other
   } = props;
 
-  const styleProps = {
+  const ownerState = {
     ...props,
     component,
     disableGutters,
     variant,
   };
 
-  const classes = useUtilityClasses(styleProps);
+  const classes = useUtilityClasses(ownerState);
 
   return (
     <ToolbarRoot
       as={component}
       className={clsx(classes.root, className)}
       ref={ref}
-      styleProps={styleProps}
+      ownerState={ownerState}
       {...other}
     />
   );

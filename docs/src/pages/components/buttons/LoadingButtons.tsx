@@ -1,15 +1,11 @@
 import * as React from 'react';
-import Box from '@material-ui/core/Box';
-import LoadingButton from '@material-ui/lab/LoadingButton';
-import SaveIcon from '@material-ui/icons/Save';
+import LoadingButton from '@mui/lab/LoadingButton';
+import SaveIcon from '@mui/icons-material/Save';
+import Stack from '@mui/material/Stack';
 
 export default function LoadingButtons() {
   return (
-    <Box
-      sx={{
-        '& > :not(style)': { m: 1 },
-      }}
-    >
+    <Stack direction="row" spacing={2}>
       <LoadingButton loading variant="outlined">
         Submit
       </LoadingButton>
@@ -24,6 +20,6 @@ export default function LoadingButtons() {
       >
         Save
       </LoadingButton>
-    </Box>
+    </Stack>
   );
 }

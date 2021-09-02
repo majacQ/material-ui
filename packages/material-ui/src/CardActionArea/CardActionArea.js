@@ -1,14 +1,14 @@
 import * as React from 'react';
 import PropTypes from 'prop-types';
 import clsx from 'clsx';
-import { unstable_composeClasses as composeClasses } from '@material-ui/unstyled';
+import { unstable_composeClasses as composeClasses } from '@mui/core';
 import useThemeProps from '../styles/useThemeProps';
-import experimentalStyled from '../styles/experimentalStyled';
+import styled from '../styles/styled';
 import cardActionAreaClasses, { getCardActionAreaUtilityClass } from './cardActionAreaClasses';
 import ButtonBase from '../ButtonBase';
 
-const useUtilityClasses = (styleProps) => {
-  const { classes } = styleProps;
+const useUtilityClasses = (ownerState) => {
+  const { classes } = ownerState;
 
   const slots = {
     root: ['root'],
@@ -18,16 +18,11 @@ const useUtilityClasses = (styleProps) => {
   return composeClasses(slots, getCardActionAreaUtilityClass, classes);
 };
 
-const CardActionAreaRoot = experimentalStyled(
-  ButtonBase,
-  {},
-  {
-    name: 'MuiCardActionArea',
-    slot: 'Root',
-    overridesResolver: (props, styles) => styles.root,
-  },
-)(({ theme }) => ({
-  /* Styles applied to the root element. */
+const CardActionAreaRoot = styled(ButtonBase, {
+  name: 'MuiCardActionArea',
+  slot: 'Root',
+  overridesResolver: (props, styles) => styles.root,
+})(({ theme }) => ({
   display: 'block',
   textAlign: 'inherit',
   width: '100%',
@@ -42,16 +37,11 @@ const CardActionAreaRoot = experimentalStyled(
   },
 }));
 
-const CardActionAreaFocusHighlight = experimentalStyled(
-  'span',
-  {},
-  {
-    name: 'MuiCardActionArea',
-    slot: 'FocusHighlight',
-    overridesResolver: (props, styles) => styles.focusHighlight,
-  },
-)(({ theme }) => ({
-  /* Styles applied to the overlay that covers the action area when it is keyboard focused. */
+const CardActionAreaFocusHighlight = styled('span', {
+  name: 'MuiCardActionArea',
+  slot: 'FocusHighlight',
+  overridesResolver: (props, styles) => styles.focusHighlight,
+})(({ theme }) => ({
   overflow: 'hidden',
   pointerEvents: 'none',
   position: 'absolute',
@@ -71,21 +61,19 @@ const CardActionArea = React.forwardRef(function CardActionArea(inProps, ref) {
   const props = useThemeProps({ props: inProps, name: 'MuiCardActionArea' });
   const { children, className, focusVisibleClassName, ...other } = props;
 
-  // TODO: convert to simple assignment after the type error in defaultPropsHandler.js:60:6 is fixed
-  const styleProps = { ...props };
-
-  const classes = useUtilityClasses(styleProps);
+  const ownerState = props;
+  const classes = useUtilityClasses(ownerState);
 
   return (
     <CardActionAreaRoot
       className={clsx(classes.root, className)}
       focusVisibleClassName={clsx(focusVisibleClassName, classes.focusVisible)}
       ref={ref}
-      styleProps={styleProps}
+      ownerState={ownerState}
       {...other}
     >
       {children}
-      <CardActionAreaFocusHighlight className={classes.focusHighlight} styleProps={styleProps} />
+      <CardActionAreaFocusHighlight className={classes.focusHighlight} ownerState={ownerState} />
     </CardActionAreaRoot>
   );
 });

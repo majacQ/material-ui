@@ -2,22 +2,20 @@ import * as React from 'react';
 import PropTypes from 'prop-types';
 import { expect } from 'chai';
 import { spy } from 'sinon';
-import { createMount, describeConformanceV5, act, createClientRender, fireEvent } from 'test/utils';
-import FormControl, { useFormControl } from '@material-ui/core/FormControl';
-import InputAdornment from '@material-ui/core/InputAdornment';
-import TextField from '@material-ui/core/TextField';
-import Select from '@material-ui/core/Select';
-import InputBase, { inputBaseClasses as classes } from '@material-ui/core/InputBase';
+import { describeConformance, act, createClientRender, fireEvent, screen } from 'test/utils';
+import FormControl, { useFormControl } from '@mui/material/FormControl';
+import InputAdornment from '@mui/material/InputAdornment';
+import TextField from '@mui/material/TextField';
+import Select from '@mui/material/Select';
+import InputBase, { inputBaseClasses as classes } from '@mui/material/InputBase';
 
 describe('<InputBase />', () => {
   const render = createClientRender();
-  const mount = createMount();
 
-  describeConformanceV5(<InputBase />, () => ({
+  describeConformance(<InputBase />, () => ({
     classes,
     inheritComponent: 'div',
     render,
-    mount,
     refInstanceof: window.HTMLDivElement,
     muiName: 'MuiInputBase',
     testVariantProps: { size: 'small' },
@@ -38,19 +36,39 @@ describe('<InputBase />', () => {
   });
 
   describe('multiline', () => {
-    it('should render an <TextareaAutosize /> when passed the multiline prop', () => {
-      const { container } = render(<InputBase multiline />);
-      expect(container.querySelectorAll('textarea')).to.have.lengthOf(2);
+    it('should render a `textbox` with `aria-multiline`', () => {
+      render(<InputBase multiline />);
+
+      const textarea = screen.getByRole('textbox', { hidden: false });
+      // implicit `aria-multiline`
+      expect(textarea).to.have.tagName('textarea');
     });
 
-    it('should render an <textarea /> when passed the multiline and rows props', () => {
-      const { container } = render(<InputBase multiline rows={4} />);
-      expect(container.querySelectorAll('textarea')).to.have.lengthOf(1);
+    it('should render a `textbox` with `aria-multiline` if `rows` is specified', () => {
+      render(<InputBase multiline rows={4} />);
+
+      const textarea = screen.getByRole('textbox', { hidden: false });
+      // implicit `aria-multiline`
+      expect(textarea).to.have.tagName('textarea');
     });
 
-    it('should forward the value to the TextareaAutosize', () => {
-      const { container } = render(<InputBase multiline maxRows={4} value="Hello" />);
-      expect(container.querySelector('textarea')).to.have.value('Hello');
+    it('should forward the value to the textarea', () => {
+      render(<InputBase multiline maxRows={4} value="Hello" />);
+
+      const textarea = screen.getByRole('textbox', { hidden: false });
+      expect(textarea).to.have.value('Hello');
+    });
+
+    it('should preserve state when changing rows', () => {
+      const { setProps } = render(<InputBase multiline />);
+      const textarea = screen.getByRole('textbox', { hidden: false });
+      act(() => {
+        textarea.focus();
+      });
+
+      setProps({ rows: 4 });
+
+      expect(textarea).toHaveFocus();
     });
   });
 
@@ -253,13 +271,12 @@ describe('<InputBase />', () => {
           render(
             <InputBase inputProps={{ ref: triggerChangeRef }} inputComponent={BadInputComponent} />,
           );
-        }).toErrorDev(
-          [
-            'Material-UI: You have provided a `inputComponent` to the input component',
-            'that does not correctly handle the `ref` prop.',
-            'Make sure the `ref` prop is called with a HTMLInputElement.',
-          ].join('\n'),
-        );
+        }).toErrorDev([
+          'Material-UI: You have provided a `inputComponent` to the input component\nthat does not correctly handle the `ref` prop.\nMake sure the `ref` prop is called with a HTMLInputElement.',
+          // React 18 Strict Effects run mount effects twice
+          React.version.startsWith('18') &&
+            'Material-UI: You have provided a `inputComponent` to the input component\nthat does not correctly handle the `ref` prop.\nMake sure the `ref` prop is called with a HTMLInputElement.',
+        ]);
       });
     });
   });
@@ -481,9 +498,12 @@ describe('<InputBase />', () => {
               </div>
             </FormControl>,
           );
-        }).toErrorDev(
+        }).toErrorDev([
           'Material-UI: There are multiple `InputBase` components inside a FormControl.\nThis creates visual inconsistencies, only use one `InputBase`.',
-        );
+          // React 18 Strict Effects run mount effects twice
+          React.version.startsWith('18') &&
+            'Material-UI: There are multiple `InputBase` components inside a FormControl.\nThis creates visual inconsistencies, only use one `InputBase`.',
+        ]);
       });
 
       it('should not warn if only one input is rendered', () => {

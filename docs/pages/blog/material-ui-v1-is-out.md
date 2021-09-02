@@ -42,7 +42,7 @@ We want Material-UI to become whatever is generally useful for application devel
 We know the ease of use is a critical part of user acquisition. The more user we have, the more likely we can make the project sustainable. Improving the ease of use comes in different flavors:
 
 - **Onboarding**. We have reduced the onboarding friction as much as possible. We know the onboarding is a critical step for user acquisition. The onboarding friction comes in different flavors:
-  We have reduced the number of installation steps needed. It should be as simple as 1. npm install @material-ui/core and 2. import Button from '@material-ui/core/Button'; . We don't ask for polyfill, custom webpack plugin or any specific build tool. The usage of MuiThemeProvider is no longer mandatory.
+  We have reduced the number of installation steps needed. It should be as simple as 1. npm install @mui/material and 2. import Button from '@mui/material/Button'; . We don't ask for polyfill, custom webpack plugin or any specific build tool. The usage of MuiThemeProvider is no longer mandatory.
 
 - **Examples**. We are hosting [example projects](https://github.com/mui-org/material-ui/tree/master/examples) with the most popular solutions to start a project: [create-react-app](https://github.com/facebook/create-react-app), [Next.js](https://github.com/zeit/next.js), [Gatsby](https://github.com/gatsbyjs/gatsby), and CDN.
 
@@ -91,7 +91,7 @@ There are so many new things, we can't be exhaustive. Aside from what we have al
 
 ## What's next?
 
-- **Material Design.** The Google Design team has recently released a new iteration on the Material Design specification, it's focused on themability. This is great news! We will do our best to be up to date. It also confirms that heavily investing in customizability for v1 was a good call. We will continue our efforts.
+- **Material Design.** The Google Design team has recently released a new iteration on the Material Design guidelines, it's focused on themability. This is great news! We will do our best to be up to date. It also confirms that heavily investing in customizability for v1 was a good call. We will continue our efforts.
 
 - **More utils.** We want to work on new utility components: Spacing, Display, Color, etc.
 - **Documentation.** We want to host multiple version of the documentation. Each minor release will bring a new hosted version of our documentation. Right now, we have v1.0.0, and come v1.1.0's release, we'll add that too. Prior releases will continue to be linked from our navigation as is already the case for v0.x.

@@ -1,15 +1,15 @@
 import * as React from 'react';
 import PropTypes from 'prop-types';
 import clsx from 'clsx';
-import { unstable_composeClasses as composeClasses } from '@material-ui/unstyled';
+import { unstable_composeClasses as composeClasses } from '@mui/core';
 import ButtonBase from '../ButtonBase';
 import capitalize from '../utils/capitalize';
 import useThemeProps from '../styles/useThemeProps';
 import fabClasses, { getFabUtilityClass } from './fabClasses';
-import experimentalStyled from '../styles/experimentalStyled';
+import styled from '../styles/styled';
 
-const useUtilityClasses = (styleProps) => {
-  const { color, variant, classes, size } = styleProps;
+const useUtilityClasses = (ownerState) => {
+  const { color, variant, classes, size } = ownerState;
 
   const slots = {
     root: [
@@ -20,34 +20,28 @@ const useUtilityClasses = (styleProps) => {
       color === 'primary' && 'primary',
       color === 'secondary' && 'secondary',
     ],
-    label: ['label'],
   };
 
   return composeClasses(slots, getFabUtilityClass, classes);
 };
 
-const FabRoot = experimentalStyled(
-  ButtonBase,
-  {},
-  {
-    name: 'MuiFab',
-    slot: 'Root',
-    overridesResolver: (props, styles) => {
-      const { styleProps } = props;
+const FabRoot = styled(ButtonBase, {
+  name: 'MuiFab',
+  slot: 'Root',
+  overridesResolver: (props, styles) => {
+    const { ownerState } = props;
 
-      return {
-        ...styles.root,
-        ...styles[styleProps.variant],
-        ...styles[`size${capitalize(styleProps.size)}`],
-        ...(styleProps.color === 'inherit' && styles.colorInherit),
-        ...(styleProps.color === 'primary' && styles.primary),
-        ...(styleProps.color === 'secondary' && styles.secondary),
-      };
-    },
+    return [
+      styles.root,
+      styles[ownerState.variant],
+      styles[`size${capitalize(ownerState.size)}`],
+      ownerState.color === 'inherit' && styles.colorInherit,
+      ownerState.color === 'primary' && styles.primary,
+      ownerState.color === 'secondary' && styles.secondary,
+    ];
   },
-)(
-  ({ theme, styleProps }) => ({
-    /* Styles applied to the root element. */
+})(
+  ({ theme, ownerState }) => ({
     ...theme.typography.button,
     minHeight: 36,
     transition: theme.transitions.create(['background-color', 'box-shadow', 'border-color'], {
@@ -80,18 +74,15 @@ const FabRoot = experimentalStyled(
       boxShadow: theme.shadows[0],
       backgroundColor: theme.palette.action.disabledBackground,
     },
-    /* Styles applied to the root element if `size="small"``. */
-    ...(styleProps.size === 'small' && {
+    ...(ownerState.size === 'small' && {
       width: 40,
       height: 40,
     }),
-    /* Styles applied to the root element if `size="medium"``. */
-    ...(styleProps.size === 'medium' && {
+    ...(ownerState.size === 'medium' && {
       width: 48,
       height: 48,
     }),
-    /* Styles applied to the root element if `variant="extended"`. */
-    ...(styleProps.variant === 'extended' && {
+    ...(ownerState.variant === 'extended' && {
       borderRadius: 48 / 2,
       padding: '0 16px',
       width: 'auto',
@@ -99,30 +90,28 @@ const FabRoot = experimentalStyled(
       minWidth: 48,
       height: 48,
     }),
-    ...(styleProps.variant === 'extended' &&
-      styleProps.size === 'small' && {
+    ...(ownerState.variant === 'extended' &&
+      ownerState.size === 'small' && {
         width: 'auto',
         padding: '0 8px',
         borderRadius: 34 / 2,
         minWidth: 34,
         height: 34,
       }),
-    ...(styleProps.variant === 'extended' &&
-      styleProps.size === 'medium' && {
+    ...(ownerState.variant === 'extended' &&
+      ownerState.size === 'medium' && {
         width: 'auto',
         padding: '0 16px',
         borderRadius: 40 / 2,
         minWidth: 40,
         height: 40,
       }),
-    /* Styles applied to the root element if `color="inherit"`. */
-    ...(styleProps.color === 'inherit' && {
+    ...(ownerState.color === 'inherit' && {
       color: 'inherit',
     }),
   }),
-  ({ theme, styleProps }) => ({
-    /* Styles applied to the root element if `color="primary"`. */
-    ...(styleProps.color === 'primary' && {
+  ({ theme, ownerState }) => ({
+    ...(ownerState.color === 'primary' && {
       color: theme.palette.primary.contrastText,
       backgroundColor: theme.palette.primary.main,
       '&:hover': {
@@ -133,8 +122,7 @@ const FabRoot = experimentalStyled(
         },
       },
     }),
-    /* Styles applied to the root element if `color="secondary"`. */
-    ...(styleProps.color === 'secondary' && {
+    ...(ownerState.color === 'secondary' && {
       color: theme.palette.secondary.contrastText,
       backgroundColor: theme.palette.secondary.main,
       '&:hover': {
@@ -147,22 +135,6 @@ const FabRoot = experimentalStyled(
     }),
   }),
 );
-
-const FabLabel = experimentalStyled(
-  'span',
-  {},
-  {
-    name: 'MuiFab',
-    slot: 'Label',
-    overridesResolver: (props, styles) => styles.label,
-  },
-)({
-  /* Styles applied to the span element that wraps the children. */
-  width: '100%', // assure the correct width for iOS Safari
-  display: 'inherit',
-  alignItems: 'inherit',
-  justifyContent: 'inherit',
-});
 
 const Fab = React.forwardRef(function Fab(inProps, ref) {
   const props = useThemeProps({ props: inProps, name: 'MuiFab' });
@@ -179,7 +151,7 @@ const Fab = React.forwardRef(function Fab(inProps, ref) {
     ...other
   } = props;
 
-  const styleProps = {
+  const ownerState = {
     ...props,
     color,
     component,
@@ -189,7 +161,7 @@ const Fab = React.forwardRef(function Fab(inProps, ref) {
     variant,
   };
 
-  const classes = useUtilityClasses(styleProps);
+  const classes = useUtilityClasses(ownerState);
 
   return (
     <FabRoot
@@ -198,13 +170,11 @@ const Fab = React.forwardRef(function Fab(inProps, ref) {
       disabled={disabled}
       focusRipple={!disableFocusRipple}
       focusVisibleClassName={clsx(classes.focusVisible, focusVisibleClassName)}
-      styleProps={styleProps}
+      ownerState={ownerState}
       ref={ref}
       {...other}
     >
-      <FabLabel className={classes.label} styleProps={styleProps}>
-        {children}
-      </FabLabel>
+      {children}
     </FabRoot>
   );
 });
@@ -268,7 +238,7 @@ Fab.propTypes /* remove-proptypes */ = {
    * @default 'large'
    */
   size: PropTypes /* @typescript-to-proptypes-ignore */.oneOfType([
-    PropTypes.oneOf(['large', 'medium', 'small']),
+    PropTypes.oneOf(['small', 'medium', 'large']),
     PropTypes.string,
   ]),
   /**

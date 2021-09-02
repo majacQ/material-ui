@@ -1,20 +1,19 @@
 import * as React from 'react';
 import { expect } from 'chai';
-import { createMount, createClientRender, describeConformanceV5 } from 'test/utils';
-import TableHead, { tableHeadClasses as classes } from '@material-ui/core/TableHead';
+import { createClientRender, describeConformance } from 'test/utils';
+import TableHead, { tableHeadClasses as classes } from '@mui/material/TableHead';
 import Tablelvl2Context from '../Table/Tablelvl2Context';
 
 describe('<TableHead />', () => {
-  const mount = createMount();
   const render = createClientRender();
   function renderInTable(node) {
     return render(<table>{node}</table>);
   }
 
-  describeConformanceV5(<TableHead />, () => ({
+  describeConformance(<TableHead />, () => ({
     classes,
     inheritComponent: 'thead',
-    mount: (node) => {
+    wrapMount: (mount) => (node) => {
       const wrapper = mount(<table>{node}</table>);
       return wrapper.find('table').childAt(0);
     },

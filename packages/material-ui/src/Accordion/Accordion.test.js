@@ -2,21 +2,20 @@ import * as React from 'react';
 import PropTypes from 'prop-types';
 import { expect } from 'chai';
 import { spy } from 'sinon';
-import { createMount, describeConformanceV5, createClientRender, fireEvent } from 'test/utils';
-import Accordion, { accordionClasses as classes } from '@material-ui/core/Accordion';
-import Paper from '@material-ui/core/Paper';
-import AccordionSummary from '@material-ui/core/AccordionSummary';
+import { describeConformance, createClientRender, fireEvent } from 'test/utils';
+import Accordion, { accordionClasses as classes } from '@mui/material/Accordion';
+import Paper from '@mui/material/Paper';
+import AccordionSummary from '@mui/material/AccordionSummary';
 
 describe('<Accordion />', () => {
   const render = createClientRender();
-  const mount = createMount();
+
   const minimalChildren = [<AccordionSummary key="header">Header</AccordionSummary>];
 
-  describeConformanceV5(<Accordion>{minimalChildren}</Accordion>, () => ({
+  describeConformance(<Accordion>{minimalChildren}</Accordion>, () => ({
     classes,
     inheritComponent: Paper,
     render,
-    mount,
     refInstanceof: window.HTMLDivElement,
     muiName: 'MuiAccordion',
     testVariantProps: { variant: 'rounded' },

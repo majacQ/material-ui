@@ -2,8 +2,8 @@ import * as React from 'react';
 import { isFragment } from 'react-is';
 import PropTypes from 'prop-types';
 import clsx from 'clsx';
-import { unstable_composeClasses as composeClasses } from '@material-ui/unstyled';
-import experimentalStyled from '../styles/experimentalStyled';
+import { unstable_composeClasses as composeClasses } from '@mui/core';
+import styled from '../styles/styled';
 import useThemeProps from '../styles/useThemeProps';
 import capitalize from '../utils/capitalize';
 import isValueSelected from './isValueSelected';
@@ -11,53 +11,45 @@ import toggleButtonGroupClasses, {
   getToggleButtonGroupUtilityClass,
 } from './toggleButtonGroupClasses';
 
-const useUtilityClasses = (styleProps) => {
-  const { classes, orientation, fullWidth } = styleProps;
+const useUtilityClasses = (ownerState) => {
+  const { classes, orientation, fullWidth, disabled } = ownerState;
 
   const slots = {
     root: ['root', orientation === 'vertical' && 'vertical', fullWidth && 'fullWidth'],
-    grouped: ['grouped', `grouped${capitalize(orientation)}`],
+    grouped: ['grouped', `grouped${capitalize(orientation)}`, disabled && 'disabled'],
   };
 
   return composeClasses(slots, getToggleButtonGroupUtilityClass, classes);
 };
 
-const ToggleButtonGroupRoot = experimentalStyled(
-  'div',
-  {},
-  {
-    name: 'MuiToggleButtonGroup',
-    slot: 'Root',
-    overridesResolver: (props, styles) => {
-      const { styleProps } = props;
+const ToggleButtonGroupRoot = styled('div', {
+  name: 'MuiToggleButtonGroup',
+  slot: 'Root',
+  overridesResolver: (props, styles) => {
+    const { ownerState } = props;
 
-      return {
-        [`& .${toggleButtonGroupClasses.grouped}`]: {
-          ...styles.grouped,
-          ...styles[`grouped${capitalize(styleProps.orientation)}`],
-        },
-        ...styles.root,
-        ...(styleProps.orientation === 'vertical' && styles.vertical),
-        ...(styleProps.fullWidth && styles.fullWidth),
-      };
-    },
+    return [
+      { [`& .${toggleButtonGroupClasses.grouped}`]: styles.grouped },
+      {
+        [`& .${toggleButtonGroupClasses.grouped}`]:
+          styles[`grouped${capitalize(ownerState.orientation)}`],
+      },
+      styles.root,
+      ownerState.orientation === 'vertical' && styles.vertical,
+      ownerState.fullWidth && styles.fullWidth,
+    ];
   },
-)(({ styleProps, theme }) => ({
-  /* Styles applied to the root element. */
+})(({ ownerState, theme }) => ({
   display: 'inline-flex',
   borderRadius: theme.shape.borderRadius,
-  /* Styles applied to the root element if `orientation="vertical"`. */
-  ...(styleProps.orientation === 'vertical' && {
+  ...(ownerState.orientation === 'vertical' && {
     flexDirection: 'column',
   }),
-  /* Styles applied to the root element if `fullWidth={true}`. */
-  ...(styleProps.fullWidth && {
+  ...(ownerState.fullWidth && {
     width: '100%',
   }),
-  /* Styles applied to the children. */
   [`& .${toggleButtonGroupClasses.grouped}`]: {
-    /* Styles applied to the children if `orientation="horizontal"`. */
-    ...(styleProps.orientation === 'horizontal'
+    ...(ownerState.orientation === 'horizontal'
       ? {
           '&:not(:first-of-type)': {
             marginLeft: -1,
@@ -69,13 +61,13 @@ const ToggleButtonGroupRoot = experimentalStyled(
             borderTopRightRadius: 0,
             borderBottomRightRadius: 0,
           },
-          [`&.${toggleButtonGroupClasses.selected} + .${toggleButtonGroupClasses.grouped}.${toggleButtonGroupClasses.selected}`]: {
-            borderLeft: 0,
-            marginLeft: 0,
-          },
+          [`&.${toggleButtonGroupClasses.selected} + .${toggleButtonGroupClasses.grouped}.${toggleButtonGroupClasses.selected}`]:
+            {
+              borderLeft: 0,
+              marginLeft: 0,
+            },
         }
       : {
-          /* Styles applied to the children if `orientation="vertical"`. */
           '&:not(:first-of-type)': {
             marginTop: -1,
             borderTop: '1px solid transparent',
@@ -86,10 +78,11 @@ const ToggleButtonGroupRoot = experimentalStyled(
             borderBottomLeftRadius: 0,
             borderBottomRightRadius: 0,
           },
-          [`&.${toggleButtonGroupClasses.selected} + .${toggleButtonGroupClasses.grouped}.${toggleButtonGroupClasses.selected}`]: {
-            borderTop: 0,
-            marginTop: 0,
-          },
+          [`&.${toggleButtonGroupClasses.selected} + .${toggleButtonGroupClasses.grouped}.${toggleButtonGroupClasses.selected}`]:
+            {
+              borderTop: 0,
+              marginTop: 0,
+            },
         }),
   },
 }));
@@ -100,6 +93,7 @@ const ToggleButtonGroup = React.forwardRef(function ToggleButtonGroup(inProps, r
     children,
     className,
     color = 'standard',
+    disabled = false,
     exclusive = false,
     fullWidth = false,
     onChange,
@@ -108,8 +102,8 @@ const ToggleButtonGroup = React.forwardRef(function ToggleButtonGroup(inProps, r
     value,
     ...other
   } = props;
-  const styleProps = { ...props, fullWidth, orientation, size };
-  const classes = useUtilityClasses(styleProps);
+  const ownerState = { ...props, disabled, fullWidth, orientation, size };
+  const classes = useUtilityClasses(ownerState);
 
   const handleChange = (event, buttonValue) => {
     if (!onChange) {
@@ -142,7 +136,7 @@ const ToggleButtonGroup = React.forwardRef(function ToggleButtonGroup(inProps, r
       role="group"
       className={clsx(classes.root, className)}
       ref={ref}
-      styleProps={styleProps}
+      ownerState={ownerState}
       {...other}
     >
       {React.Children.map(children, (child) => {
@@ -171,6 +165,7 @@ const ToggleButtonGroup = React.forwardRef(function ToggleButtonGroup(inProps, r
           size: child.props.size || size,
           fullWidth,
           color: child.props.color || color,
+          disabled: child.props.disabled || disabled,
         });
       })}
     </ToggleButtonGroupRoot>
@@ -198,7 +193,15 @@ ToggleButtonGroup.propTypes /* remove-proptypes */ = {
    * The color of a button when it is selected.
    * @default 'standard'
    */
-  color: PropTypes.oneOf(['primary', 'secondary', 'standard']),
+  color: PropTypes /* @typescript-to-proptypes-ignore */.oneOfType([
+    PropTypes.oneOf(['standard', 'primary', 'secondary', 'error', 'info', 'success', 'warning']),
+    PropTypes.string,
+  ]),
+  /**
+   * If `true`, the component is disabled. This implies that all ToggleButton children will be disabled.
+   * @default false
+   */
+  disabled: PropTypes.bool,
   /**
    * If `true`, only allow one of the child ToggleButton values to be selected.
    * @default false
@@ -212,7 +215,7 @@ ToggleButtonGroup.propTypes /* remove-proptypes */ = {
   /**
    * Callback fired when the value changes.
    *
-   * @param {object} event The event source of the callback.
+   * @param {React.MouseEvent<HTMLElement>} event The event source of the callback.
    * @param {any} value of the selected buttons. When `exclusive` is true
    * this is a single value; when false an array of selected values. If no value
    * is selected and `exclusive` is true the value is null; when false an empty array.
@@ -228,7 +231,7 @@ ToggleButtonGroup.propTypes /* remove-proptypes */ = {
    * @default 'medium'
    */
   size: PropTypes /* @typescript-to-proptypes-ignore */.oneOfType([
-    PropTypes.oneOf(['large', 'medium', 'small']),
+    PropTypes.oneOf(['small', 'medium', 'large']),
     PropTypes.string,
   ]),
   /**

@@ -1,6 +1,6 @@
 {
-  "name": "@material-ui/core",
-  "version": "5.0.0-alpha.32",
+  "name": "@mui/material",
+  "version": "5.0.0-rc.0",
   "private": false,
   "author": "Material-UI Team",
   "description": "Quickly build beautiful React apps. Material-UI is a simple and customizable component library to build faster, beautiful, and more accessible React applications. Follow your own design system, or start with Material Design.",
@@ -41,11 +41,11 @@
     "typescript:module-augmentation": "node scripts/testModuleAugmentation.js"
   },
   "peerDependencies": {
-    "@emotion/react": "^11.0.0",
-    "@emotion/styled": "^11.0.0",
+    "@emotion/react": "^11.4.1",
+    "@emotion/styled": "^11.3.0",
     "@types/react": "^16.8.6 || ^17.0.0",
-    "react": "^17.0.0",
-    "react-dom": "^17.0.0"
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2"
   },
   "peerDependenciesMeta": {
     "@types/react": {
@@ -59,21 +59,18 @@
     }
   },
   "dependencies": {
-    "@babel/runtime": "^7.4.4",
-    "@material-ui/styled-engine": "5.0.0-alpha.26",
-    "@material-ui/styles": "5.0.0-alpha.32",
-    "@material-ui/system": "5.0.0-alpha.31",
-    "@material-ui/private-theming": "5.0.0-alpha.32",
-    "@material-ui/types": "6.0.0",
-    "@material-ui/unstyled": "5.0.0-alpha.32",
-    "@material-ui/utils": "5.0.0-alpha.31",
+    "@babel/runtime": "^7.14.8",
+    "@mui/core": "5.0.0-alpha.45",
+    "@mui/system": "5.0.0-rc.0",
+    "@mui/types": "7.0.0-rc.0",
+    "@mui/utils": "5.0.0-rc.0",
     "@popperjs/core": "^2.4.4",
     "@types/react-transition-group": "^4.2.0",
-    "clsx": "^1.0.4",
-    "csstype": "^3.0.2",
+    "clsx": "^1.1.1",
+    "csstype": "^3.0.8",
     "hoist-non-react-statics": "^3.3.2",
     "prop-types": "^15.7.2",
-    "react-is": "^17.0.0",
+    "react-is": "^17.0.2",
     "react-transition-group": "^4.4.0"
   },
   "sideEffects": false,

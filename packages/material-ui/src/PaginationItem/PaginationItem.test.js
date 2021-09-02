@@ -1,17 +1,15 @@
 import * as React from 'react';
 import { expect } from 'chai';
-import { createMount, createClientRender, describeConformanceV5 } from 'test/utils';
-import PaginationItem, { paginationItemClasses as classes } from '@material-ui/core/PaginationItem';
+import { createClientRender, describeConformance } from 'test/utils';
+import PaginationItem, { paginationItemClasses as classes } from '@mui/material/PaginationItem';
 
 describe('<PaginationItem />', () => {
   const render = createClientRender();
-  const mount = createMount();
 
-  describeConformanceV5(<PaginationItem />, () => ({
+  describeConformance(<PaginationItem />, () => ({
     classes,
     inheritComponent: 'button',
     render,
-    mount,
     muiName: 'MuiPaginationItem',
     refInstanceof: window.HTMLButtonElement,
     testVariantProps: { variant: 'foo' },

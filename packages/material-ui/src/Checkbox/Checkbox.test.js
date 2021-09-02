@@ -1,20 +1,18 @@
 import * as React from 'react';
 import { expect } from 'chai';
 import { spy } from 'sinon';
-import { createMount, describeConformanceV5, act, createClientRender } from 'test/utils';
-import Checkbox, { checkboxClasses as classes } from '@material-ui/core/Checkbox';
-import FormControl from '@material-ui/core/FormControl';
-import IconButton from '@material-ui/core/IconButton';
+import { describeConformance, act, createClientRender } from 'test/utils';
+import Checkbox, { checkboxClasses as classes } from '@mui/material/Checkbox';
+import FormControl from '@mui/material/FormControl';
+import ButtonBase from '@mui/material/ButtonBase';
 
 describe('<Checkbox />', () => {
   const render = createClientRender();
-  const mount = createMount();
 
-  describeConformanceV5(<Checkbox checked />, () => ({
+  describeConformance(<Checkbox checked />, () => ({
     classes,
-    inheritComponent: IconButton,
+    inheritComponent: ButtonBase,
     render,
-    mount,
     muiName: 'MuiCheckbox',
     testVariantProps: { variant: 'foo' },
     testStateOverrides: { prop: 'color', value: 'secondary', styleKey: 'colorSecondary' },

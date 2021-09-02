@@ -1,6 +1,6 @@
 ---
 title: Text Field React component
-components: FilledInput, FormControl, FormHelperText, Input, InputAdornment, InputBase, InputLabel, OutlinedInput, TextField
+components: FilledInput, FormControl, FormControlUnstyled, FormHelperText, Input, InputAdornment, InputBase, InputLabel, OutlinedInput, TextField
 githubLabel: 'component: TextField'
 materialDesign: https://material.io/components/text-fields
 ---
@@ -16,8 +16,7 @@ Text fields allow users to enter text into a UI. They typically appear in forms 
 ## Basic TextField
 
 The `TextField` wrapper component is a complete form control including a label, input, and help text.
-
-It supports standard, outlined, and filled styling.
+It comes with three variants: outlined (default), filled, and standard.
 
 {{"demo": "pages/components/text-fields/BasicTextFields.js"}}
 
@@ -76,15 +75,18 @@ The `filled` variant input height can be further reduced by rendering the label 
 
 {{"demo": "pages/components/text-fields/TextFieldHiddenLabel.js"}}
 
-## Layout
+## Margin
 
-`margin` prop can be used to alter the vertical spacing of inputs.
-Using `none` (default) will not apply margins to the `FormControl`, whereas `dense` and `normal` will.
-`dense` and `normal` alter other styles to meet the specification.
+The `margin` prop can be used to alter the vertical spacing of the text field.
+Using `none` (default) doesn't apply margins to the `FormControl` whereas `dense` and `normal` do.
+
+{{"demo": "pages/components/text-fields/LayoutTextFields.js"}}
+
+## Full width
 
 `fullWidth` can be used to make the input take up the full width of its container.
 
-{{"demo": "pages/components/text-fields/LayoutTextFields.js"}}
+{{"demo": "pages/components/text-fields/FullWidthTextField.js"}}
 
 ## Uncontrolled vs. Controlled
 
@@ -120,10 +122,10 @@ The `color` prop changes the highlight color of the text field when focused.
 
 {{"demo": "pages/components/text-fields/ColorTextFields.js"}}
 
-## Customized inputs
+## Customization
 
-Here are some examples of customizing the component. You can learn more about this in the
-[overrides documentation page](/customization/how-to-customize/).
+Here are some examples of customizing the component.
+You can learn more about this in the [overrides documentation page](/customization/how-to-customize/).
 
 {{"demo": "pages/components/text-fields/CustomizedInputs.js"}}
 
@@ -134,6 +136,42 @@ Below is an example using the [`InputBase`](/api/input-base/) component, inspire
 {{"demo": "pages/components/text-fields/CustomizedInputBase.js", "bg": true}}
 
 🎨 If you are looking for inspiration, you can check [MUI Treasury's customization examples](https://mui-treasury.com/styles/text-field).
+
+## `useFormControl`
+
+For advanced customization use cases, a `useFormControl()` hook is exposed.
+This hook returns the context value of the parent `FormControl` component.
+
+**API**
+
+```jsx
+import { useFormControl } from '@mui/material/FormControl';
+```
+
+**Returns**
+
+`value` (_object_):
+
+- `value.adornedStart` (_bool_): Indicate whether the child `Input` or `Select` component has a start adornment.
+- `value.setAdornedStart` (_func_): Setter function for `adornedStart` state value.
+- `value.color` (_string_): The theme color is being used, inherited from `FormControl` `color` prop .
+- `value.disabled` (_bool_): Indicate whether the component is being displayed in a disabled state, inherited from `FormControl` `disabled` prop.
+- `value.error` (_bool_): Indicate whether the component is being displayed in an error state, inherited from `FormControl` `error` prop
+- `value.filled` (_bool_): Indicate whether input is filled
+- `value.focused` (_bool_): Indicate whether the component and its children are being displayed in a focused state
+- `value.fullWidth` (_bool_): Indicate whether the component is taking up the full width of its container, inherited from `FormControl` `fullWidth` prop
+- `value.hiddenLabel` (_bool_): Indicate whether the label is being hidden, inherited from `FormControl` `hiddenLabel` prop
+- `value.required` (_bool_): Indicate whether the label is indicating that the input is required input, inherited from the `FormControl` `required` prop
+- `value.size` (_string_): The size of the component, inherited from the `FormControl` `size` prop
+- `value.variant` (_string_): The variant is being used by the `FormControl` component and its children, inherited from `FormControl` `variant` prop
+- `value.onBlur` (_func_): Should be called when the input is blurred
+- `value.onFocus` (_func_): Should be called when the input is focused
+- `value.onEmpty` (_func_): Should be called when the input is emptied
+- `value.onFilled` (_func_): Should be called when the input is filled
+
+**Example**
+
+{{"demo": "pages/components/text-fields/UseFormControl.js"}}
 
 ## Limitations
 
@@ -195,7 +233,7 @@ This can be fixed by passing a space character to the `helperText` prop:
 You can use third-party libraries to format an input.
 You have to provide a custom implementation of the `<input>` element with the `inputComponent` property.
 
-The following demo uses the [react-text-mask](https://github.com/text-mask/text-mask) and [react-number-format](https://github.com/s-yadav/react-number-format) libraries. The same concept could be applied to [e.g. react-stripe-element](https://github.com/mui-org/material-ui/issues/16037).
+The following demo uses the [react-imask](https://github.com/uNmAnNeR/imaskjs) and [react-number-format](https://github.com/s-yadav/react-number-format) libraries. The same concept could be applied to [e.g. react-stripe-element](https://github.com/mui-org/material-ui/issues/16037).
 
 {{"demo": "pages/components/text-fields/FormattedInputs.js"}}
 

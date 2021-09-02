@@ -1,17 +1,15 @@
 import * as React from 'react';
 import { expect } from 'chai';
-import { createClientRender, createMount, describeConformanceV5 } from 'test/utils';
-import Icon, { iconClasses as classes } from '@material-ui/core/Icon';
+import { createClientRender, describeConformance } from 'test/utils';
+import Icon, { iconClasses as classes } from '@mui/material/Icon';
 
 describe('<Icon />', () => {
   const render = createClientRender();
-  const mount = createMount();
 
-  describeConformanceV5(<Icon>account_circle</Icon>, () => ({
+  describeConformance(<Icon>account_circle</Icon>, () => ({
     classes,
     inheritComponent: 'span',
     render,
-    mount,
     muiName: 'MuiIcon',
     refInstanceof: window.HTMLSpanElement,
     testComponentPropWith: 'div',

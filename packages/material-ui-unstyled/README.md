@@ -1,4 +1,4 @@
-# @material-ui/unstyled
+# @mui/core
 
 This package hosts unstyled React components that can be used for creating custom design systems.
 
@@ -8,12 +8,14 @@ Install the package in your project directory with:
 
 ```sh
 // with npm
-npm install @material-ui/unstyled@next
+npm install @mui/core@next
 
 // with yarn
-yarn add @material-ui/unstyled@next
+yarn add @mui/core@next
 ```
 
 ## Documentation
 
-[The documentation](https://material-ui.com/)
+<!-- #default-branch-switch -->
+
+[The documentation](https://next.material-ui.com/customization/unstyled-components/)

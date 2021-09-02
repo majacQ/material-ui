@@ -1,18 +1,16 @@
 import * as React from 'react';
 import { expect } from 'chai';
-import { createMount, createClientRender, describeConformanceV5 } from 'test/utils';
-import { typographyClasses } from '@material-ui/core/Typography';
-import CardHeader, { cardHeaderClasses as classes } from '@material-ui/core/CardHeader';
+import { createClientRender, describeConformance } from 'test/utils';
+import { typographyClasses } from '@mui/material/Typography';
+import CardHeader, { cardHeaderClasses as classes } from '@mui/material/CardHeader';
 
 describe('<CardHeader />', () => {
   const render = createClientRender();
-  const mount = createMount();
 
-  describeConformanceV5(<CardHeader />, () => ({
+  describeConformance(<CardHeader />, () => ({
     classes,
     inheritComponent: 'div',
     render,
-    mount,
     muiName: 'MuiCardHeader',
     refInstanceof: window.HTMLDivElement,
     testDeepOverrides: { slotName: 'content', slotClassName: classes.content },

@@ -2,16 +2,16 @@
 import * as React from 'react';
 import PropTypes from 'prop-types';
 import clsx from 'clsx';
-import { unstable_composeClasses as composeClasses } from '@material-ui/unstyled';
+import { unstable_composeClasses as composeClasses } from '@mui/core';
 import { alpha } from '../styles';
 import ButtonBase from '../ButtonBase';
 import capitalize from '../utils/capitalize';
 import useThemeProps from '../styles/useThemeProps';
-import experimentalStyled from '../styles/experimentalStyled';
+import styled from '../styles/styled';
 import toggleButtonClasses, { getToggleButtonUtilityClass } from './toggleButtonClasses';
 
-const useUtilityClasses = (styleProps) => {
-  const { classes, fullWidth, selected, disabled, size, color } = styleProps;
+const useUtilityClasses = (ownerState) => {
+  const { classes, fullWidth, selected, disabled, size, color } = ownerState;
 
   const slots = {
     root: [
@@ -22,116 +22,68 @@ const useUtilityClasses = (styleProps) => {
       `size${capitalize(size)}`,
       color,
     ],
-    label: ['label'],
   };
 
   return composeClasses(slots, getToggleButtonUtilityClass, classes);
 };
 
-const ToggleButtonRoot = experimentalStyled(
-  ButtonBase,
-  {},
-  {
-    name: 'MuiToggleButton',
-    slot: 'Root',
-    overridesResolver: (props, styles) => {
-      const { styleProps } = props;
+const ToggleButtonRoot = styled(ButtonBase, {
+  name: 'MuiToggleButton',
+  slot: 'Root',
+  overridesResolver: (props, styles) => {
+    const { ownerState } = props;
 
-      return {
-        ...styles.root,
-        ...styles[`size${capitalize(styleProps.size)}`],
-      };
+    return [styles.root, styles[`size${capitalize(ownerState.size)}`]];
+  },
+})(({ theme, ownerState }) => {
+  const selectedColor =
+    ownerState.color === 'standard'
+      ? theme.palette.text.primary
+      : theme.palette[ownerState.color].main;
+  return {
+    ...theme.typography.button,
+    borderRadius: theme.shape.borderRadius,
+    padding: 11,
+    border: `1px solid ${theme.palette.divider}`,
+    color: theme.palette.action.active,
+    ...(ownerState.fullWidth && {
+      width: '100%',
+    }),
+    [`&.${toggleButtonClasses.disabled}`]: {
+      color: theme.palette.action.disabled,
+      border: `1px solid ${theme.palette.action.disabledBackground}`,
     },
-  },
-)(({ theme, styleProps }) => ({
-  /* Styles applied to the root element. */
-  ...theme.typography.button,
-  borderRadius: theme.shape.borderRadius,
-  padding: 11,
-  border: `1px solid ${theme.palette.divider}`,
-  color: theme.palette.action.active,
-  /* Styles applied to the root element if `fullWidth={true}`. */
-  ...(styleProps.fullWidth && {
-    width: '100%',
-  }),
-  [`&.${toggleButtonClasses.disabled}`]: {
-    color: theme.palette.action.disabled,
-    border: `1px solid ${theme.palette.action.disabledBackground}`,
-  },
-  '&:hover': {
-    textDecoration: 'none',
-    // Reset on mouse devices
-    backgroundColor: alpha(theme.palette.text.primary, theme.palette.action.hoverOpacity),
-    '@media (hover: none)': {
-      backgroundColor: 'transparent',
+    '&:hover': {
+      textDecoration: 'none',
+      // Reset on mouse devices
+      backgroundColor: alpha(theme.palette.text.primary, theme.palette.action.hoverOpacity),
+      '@media (hover: none)': {
+        backgroundColor: 'transparent',
+      },
     },
-  },
-  /* Styles applied to the root element if `color="standard"`. */
-  ...(styleProps.color === 'standard' && {
     [`&.${toggleButtonClasses.selected}`]: {
-      color: theme.palette.text.primary,
-      backgroundColor: alpha(theme.palette.text.primary, theme.palette.action.selectedOpacity),
+      color: selectedColor,
+      backgroundColor: alpha(selectedColor, theme.palette.action.selectedOpacity),
       '&:hover': {
         backgroundColor: alpha(
-          theme.palette.text.primary,
+          selectedColor,
           theme.palette.action.selectedOpacity + theme.palette.action.hoverOpacity,
         ),
         // Reset on touch devices, it doesn't add specificity
         '@media (hover: none)': {
-          backgroundColor: alpha(theme.palette.text.primary, theme.palette.action.selectedOpacity),
+          backgroundColor: alpha(selectedColor, theme.palette.action.selectedOpacity),
         },
       },
     },
-  }),
-  /* Styles applied to the root element if `color!="standard"`. */
-  ...(styleProps.color !== 'standard' && {
-    [`&.${toggleButtonClasses.selected}`]: {
-      color: theme.palette[styleProps.color].main,
-      backgroundColor: alpha(
-        theme.palette[styleProps.color].main,
-        theme.palette.action.selectedOpacity,
-      ),
-      '&:hover': {
-        backgroundColor: alpha(
-          theme.palette[styleProps.color].main,
-          theme.palette.action.selectedOpacity + theme.palette.action.hoverOpacity,
-        ),
-        // Reset on touch devices, it doesn't add specificity
-        '@media (hover: none)': {
-          backgroundColor: alpha(
-            theme.palette[styleProps.color].main,
-            theme.palette.action.selectedOpacity,
-          ),
-        },
-      },
-    },
-  }),
-  /* Styles applied to the root element if `size="small"`. */
-  ...(styleProps.size === 'small' && {
-    padding: 7,
-    fontSize: theme.typography.pxToRem(13),
-  }),
-  /* Styles applied to the root element if `size="large"`. */
-  ...(styleProps.size === 'large' && {
-    padding: 15,
-    fontSize: theme.typography.pxToRem(15),
-  }),
-}));
-
-const ToggleButtonLabel = experimentalStyled(
-  'span',
-  {},
-  {
-    name: 'MuiToggleButton',
-    slot: 'Label',
-    overridesResolver: (props, styles) => styles.label,
-  },
-)({
-  /* Styles applied to the label wrapper element. */
-  width: '100%', // Ensure the correct width for iOS Safari
-  display: 'inherit',
-  alignItems: 'inherit',
-  justifyContent: 'inherit',
+    ...(ownerState.size === 'small' && {
+      padding: 7,
+      fontSize: theme.typography.pxToRem(13),
+    }),
+    ...(ownerState.size === 'large' && {
+      padding: 15,
+      fontSize: theme.typography.pxToRem(15),
+    }),
+  };
 });
 
 const ToggleButton = React.forwardRef(function ToggleButton(inProps, ref) {
@@ -151,7 +103,7 @@ const ToggleButton = React.forwardRef(function ToggleButton(inProps, ref) {
     ...other
   } = props;
 
-  const styleProps = {
+  const ownerState = {
     ...props,
     color,
     disabled,
@@ -160,7 +112,7 @@ const ToggleButton = React.forwardRef(function ToggleButton(inProps, ref) {
     size,
   };
 
-  const classes = useUtilityClasses(styleProps);
+  const classes = useUtilityClasses(ownerState);
 
   const handleChange = (event) => {
     if (onClick) {
@@ -178,20 +130,17 @@ const ToggleButton = React.forwardRef(function ToggleButton(inProps, ref) {
   return (
     <ToggleButtonRoot
       className={clsx(classes.root, className)}
-      color={color}
       disabled={disabled}
       focusRipple={!disableFocusRipple}
       ref={ref}
       onClick={handleChange}
       onChange={onChange}
       value={value}
-      styleProps={styleProps}
+      ownerState={ownerState}
       aria-pressed={selected}
       {...other}
     >
-      <ToggleButtonLabel className={classes.label} styleProps={styleProps}>
-        {children}
-      </ToggleButtonLabel>
+      {children}
     </ToggleButtonRoot>
   );
 });
@@ -218,7 +167,7 @@ ToggleButton.propTypes /* remove-proptypes */ = {
    * @default 'standard'
    */
   color: PropTypes /* @typescript-to-proptypes-ignore */.oneOfType([
-    PropTypes.oneOf(['standard', 'primary', 'secondary']),
+    PropTypes.oneOf(['standard', 'primary', 'secondary', 'error', 'info', 'success', 'warning']),
     PropTypes.string,
   ]),
   /**
@@ -235,7 +184,7 @@ ToggleButton.propTypes /* remove-proptypes */ = {
    * If `true`, the ripple effect is disabled.
    *
    * ⚠️ Without a ripple there is no styling for :focus-visible by default. Be sure
-   * to highlight the element by applying separate styles with the `.Mui-focusedVisible` class.
+   * to highlight the element by applying separate styles with the `.Mui-focusVisible` class.
    * @default false
    */
   disableRipple: PropTypes.bool,
@@ -262,7 +211,7 @@ ToggleButton.propTypes /* remove-proptypes */ = {
    * @default 'medium'
    */
   size: PropTypes /* @typescript-to-proptypes-ignore */.oneOfType([
-    PropTypes.oneOf(['large', 'medium', 'small']),
+    PropTypes.oneOf(['small', 'medium', 'large']),
     PropTypes.string,
   ]),
   /**

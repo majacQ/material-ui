@@ -1,17 +1,15 @@
 import * as React from 'react';
 import { expect } from 'chai';
-import { createMount, describeConformanceV5, createClientRender } from 'test/utils';
-import ListSubheader, { listSubheaderClasses as classes } from '@material-ui/core/ListSubheader';
+import { describeConformance, createClientRender } from 'test/utils';
+import ListSubheader, { listSubheaderClasses as classes } from '@mui/material/ListSubheader';
 
 describe('<ListSubheader />', () => {
   const render = createClientRender();
-  const mount = createMount();
 
-  describeConformanceV5(<ListSubheader />, () => ({
+  describeConformance(<ListSubheader />, () => ({
     classes,
     inheritComponent: 'li',
     render,
-    mount,
     muiName: 'MuiListSubheader',
     refInstanceof: window.HTMLLIElement,
     testVariantProps: { disableGutters: true },

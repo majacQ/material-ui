@@ -112,11 +112,11 @@ A floating action buttons appears on scroll to make it easy to get back to the t
 
 #### Arguments
 
-1. `options` (_Object_ [optional]):
+1. `options` (_object_ [optional]):
 
-   - `options.disableHysteresis` (_Boolean_ [optional]): Defaults to `false`. Disable the hysteresis. Ignore the scroll direction when determining the `trigger` value.
+   - `options.disableHysteresis` (_bool_ [optional]): Defaults to `false`. Disable the hysteresis. Ignore the scroll direction when determining the `trigger` value.
    - `options.target` (_Node_ [optional]): Defaults to `window`.
-   - `options.threshold` (_Number_ [optional]): Defaults to `100`. Change the `trigger` value when the vertical scroll strictly crosses this threshold (exclusive).
+   - `options.threshold` (_number_ [optional]): Defaults to `100`. Change the `trigger` value when the vertical scroll strictly crosses this threshold (exclusive).
 
 #### Returns
 
@@ -125,7 +125,7 @@ A floating action buttons appears on scroll to make it easy to get back to the t
 #### Examples
 
 ```jsx
-import useScrollTrigger from '@material-ui/core/useScrollTrigger';
+import useScrollTrigger from '@mui/material/useScrollTrigger';
 
 function HideOnScroll(props) {
   const trigger = useScrollTrigger();
@@ -135,4 +135,29 @@ function HideOnScroll(props) {
     </Slide>
   );
 }
+```
+
+## Enable Color on Dark
+
+Following the [Material Design guidelines](https://material.io/design/color/dark-theme.html), the `color` prop has no effect on the appearance of the AppBar in dark mode.
+You can override this behavior by setting the `enableColorOnDark` prop to `true`.
+
+```jsx
+// Specific element via prop
+<AppBar enableColorOnDark />
+
+// Affect all AppBars via theme
+<ThemeProvider
+  theme={createTheme({
+    components: {
+      MuiAppBar: {
+        defaultProps: {
+          enableColorOnDark: true,
+        },
+      },
+    },
+  })}
+>
+  <AppBar />
+</ThemeProvider>
 ```

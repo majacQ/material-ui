@@ -1,15 +1,15 @@
 import * as React from 'react';
 import PropTypes from 'prop-types';
 import clsx from 'clsx';
-import { unstable_composeClasses as composeClasses } from '@material-ui/unstyled';
-import experimentalStyled from '../styles/experimentalStyled';
+import { unstable_composeClasses as composeClasses } from '@mui/core';
+import { emphasize } from '@mui/system';
+import styled from '../styles/styled';
 import useThemeProps from '../styles/useThemeProps';
-import { emphasize } from '../styles/colorManipulator';
 import Paper from '../Paper';
 import { getSnackbarContentUtilityClass } from './snackbarContentClasses';
 
-const useUtilityClasses = (styleProps) => {
-  const { classes } = styleProps;
+const useUtilityClasses = (ownerState) => {
+  const { classes } = ownerState;
 
   const slots = {
     root: ['root'],
@@ -20,15 +20,11 @@ const useUtilityClasses = (styleProps) => {
   return composeClasses(slots, getSnackbarContentUtilityClass, classes);
 };
 
-const SnackbarContentRoot = experimentalStyled(
-  Paper,
-  {},
-  {
-    name: 'MuiSnackbarContent',
-    slot: 'Root',
-    overridesResolver: (props, styles) => styles.root,
-  },
-)(({ theme }) => {
+const SnackbarContentRoot = styled(Paper, {
+  name: 'MuiSnackbarContent',
+  slot: 'Root',
+  overridesResolver: (props, styles) => styles.root,
+})(({ theme }) => {
   const emphasis = theme.palette.mode === 'light' ? 0.8 : 0.98;
   const backgroundColor = emphasize(theme.palette.background.default, emphasis);
 
@@ -49,27 +45,19 @@ const SnackbarContentRoot = experimentalStyled(
   };
 });
 
-const SnackbarContentMessage = experimentalStyled(
-  'div',
-  {},
-  {
-    name: 'MuiSnackbarContent',
-    slot: 'Message',
-    overridesResolver: (props, styles) => styles.message,
-  },
-)({
+const SnackbarContentMessage = styled('div', {
+  name: 'MuiSnackbarContent',
+  slot: 'Message',
+  overridesResolver: (props, styles) => styles.message,
+})({
   padding: '8px 0',
 });
 
-const SnackbarContentAction = experimentalStyled(
-  'div',
-  {},
-  {
-    name: 'MuiSnackbarContent',
-    slot: 'Action',
-    overridesResolver: (props, styles) => styles.action,
-  },
-)({
+const SnackbarContentAction = styled('div', {
+  name: 'MuiSnackbarContent',
+  slot: 'Action',
+  overridesResolver: (props, styles) => styles.action,
+})({
   display: 'flex',
   alignItems: 'center',
   marginLeft: 'auto',
@@ -80,9 +68,8 @@ const SnackbarContentAction = experimentalStyled(
 const SnackbarContent = React.forwardRef(function SnackbarContent(inProps, ref) {
   const props = useThemeProps({ props: inProps, name: 'MuiSnackbarContent' });
   const { action, className, message, role = 'alert', ...other } = props;
-  // TODO: convert to simple assignment after the type error in defaultPropsHandler.js:60:6 is fixed
-  const styleProps = { ...props };
-  const classes = useUtilityClasses(styleProps);
+  const ownerState = props;
+  const classes = useUtilityClasses(ownerState);
 
   return (
     <SnackbarContentRoot
@@ -90,15 +77,15 @@ const SnackbarContent = React.forwardRef(function SnackbarContent(inProps, ref) 
       square
       elevation={6}
       className={clsx(classes.root, className)}
-      styleProps={styleProps}
+      ownerState={ownerState}
       ref={ref}
       {...other}
     >
-      <SnackbarContentMessage className={classes.message} styleProps={styleProps}>
+      <SnackbarContentMessage className={classes.message} ownerState={ownerState}>
         {message}
       </SnackbarContentMessage>
       {action ? (
-        <SnackbarContentAction className={classes.action} styleProps={styleProps}>
+        <SnackbarContentAction className={classes.action} ownerState={ownerState}>
           {action}
         </SnackbarContentAction>
       ) : null}
@@ -131,7 +118,7 @@ SnackbarContent.propTypes /* remove-proptypes */ = {
    * The ARIA role attribute of the element.
    * @default 'alert'
    */
-  role: PropTypes.string,
+  role: PropTypes /* @typescript-to-proptypes-ignore */.string,
   /**
    * The system prop that allows defining system overrides as well as additional CSS styles.
    */

@@ -2,7 +2,9 @@ const { expect } = require('chai');
 const { execFileSync } = require('child_process');
 const path = require('path');
 
-describe('@material-ui/envinfo', () => {
+const isRunningOnWindows = process.platform === 'win32';
+
+describe('@mui/envinfo', () => {
   const packagePath = __dirname;
   before(function beforeHook() {
     // only run in node
@@ -12,15 +14,22 @@ describe('@material-ui/envinfo', () => {
 
     // Building might take some time
     this.timeout(10000);
-    execFileSync('yarn', ['build'], { cwd: packagePath, stdio: 'pipe' });
+    execFileSync(isRunningOnWindows ? 'yarn.cmd' : 'yarn', ['build'], {
+      cwd: packagePath,
+      stdio: 'pipe',
+    });
   });
 
   function execEnvinfo(args) {
     const buildPath = path.resolve(packagePath, 'build');
-    return execFileSync('npx', ['--package', buildPath, 'envinfo', ...args], {
-      encoding: 'utf-8',
-      stdio: 'pipe',
-    });
+    return execFileSync(
+      isRunningOnWindows ? 'npx.cmd' : 'npx',
+      ['--package', buildPath, 'envinfo', ...args],
+      {
+        encoding: 'utf-8',
+        stdio: 'pipe',
+      },
+    );
   }
 
   it('includes info about the environment relevant to Material-UI', function test() {
@@ -41,9 +50,9 @@ describe('@material-ui/envinfo', () => {
     expect(envinfo).to.have.nested.property('Browsers');
     expect(envinfo).to.have.nested.property('npmPackages.@emotion/react');
     expect(envinfo).to.have.nested.property('npmPackages.@emotion/styled');
-    // Non-exhaustive list of `@material-ui/*` packages
-    expect(envinfo).to.have.nested.property('npmPackages.@material-ui/core');
-    expect(envinfo).to.have.nested.property('npmPackages.@material-ui/lab');
+    // Non-exhaustive list of `@mui/*` packages
+    expect(envinfo).to.have.nested.property('npmPackages.@mui/material');
+    expect(envinfo).to.have.nested.property('npmPackages.@mui/lab');
     expect(envinfo).to.have.nested.property('npmPackages.react');
     expect(envinfo).to.have.nested.property('npmPackages.react-dom');
     expect(envinfo).to.have.nested.property('npmPackages.styled-components');

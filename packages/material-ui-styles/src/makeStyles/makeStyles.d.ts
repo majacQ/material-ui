@@ -1,10 +1,10 @@
-import { ClassNameMap, Styles, WithStylesOptions } from '@material-ui/styles/withStyles';
+import { ClassNameMap, Styles, WithStylesOptions } from '@mui/styles/withStyles';
 import { DefaultTheme } from '../defaultTheme';
 
 export default function makeStyles<
   Theme = DefaultTheme,
   Props extends object = {},
-  ClassKey extends string = string
+  ClassKey extends string = string,
 >(
   styles: Styles<Theme, Props, ClassKey>,
   options?: Omit<WithStylesOptions<Theme>, 'withTheme'>,

@@ -1,22 +1,18 @@
 import * as React from 'react';
 import { expect } from 'chai';
-import { createClientRender, createMount, describeConformanceV5 } from 'test/utils';
-import Typography from '@material-ui/core/Typography';
-import Timeline from '@material-ui/lab/Timeline';
-import TimelineItem from '@material-ui/lab/TimelineItem';
-import TimelineContent, {
-  timelineContentClasses as classes,
-} from '@material-ui/lab/TimelineContent';
+import { createClientRender, describeConformance } from 'test/utils';
+import Typography from '@mui/material/Typography';
+import Timeline from '@mui/lab/Timeline';
+import TimelineItem from '@mui/lab/TimelineItem';
+import TimelineContent, { timelineContentClasses as classes } from '@mui/lab/TimelineContent';
 
 describe('<TimelineContent />', () => {
   const render = createClientRender();
-  const mount = createMount();
 
-  describeConformanceV5(<TimelineContent />, () => ({
+  describeConformance(<TimelineContent />, () => ({
     classes,
     inheritComponent: Typography,
     render,
-    mount,
     muiName: 'MuiTimelineContent',
     refInstanceof: window.HTMLDivElement,
     skip: ['componentProp', 'componentsProp', 'themeVariants'],

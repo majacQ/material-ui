@@ -1,4 +1,4 @@
-import { compose, spacing, style, breakpoints } from '@material-ui/system';
+import { compose, spacing, style, breakpoints } from '@mui/system';
 import * as React from 'react';
 import styled from 'styled-components';
 
@@ -17,10 +17,13 @@ function composeTest() {
   // @ts-expect-error missing `color`
   styler({ spacing: 1 });
   styler({ color: 'test', spacing: 1 });
+
+  // filterProps should exist
+  styler.filterProps;
 }
 
 /**
- * Testing inference of TypeScript + styled-components + @material-ui/system
+ * Testing inference of TypeScript + styled-components + @mui/system
  */
 function interopTest() {
   const mixin = style({ prop: 'color' });

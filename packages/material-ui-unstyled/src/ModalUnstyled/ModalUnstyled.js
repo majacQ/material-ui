@@ -8,7 +8,7 @@ import {
   unstable_useForkRef as useForkRef,
   unstable_createChainedFunction as createChainedFunction,
   unstable_useEventCallback as useEventCallback,
-} from '@material-ui/utils';
+} from '@mui/utils';
 import composeClasses from '../composeClasses';
 import isHostComponent from '../utils/isHostComponent';
 import Portal from '../Portal';
@@ -16,8 +16,8 @@ import ModalManager, { ariaHidden } from './ModalManager';
 import TrapFocus from '../Unstable_TrapFocus';
 import { getModalUtilityClass } from './modalUnstyledClasses';
 
-const useUtilityClasses = (styleProps) => {
-  const { open, exited, classes } = styleProps;
+const useUtilityClasses = (ownerState) => {
+  const { open, exited, classes } = ownerState;
 
   const slots = {
     root: ['root', !open && exited && 'hidden'],
@@ -151,7 +151,7 @@ const ModalUnstyled = React.forwardRef(function ModalUnstyled(props, ref) {
     }
   }, [open, handleClose, hasTransition, closeAfterTransition, handleOpen]);
 
-  const styleProps = {
+  const ownerState = {
     ...props,
     classes: classesProp,
     closeAfterTransition,
@@ -166,7 +166,7 @@ const ModalUnstyled = React.forwardRef(function ModalUnstyled(props, ref) {
     keepMounted,
   };
 
-  const classes = useUtilityClasses(styleProps);
+  const classes = useUtilityClasses(ownerState);
 
   if (!keepMounted && !open && (!hasTransition || exited)) {
     return null;
@@ -233,7 +233,7 @@ const ModalUnstyled = React.forwardRef(function ModalUnstyled(props, ref) {
 
   const childProps = {};
   if (children.props.tabIndex === undefined) {
-    childProps.tabIndex = children.props.tabIndex || '-1';
+    childProps.tabIndex = '-1';
   }
 
   // It's a Transition like component
@@ -258,7 +258,7 @@ const ModalUnstyled = React.forwardRef(function ModalUnstyled(props, ref) {
         {...rootProps}
         {...(!isHostComponent(Root) && {
           as: component,
-          styleProps: { ...styleProps, ...rootProps.styleProps },
+          ownerState: { ...ownerState, ...rootProps.ownerState },
           theme,
         })}
         {...other}
@@ -273,7 +273,6 @@ const ModalUnstyled = React.forwardRef(function ModalUnstyled(props, ref) {
           disableEnforceFocus={disableEnforceFocus}
           disableAutoFocus={disableAutoFocus}
           disableRestoreFocus={disableRestoreFocus}
-          getDoc={getDoc}
           isEnabled={isTopModal}
           open={open}
         >

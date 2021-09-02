@@ -1,14 +1,14 @@
 import * as React from 'react';
 import PropTypes from 'prop-types';
 import clsx from 'clsx';
-import { unstable_composeClasses as composeClasses } from '@material-ui/unstyled';
+import { unstable_composeClasses as composeClasses } from '@mui/core';
 import useThemeProps from '../styles/useThemeProps';
-import experimentalStyled from '../styles/experimentalStyled';
+import styled from '../styles/styled';
 import { html, body } from '../CssBaseline/CssBaseline';
 import { getScopedCssBaselineUtilityClass } from './scopedCssBaselineClasses';
 
-const useUtilityClasses = (styleProps) => {
-  const { classes } = styleProps;
+const useUtilityClasses = (ownerState) => {
+  const { classes } = ownerState;
 
   const slots = {
     root: ['root'],
@@ -17,16 +17,11 @@ const useUtilityClasses = (styleProps) => {
   return composeClasses(slots, getScopedCssBaselineUtilityClass, classes);
 };
 
-const ScopedCssBaselineRoot = experimentalStyled(
-  'div',
-  {},
-  {
-    name: 'MuiScopedCssBaseline',
-    slot: 'Root',
-    overridesResolver: (props, styles) => styles.root,
-  },
-)(({ theme }) => ({
-  /* Styles applied to the root element. */
+const ScopedCssBaselineRoot = styled('div', {
+  name: 'MuiScopedCssBaseline',
+  slot: 'Root',
+  overridesResolver: (props, styles) => styles.root,
+})(({ theme }) => ({
   ...html,
   ...body(theme),
   '& *, & *::before, & *::after': {
@@ -41,19 +36,19 @@ const ScopedCssBaseline = React.forwardRef(function ScopedCssBaseline(inProps, r
   const props = useThemeProps({ props: inProps, name: 'MuiScopedCssBaseline' });
   const { className, component = 'div', ...other } = props;
 
-  const styleProps = {
+  const ownerState = {
     ...props,
     component,
   };
 
-  const classes = useUtilityClasses(styleProps);
+  const classes = useUtilityClasses(ownerState);
 
   return (
     <ScopedCssBaselineRoot
       as={component}
       className={clsx(classes.root, className)}
       ref={ref}
-      styleProps={styleProps}
+      ownerState={ownerState}
       {...other}
     />
   );

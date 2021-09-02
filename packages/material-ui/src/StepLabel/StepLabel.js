@@ -1,17 +1,16 @@
 import * as React from 'react';
 import PropTypes from 'prop-types';
 import clsx from 'clsx';
-import { unstable_composeClasses as composeClasses } from '@material-ui/unstyled';
-import experimentalStyled from '../styles/experimentalStyled';
+import { unstable_composeClasses as composeClasses } from '@mui/core';
+import styled from '../styles/styled';
 import useThemeProps from '../styles/useThemeProps';
-import Typography from '../Typography';
 import StepIcon from '../StepIcon';
 import StepperContext from '../Stepper/StepperContext';
 import StepContext from '../Step/StepContext';
 import stepLabelClasses, { getStepLabelUtilityClass } from './stepLabelClasses';
 
-const useUtilityClasses = (styleProps) => {
-  const { classes, orientation, active, completed, error, disabled, alternativeLabel } = styleProps;
+const useUtilityClasses = (ownerState) => {
+  const { classes, orientation, active, completed, error, disabled, alternativeLabel } = ownerState;
 
   const slots = {
     root: [
@@ -36,23 +35,15 @@ const useUtilityClasses = (styleProps) => {
   return composeClasses(slots, getStepLabelUtilityClass, classes);
 };
 
-const StepLabelRoot = experimentalStyled(
-  'span',
-  {},
-  {
-    name: 'MuiStepLabel',
-    slot: 'Root',
-    overridesResolver: (props, styles) => {
-      const { styleProps } = props;
+const StepLabelRoot = styled('span', {
+  name: 'MuiStepLabel',
+  slot: 'Root',
+  overridesResolver: (props, styles) => {
+    const { ownerState } = props;
 
-      return {
-        ...styles.root,
-        ...styles[styleProps.orientation],
-      };
-    },
+    return [styles.root, styles[ownerState.orientation]];
   },
-)(({ styleProps }) => ({
-  /* Styles applied to the root element. */
+})(({ ownerState }) => ({
   display: 'flex',
   alignItems: 'center',
   [`&.${stepLabelClasses.alternativeLabel}`]: {
@@ -61,23 +52,19 @@ const StepLabelRoot = experimentalStyled(
   [`&.${stepLabelClasses.disabled}`]: {
     cursor: 'default',
   },
-  /* Styles applied to the root element if `orientation="vertical"`. */
-  ...(styleProps.orientation === 'vertical' && {
+  ...(ownerState.orientation === 'vertical' && {
     textAlign: 'left',
     padding: '8px 0',
   }),
 }));
 
-const StepLabelLabel = experimentalStyled(
-  Typography,
-  {},
-  {
-    name: 'MuiStepLabel',
-    slot: 'Label',
-    overridesResolver: (props, styles) => styles.label,
-  },
-)(({ theme }) => ({
-  /* Styles applied to the Typography component that wraps `children`. */
+const StepLabelLabel = styled('span', {
+  name: 'MuiStepLabel',
+  slot: 'Label',
+  overridesResolver: (props, styles) => styles.label,
+})(({ theme }) => ({
+  ...theme.typography.body2,
+  display: 'block',
   transition: theme.transitions.create('color', {
     duration: theme.transitions.duration.shortest,
   }),
@@ -98,16 +85,11 @@ const StepLabelLabel = experimentalStyled(
   },
 }));
 
-const StepLabelIconContainer = experimentalStyled(
-  'span',
-  {},
-  {
-    name: 'MuiStepLabel',
-    slot: 'IconContainer',
-    overridesResolver: (props, styles) => styles.iconContainer,
-  },
-)(() => ({
-  /* Styles applied to the `icon` container element. */
+const StepLabelIconContainer = styled('span', {
+  name: 'MuiStepLabel',
+  slot: 'IconContainer',
+  overridesResolver: (props, styles) => styles.iconContainer,
+})(() => ({
   flexShrink: 0, // Fix IE11 issue
   display: 'flex',
   paddingRight: 8,
@@ -116,16 +98,11 @@ const StepLabelIconContainer = experimentalStyled(
   },
 }));
 
-const StepLabelLabelContainer = experimentalStyled(
-  'span',
-  {},
-  {
-    name: 'MuiStepLabel',
-    slot: 'LabelContainer',
-    overridesResolver: (props, styles) => styles.labelContainer,
-  },
-)(({ theme }) => ({
-  /* Styles applied to the container element which wraps `Typography` and `optional`. */
+const StepLabelLabelContainer = styled('span', {
+  name: 'MuiStepLabel',
+  slot: 'LabelContainer',
+  overridesResolver: (props, styles) => styles.labelContainer,
+})(({ theme }) => ({
   width: '100%',
   color: theme.palette.text.secondary,
 }));
@@ -135,6 +112,7 @@ const StepLabel = React.forwardRef(function StepLabel(inProps, ref) {
   const {
     children,
     className,
+    componentsProps = {},
     error = false,
     icon: iconProp,
     optional,
@@ -153,7 +131,7 @@ const StepLabel = React.forwardRef(function StepLabel(inProps, ref) {
     StepIconComponent = StepIcon;
   }
 
-  const styleProps = {
+  const ownerState = {
     ...props,
     active,
     alternativeLabel,
@@ -163,17 +141,17 @@ const StepLabel = React.forwardRef(function StepLabel(inProps, ref) {
     orientation,
   };
 
-  const classes = useUtilityClasses(styleProps);
+  const classes = useUtilityClasses(ownerState);
 
   return (
     <StepLabelRoot
       className={clsx(classes.root, className)}
       ref={ref}
-      styleProps={styleProps}
+      ownerState={ownerState}
       {...other}
     >
       {icon || StepIconComponent ? (
-        <StepLabelIconContainer className={classes.iconContainer} styleProps={styleProps}>
+        <StepLabelIconContainer className={classes.iconContainer} ownerState={ownerState}>
           <StepIconComponent
             completed={completed}
             active={active}
@@ -183,14 +161,12 @@ const StepLabel = React.forwardRef(function StepLabel(inProps, ref) {
           />
         </StepLabelIconContainer>
       ) : null}
-      <StepLabelLabelContainer className={classes.labelContainer} styleProps={styleProps}>
+      <StepLabelLabelContainer className={classes.labelContainer} ownerState={ownerState}>
         {children ? (
           <StepLabelLabel
-            variant="body2"
-            component="span"
-            display="block"
             className={classes.label}
-            styleProps={styleProps}
+            ownerState={ownerState}
+            {...componentsProps.label}
           >
             {children}
           </StepLabelLabel>
@@ -218,6 +194,11 @@ StepLabel.propTypes /* remove-proptypes */ = {
    * @ignore
    */
   className: PropTypes.string,
+  /**
+   * The props used for each slot inside.
+   * @default {}
+   */
+  componentsProps: PropTypes.object,
   /**
    * If `true`, the step is marked as failed.
    * @default false

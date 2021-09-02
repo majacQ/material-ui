@@ -25,24 +25,38 @@ export default function transformer(fileInfo, api, options) {
   const resultSpecifiers = [];
 
   root.find(j.ImportDeclaration).forEach((path) => {
-    if (!path.node.specifiers.length) return;
+    if (!path.node.specifiers.length) {
+      return;
+    }
 
-    if (path.value.importKind && path.value.importKind !== 'value') return;
+    if (path.value.importKind && path.value.importKind !== 'value') {
+      return;
+    }
     const importPath = path.value.source.value;
     const match = importPath.match(importRegExp);
-    if (!match) return;
+    if (!match) {
+      return;
+    }
 
-    if (importPath.includes('internal/')) return;
+    if (importPath.includes('internal/')) {
+      return;
+    }
 
     path.node.specifiers.forEach((specifier, index) => {
-      if (specifier.importKind && specifier.importKind !== 'value') return;
-      if (specifier.type === 'ImportNamespaceSpecifier') return;
+      if (specifier.importKind && specifier.importKind !== 'value') {
+        return;
+      }
+      if (specifier.type === 'ImportNamespaceSpecifier') {
+        return;
+      }
 
       switch (specifier.type) {
         case 'ImportDefaultSpecifier': {
           const localName = specifier.local.name;
           const moduleName = match[1];
-          if (whitelist[moduleName] == null) return;
+          if (whitelist[moduleName] == null) {
+            return;
+          }
           resultSpecifiers.push(
             j.importSpecifier(j.identifier(moduleName), j.identifier(localName)),
           );
@@ -50,7 +64,12 @@ export default function transformer(fileInfo, api, options) {
           break;
         }
         case 'ImportSpecifier':
-          if (whitelist[specifier.imported.name] == null) return;
+          if (
+            whitelist[specifier.imported.name] == null &&
+            specifier.imported.name !== 'withStyles'
+          ) {
+            return;
+          }
           resultSpecifiers.push(specifier);
           path.get('specifiers', index).prune();
           break;
@@ -59,7 +78,9 @@ export default function transformer(fileInfo, api, options) {
       }
     });
 
-    if (!path.node.specifiers.length) path.prune();
+    if (!path.node.specifiers.length) {
+      path.prune();
+    }
   });
 
   if (resultSpecifiers.length) {

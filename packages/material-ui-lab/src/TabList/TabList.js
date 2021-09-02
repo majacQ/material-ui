@@ -1,6 +1,6 @@
 import * as React from 'react';
 import PropTypes from 'prop-types';
-import Tabs from '@material-ui/core/Tabs';
+import Tabs from '@mui/material/Tabs';
 import { useTabContext, getTabId, getPanelId } from '../TabContext';
 
 const TabList = React.forwardRef(function TabList(props, ref) {
@@ -10,6 +10,10 @@ const TabList = React.forwardRef(function TabList(props, ref) {
     throw new TypeError('No TabContext provided');
   }
   const children = React.Children.map(childrenProp, (child) => {
+    if (!React.isValidElement(child)) {
+      return null;
+    }
+
     return React.cloneElement(child, {
       // SOMEDAY: `Tabs` will set those themselves
       'aria-controls': getPanelId(context, child.props.value),
@@ -32,7 +36,7 @@ TabList.propTypes /* remove-proptypes */ = {
   /**
    * A list of `<Tab />` elements.
    */
-  children: PropTypes.arrayOf(PropTypes.element),
+  children: PropTypes.node,
 };
 
 export default TabList;

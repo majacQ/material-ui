@@ -1,15 +1,17 @@
 import * as React from 'react';
 import PropTypes from 'prop-types';
 import NProgress from 'nprogress';
-import { withStyles } from '@material-ui/core/styles';
-import NoSsr from '@material-ui/core/NoSsr';
-import { exactProp } from '@material-ui/utils';
+import { withStyles } from '@mui/styles';
+import { createTheme } from '@mui/material/styles';
+import NoSsr from '@mui/core/NoSsr';
+import { exactProp } from '@mui/utils';
 
 NProgress.configure({
+  barSelector: '.nprogress-bar',
   template: `
-    <div class="nprogress-bar" role="bar">
-      <dt></dt>
-      <dd></dd>
+    <div class="nprogress-bar">
+      <div></div>
+      <div></div>
     </div>
   `,
 });
@@ -33,7 +35,8 @@ const styles = (theme) => {
         right: 0,
         height: 2,
         zIndex: theme.zIndex.tooltip,
-        backgroundColor: '#e0e0e0',
+        backgroundColor:
+          theme.palette.mode === 'dark' ? theme.palette.primary[700] : theme.palette.primary[200],
         '& .nprogress-bar': {
           position: 'fixed',
           backgroundColor: theme.nprogress.color,
@@ -42,7 +45,7 @@ const styles = (theme) => {
           right: 0,
           height: 2,
         },
-        '& dd, & dt': {
+        '& .nprogress-bar > div': {
           position: 'absolute',
           top: 0,
           height: 2,
@@ -50,13 +53,13 @@ const styles = (theme) => {
           borderRadius: '100%',
           animation: 'mui-nprogress-pulse 2s ease-out 0s infinite',
         },
-        '& dd': {
+        '& .nprogress-bar > div:first-child': {
           opacity: 0.6,
           width: 20,
           right: 0,
           clip: 'rect(-6px,22px,14px,10px)',
         },
-        '& dt': {
+        '& .nprogress-bar > div:last-child': {
           opacity: 0.6,
           width: 180,
           right: -80,
@@ -78,7 +81,10 @@ const styles = (theme) => {
   };
 };
 
-const GlobalStyles = withStyles(styles, { flip: false, name: 'MuiNProgressBar' })(() => null);
+const defaultTheme = createTheme();
+const GlobalStyles = withStyles(styles, { defaultTheme, flip: false, name: 'MuiNProgressBar' })(
+  () => null,
+);
 
 /**
  * Elegant and ready to use wrapper on top of https://github.com/rstacruz/nprogress/.

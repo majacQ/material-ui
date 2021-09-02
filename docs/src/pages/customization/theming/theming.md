@@ -47,7 +47,7 @@ const theme = createTheme({
 If you are using TypeScript, you would also need to use [module augmentation](/guides/typescript/#customization-of-theme) for the theme to accept the above values.
 
 ```tsx
-declare module '@material-ui/core/styles' {
+declare module '@mui/material/styles' {
   interface Theme {
     status: {
       danger: string;
@@ -107,19 +107,18 @@ Generate a theme base on the options received.
 
 #### Arguments
 
-1. `options` (_Object_): Takes an incomplete theme object and adds the missing parts.
-2. `...args` (_Object[]_): Deep merge the arguments with the about to be returned theme.
+1. `options` (_object_): Takes an incomplete theme object and adds the missing parts.
+2. `...args` (_object[]_): Deep merge the arguments with the about to be returned theme.
 
 #### Returns
 
-`theme` (_Object_): A complete, ready to use theme object.
+`theme` (_object_): A complete, ready-to-use theme object.
 
 #### Examples
 
 ```js
-import { createTheme } from '@material-ui/core/styles';
-import purple from '@material-ui/core/colors/purple';
-import green from '@material-ui/core/colors/green';
+import { createTheme } from '@mui/material/styles';
+import { green, purple } from '@mui/material/colors';
 
 const theme = createTheme({
   palette: {
@@ -139,25 +138,25 @@ Generate responsive typography settings based on the options received.
 
 #### Arguments
 
-1. `theme` (_Object_): The theme object to enhance.
-2. `options` (_Object_ [optional]):
+1. `theme` (_object_): The theme object to enhance.
+2. `options` (_object_ [optional]):
 
-- `breakpoints` (_Array\<String\>_ [optional]): Default to `['sm', 'md', 'lg']`. Array of [breakpoints](/customization/breakpoints/) (identifiers).
-- `disableAlign` (_Boolean_ [optional]): Default to `false`. Whether font sizes change slightly so line
+- `breakpoints` (_array\<string\>_ [optional]): Default to `['sm', 'md', 'lg']`. Array of [breakpoints](/customization/breakpoints/) (identifiers).
+- `disableAlign` (_bool_ [optional]): Default to `false`. Whether font sizes change slightly so line
   heights are preserved and align to Material Design's 4px line height grid.
   This requires a unitless line height in the theme's styles.
-- `factor` (_Number_ [optional]): Default to `2`. This value determines the strength of font size resizing. The higher the value, the less difference there is between font sizes on small screens.
+- `factor` (_number_ [optional]): Default to `2`. This value determines the strength of font size resizing. The higher the value, the less difference there is between font sizes on small screens.
   The lower the value, the bigger font sizes for small screens. The value must be greater than 1.
-- `variants` (_Array\<String\>_ [optional]): Default to all. The typography variants to handle.
+- `variants` (_array\<string\>_ [optional]): Default to all. The typography variants to handle.
 
 #### Returns
 
-`theme` (_Object_): The new theme with a responsive typography.
+`theme` (_object_): The new theme with a responsive typography.
 
 #### Examples
 
 ```js
-import { createTheme, responsiveFontSizes } from '@material-ui/core/styles';
+import { createTheme, responsiveFontSizes } from '@mui/material/styles';
 
 let theme = createTheme();
 theme = responsiveFontSizes(theme);
@@ -175,17 +174,17 @@ Currently `unstable_createMuiStrictModeTheme` adds no additional requirements.
 
 #### Arguments
 
-1. `options` (_Object_): Takes an incomplete theme object and adds the missing parts.
-2. `...args` (_Object[]_): Deep merge the arguments with the about to be returned theme.
+1. `options` (_object_): Takes an incomplete theme object and adds the missing parts.
+2. `...args` (_object[]_): Deep merge the arguments with the about to be returned theme.
 
 #### Returns
 
-`theme` (_Object_): A complete, ready to use theme object.
+`theme` (_object_): A complete, ready to use theme object.
 
 #### Examples
 
 ```js
-import { unstable_createMuiStrictModeTheme } from '@material-ui/core/styles';
+import { unstable_createMuiStrictModeTheme } from '@mui/material/styles';
 
 const theme = unstable_createMuiStrictModeTheme();
 

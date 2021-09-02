@@ -1,34 +1,27 @@
 import * as React from 'react';
 import PropTypes from 'prop-types';
-import { isHostComponent } from '@material-ui/unstyled';
-import BackdropUnstyled, { backdropUnstyledClasses } from '@material-ui/unstyled/BackdropUnstyled';
-import experimentalStyled from '../styles/experimentalStyled';
+import { isHostComponent } from '@mui/core';
+import BackdropUnstyled, { backdropUnstyledClasses } from '@mui/core/BackdropUnstyled';
+import styled from '../styles/styled';
 import useThemeProps from '../styles/useThemeProps';
 import Fade from '../Fade';
 
 export const backdropClasses = backdropUnstyledClasses;
 
-const extendUtilityClasses = (styleProps) => {
-  const { classes } = styleProps;
+const extendUtilityClasses = (ownerState) => {
+  const { classes } = ownerState;
   return classes;
 };
 
-const BackdropRoot = experimentalStyled(
-  'div',
-  {},
-  {
-    name: 'MuiBackdrop',
-    slot: 'Root',
-    overridesResolver: (props, styles) => {
-      const { styleProps } = props;
+const BackdropRoot = styled('div', {
+  name: 'MuiBackdrop',
+  slot: 'Root',
+  overridesResolver: (props, styles) => {
+    const { ownerState } = props;
 
-      return {
-        ...styles.root,
-        ...(styleProps.invisible && styles.invisible),
-      };
-    },
+    return [styles.root, ownerState.invisible && styles.invisible];
   },
-)(({ styleProps }) => ({
+})(({ ownerState }) => ({
   position: 'fixed',
   display: 'flex',
   alignItems: 'center',
@@ -39,8 +32,7 @@ const BackdropRoot = experimentalStyled(
   left: 0,
   backgroundColor: 'rgba(0, 0, 0, 0.5)',
   WebkitTapHighlightColor: 'transparent',
-  /* Styles applied to the root element if `invisible={true}`. */
-  ...(styleProps.invisible && {
+  ...(ownerState.invisible && {
     backgroundColor: 'transparent',
   }),
 }));
@@ -60,12 +52,12 @@ const Backdrop = React.forwardRef(function Backdrop(inProps, ref) {
     ...other
   } = props;
 
-  const styleProps = {
+  const ownerState = {
     ...props,
     invisible,
   };
 
-  const classes = extendUtilityClasses(styleProps);
+  const classes = extendUtilityClasses(ownerState);
 
   return (
     <TransitionComponent in={open} timeout={transitionDuration} {...other}>
@@ -80,7 +72,7 @@ const Backdrop = React.forwardRef(function Backdrop(inProps, ref) {
           root: {
             ...componentsProps.root,
             ...((!components.Root || !isHostComponent(components.Root)) && {
-              styleProps: { ...componentsProps.root?.styleProps },
+              ownerState: { ...componentsProps.root?.ownerState },
             }),
           },
         }}

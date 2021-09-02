@@ -1,8 +1,8 @@
 import * as React from 'react';
 import { expect } from 'chai';
-import { BadgeUnstyled } from '@material-ui/unstyled';
-import { createMount, createClientRender, describeConformanceV5 } from 'test/utils';
-import Badge, { badgeClasses as classes } from '@material-ui/core/Badge';
+import { BadgeUnstyled } from '@mui/core';
+import { createClientRender, describeConformance } from 'test/utils';
+import Badge, { badgeClasses as classes } from '@mui/material/Badge';
 
 function findBadge(container) {
   return container.firstChild.querySelector('span');
@@ -10,7 +10,7 @@ function findBadge(container) {
 
 describe('<Badge />', () => {
   const render = createClientRender();
-  const mount = createMount();
+
   const defaultProps = {
     children: (
       <div className="unique" data-testid="children">
@@ -20,7 +20,7 @@ describe('<Badge />', () => {
     badgeContent: 10,
   };
 
-  describeConformanceV5(
+  describeConformance(
     <Badge>
       <div />
     </Badge>,
@@ -28,7 +28,6 @@ describe('<Badge />', () => {
       classes,
       inheritComponent: BadgeUnstyled,
       render,
-      mount,
       refInstanceof: window.HTMLSpanElement,
       muiName: 'MuiBadge',
       testVariantProps: { color: 'secondary', variant: 'dot' },
@@ -95,8 +94,9 @@ describe('<Badge />', () => {
       expect(findBadge(container)).to.have.class(classes.invisible);
       container = render(<Badge {...defaultProps} badgeContent={undefined} />).container;
       expect(findBadge(container)).to.have.class(classes.invisible);
-      container = render(<Badge {...defaultProps} badgeContent={undefined} variant="dot" />)
-        .container;
+      container = render(
+        <Badge {...defaultProps} badgeContent={undefined} variant="dot" />,
+      ).container;
       expect(findBadge(container)).not.to.have.class(classes.invisible);
     });
   });

@@ -1,72 +1,62 @@
 import * as React from 'react';
-import { makeStyles } from '@material-ui/core';
-import Box from '@material-ui/core/Box';
-import TextField from '@material-ui/core/TextField';
-import AdapterDateFns from '@material-ui/lab/AdapterDateFns';
-import LocalizaitonProvider from '@material-ui/lab/LocalizationProvider';
-import DateRangePicker, { DateRange } from '@material-ui/lab/DateRangePicker';
-import DateRangePickerDay, {
+import { styled } from '@mui/material/styles';
+import Box from '@mui/material/Box';
+import TextField from '@mui/material/TextField';
+import AdapterDateFns from '@mui/lab/AdapterDateFns';
+import LocalizationProvider from '@mui/lab/LocalizationProvider';
+import { DateRange } from '@mui/lab/DateRangePicker';
+import StaticDateRangePicker from '@mui/lab/StaticDateRangePicker';
+import MuiDateRangePickerDay, {
   DateRangePickerDayProps,
-} from '@material-ui/lab/DateRangePickerDay';
-import clsx from 'clsx';
+} from '@mui/lab/DateRangePickerDay';
 
-const useStyles = makeStyles((theme) => ({
-  highlight: {
-    borderRadius: 0,
-    backgroundColor: theme.palette.primary.main,
-    color: theme.palette.common.white,
-    '&:hover, &:focus': {
-      backgroundColor: theme.palette.primary.dark,
-    },
-  },
-  firstHighlight: {
-    borderTopLeftRadius: '50%',
-    borderBottomLeftRadius: '50%',
-  },
-  endHighlight: {
-    borderTopRightRadius: '50%',
-    borderBottomRightRadius: '50%',
-  },
-}));
+const DateRangePickerDay = styled(MuiDateRangePickerDay)(
+  ({ theme, isHighlighting, isStartOfHighlighting, isEndOfHighlighting }) => ({
+    ...(isHighlighting && {
+      borderRadius: 0,
+      backgroundColor: theme.palette.primary.main,
+      color: theme.palette.common.white,
+      '&:hover, &:focus': {
+        backgroundColor: theme.palette.primary.dark,
+      },
+    }),
+    ...(isStartOfHighlighting && {
+      borderTopLeftRadius: '50%',
+      borderBottomLeftRadius: '50%',
+    }),
+    ...(isEndOfHighlighting && {
+      borderTopRightRadius: '50%',
+      borderBottomRightRadius: '50%',
+    }),
+  }),
+) as React.ComponentType<DateRangePickerDayProps<Date>>;
 
 export default function CustomDateRangePickerDay() {
-  const classes = useStyles();
-  const [selectedDate, handleDateChange] = React.useState<DateRange<Date>>([
-    null,
-    null,
-  ]);
+  const [value, setValue] = React.useState<DateRange<Date>>([null, null]);
 
   const renderWeekPickerDay = (
     date: Date,
     dateRangePickerDayProps: DateRangePickerDayProps<Date>,
   ) => {
-    return (
-      <DateRangePickerDay
-        {...dateRangePickerDayProps}
-        className={clsx(dateRangePickerDayProps.className, {
-          [classes.firstHighlight]: dateRangePickerDayProps.isStartOfHighlighting,
-          [classes.endHighlight]: dateRangePickerDayProps.isEndOfHighlighting,
-          [classes.highlight]: dateRangePickerDayProps.isHighlighting,
-        })}
-      />
-    );
+    return <DateRangePickerDay {...dateRangePickerDayProps} />;
   };
 
   return (
-    <LocalizaitonProvider dateAdapter={AdapterDateFns}>
-      <DateRangePicker
+    <LocalizationProvider dateAdapter={AdapterDateFns}>
+      <StaticDateRangePicker
+        displayStaticWrapperAs="desktop"
         label="date range"
-        value={selectedDate}
-        onChange={(date) => handleDateChange(date)}
+        value={value}
+        onChange={(newValue) => setValue(newValue)}
         renderDay={renderWeekPickerDay}
         renderInput={(startProps, endProps) => (
           <React.Fragment>
-            <TextField {...startProps} variant="standard" />
+            <TextField {...startProps} />
             <Box sx={{ mx: 2 }}> to </Box>
-            <TextField {...endProps} variant="standard" />
+            <TextField {...endProps} />
           </React.Fragment>
         )}
       />
-    </LocalizaitonProvider>
+    </LocalizationProvider>
   );
 }

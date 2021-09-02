@@ -2,13 +2,13 @@ import * as React from 'react';
 import { isFragment } from 'react-is';
 import PropTypes from 'prop-types';
 import clsx from 'clsx';
-import { unstable_composeClasses as composeClasses } from '@material-ui/unstyled';
-import experimentalStyled from '../styles/experimentalStyled';
+import { unstable_composeClasses as composeClasses } from '@mui/core';
+import styled from '../styles/styled';
 import useThemeProps from '../styles/useThemeProps';
 import { getBottomNavigationUtilityClass } from './bottomNavigationClasses';
 
-const useUtilityClasses = (styleProps) => {
-  const { classes } = styleProps;
+const useUtilityClasses = (ownerState) => {
+  const { classes } = ownerState;
 
   const slots = {
     root: ['root'],
@@ -17,16 +17,11 @@ const useUtilityClasses = (styleProps) => {
   return composeClasses(slots, getBottomNavigationUtilityClass, classes);
 };
 
-const BottomNavigationRoot = experimentalStyled(
-  'div',
-  {},
-  {
-    name: 'MuiBottomNavigation',
-    slot: 'Root',
-    overridesResolver: (props, styles) => styles.root,
-  },
-)(({ theme }) => ({
-  /* Styles applied to the root element. */
+const BottomNavigationRoot = styled('div', {
+  name: 'MuiBottomNavigation',
+  slot: 'Root',
+  overridesResolver: (props, styles) => styles.root,
+})(({ theme }) => ({
   display: 'flex',
   justifyContent: 'center',
   height: 56,
@@ -45,20 +40,20 @@ const BottomNavigation = React.forwardRef(function BottomNavigation(inProps, ref
     ...other
   } = props;
 
-  const styleProps = {
+  const ownerState = {
     ...props,
     component,
     showLabels,
   };
 
-  const classes = useUtilityClasses(styleProps);
+  const classes = useUtilityClasses(ownerState);
 
   return (
     <BottomNavigationRoot
       as={component}
       className={clsx(classes.root, className)}
       ref={ref}
-      styleProps={styleProps}
+      ownerState={ownerState}
       {...other}
     >
       {React.Children.map(children, (child, childIndex) => {
@@ -115,7 +110,7 @@ BottomNavigation.propTypes /* remove-proptypes */ = {
   /**
    * Callback fired when the value changes.
    *
-   * @param {object} event The event source of the callback. **Warning**: This is a generic event not a change event.
+   * @param {React.SyntheticEvent} event The event source of the callback. **Warning**: This is a generic event not a change event.
    * @param {any} value We default to the index of the child.
    */
   onChange: PropTypes.func,

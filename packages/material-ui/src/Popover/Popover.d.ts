@@ -1,10 +1,11 @@
 import * as React from 'react';
-import { SxProps } from '@material-ui/system';
+import { SxProps } from '@mui/system';
 import { InternalStandardProps as StandardProps } from '..';
 import { PaperProps } from '../Paper';
 import { ModalProps } from '../Modal';
 import { Theme } from '../styles';
-import { TransitionHandlerProps, TransitionProps } from '../transitions/transition';
+import { TransitionProps } from '../transitions/transition';
+import { PopoverClasses } from './popoverClasses';
 
 export interface PopoverOrigin {
   vertical: 'top' | 'center' | 'bottom' | number;
@@ -18,8 +19,7 @@ export interface PopoverPosition {
 
 export type PopoverReference = 'anchorEl' | 'anchorPosition' | 'none';
 
-export interface PopoverProps
-  extends StandardProps<ModalProps & Partial<TransitionHandlerProps>, 'children'> {
+export interface PopoverProps extends StandardProps<ModalProps, 'children'> {
   /**
    * A ref for imperative actions.
    * It currently only supports updatePosition() action.
@@ -62,12 +62,7 @@ export interface PopoverProps
   /**
    * Override or extend the styles applied to the component.
    */
-  classes?: {
-    /** Styles applied to the root element. */
-    root?: string;
-    /** Styles applied to the Paper component. */
-    paper?: string;
-  };
+  classes?: Partial<PopoverClasses>;
   /**
    * An HTML element, component instance, or function that returns either.
    * The `container` will passed to the Modal component.
@@ -118,7 +113,7 @@ export interface PopoverProps
    * [Follow this guide](/components/transitions/#transitioncomponent-prop) to learn more about the requirements for this component.
    * @default Grow
    */
-  TransitionComponent?: React.ComponentType<
+  TransitionComponent?: React.JSXElementConstructor<
     TransitionProps & { children?: React.ReactElement<any, any> }
   >;
   /**
@@ -133,8 +128,6 @@ export interface PopoverProps
    */
   TransitionProps?: TransitionProps;
 }
-
-export type PopoverClassKey = keyof NonNullable<PopoverProps['classes']>;
 
 export interface PopoverActions {
   updatePosition(): void;

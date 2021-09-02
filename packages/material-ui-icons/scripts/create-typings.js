@@ -4,7 +4,7 @@ import chalk from 'chalk';
 import fse from 'fs-extra';
 import glob from 'fast-glob';
 
-const SRC_DIR = path.resolve(__dirname, '../src');
+const SRC_DIR = path.resolve(__dirname, '../lib/esm');
 const TARGET_DIR = path.resolve(__dirname, '../build');
 
 function normalizeFileName(file) {
@@ -13,13 +13,13 @@ function normalizeFileName(file) {
 
 function createIconTyping(file) {
   const name = normalizeFileName(file);
-  const contents = `export { default } from '@material-ui/core/SvgIcon';`;
+  const contents = `export { default } from '@mui/material/SvgIcon';`;
   return fse.writeFile(path.resolve(TARGET_DIR, `${name}.d.ts`), contents, 'utf8');
 }
 
 function createIndexTyping(files) {
   const contents = `
-import SvgIcon from '@material-ui/core/SvgIcon';
+import SvgIcon from '@mui/material/SvgIcon';
 
 type SvgIconComponent = typeof SvgIcon;
 

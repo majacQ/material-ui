@@ -1,4 +1,4 @@
-import { RangeInput, NonEmptyDateRange, DateRange } from '../../DateRangePicker/RangeTypes';
+import { NonEmptyDateRange, DateRange } from '../../DateRangePicker/RangeTypes';
 import { ParseableDate } from './constants/prop-types';
 import { MuiPickersAdapter } from './hooks/useUtils';
 
@@ -69,8 +69,7 @@ export const findClosestEnabledDate = <TDate>({
     }
   }
 
-  // fallback to today if no enabled days
-  return utils.date();
+  return today;
 };
 
 export function parsePickerInputValue(utils: MuiPickersAdapter, value: unknown): unknown {
@@ -79,6 +78,7 @@ export function parsePickerInputValue(utils: MuiPickersAdapter, value: unknown):
   return utils.isValid(parsedValue) ? parsedValue : null;
 }
 
+export type RangeInput<TDate> = import('../../DateRangePicker/RangeTypes').RangeInput<TDate>;
 export function parseRangeInputValue<TDate>(
   utils: MuiPickersAdapter,
   value: RangeInput<TDate> = [null, null],

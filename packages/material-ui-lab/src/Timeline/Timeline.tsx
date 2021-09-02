@@ -1,16 +1,12 @@
 import * as React from 'react';
 import PropTypes from 'prop-types';
 import clsx from 'clsx';
-import { SxProps } from '@material-ui/system';
+import { SxProps } from '@mui/system';
 // eslint-disable-next-line no-restricted-imports -- importing types
-import { InternalStandardProps as StandardProps } from '@material-ui/core';
-import { capitalize } from '@material-ui/core/utils';
-import { unstable_composeClasses as composeClasses } from '@material-ui/unstyled';
-import {
-  experimentalStyled,
-  unstable_useThemeProps as useThemeProps,
-  Theme,
-} from '@material-ui/core/styles';
+import { InternalStandardProps as StandardProps } from '@mui/material';
+import { capitalize } from '@mui/material/utils';
+import { unstable_composeClasses as composeClasses } from '@mui/core';
+import { styled, useThemeProps, Theme } from '@mui/material/styles';
 import TimelineContext from './TimelineContext';
 import { getTimelineUtilityClass } from './timelineClasses';
 
@@ -50,10 +46,10 @@ export interface TimelineProps extends StandardProps<React.HTMLAttributes<HTMLUL
   sx?: SxProps<Theme>;
 }
 
-type StyleProps = TimelineProps;
+type OwnerState = TimelineProps;
 
-const useUtilityClasses = (styleProps: StyleProps) => {
-  const { position, classes } = styleProps;
+const useUtilityClasses = (ownerState: OwnerState) => {
+  const { position, classes } = ownerState;
 
   const slots = {
     root: ['root', position && `position${capitalize(position)}`],
@@ -62,22 +58,18 @@ const useUtilityClasses = (styleProps: StyleProps) => {
   return composeClasses(slots, getTimelineUtilityClass, classes);
 };
 
-const TimelineRoot = experimentalStyled(
-  'ul' as const,
-  {},
-  {
-    name: 'MuiTimeline' as const,
-    slot: 'Root',
-    overridesResolver: (props, styles) => {
-      const { styleProps } = props;
-      return {
-        ...styles.root,
-        ...(styleProps.position &&
-          styles[`position${capitalize(styleProps.position)}` as TimelineClassKey]),
-      };
-    },
+const TimelineRoot = styled('ul' as const, {
+  name: 'MuiTimeline' as const,
+  slot: 'Root',
+  overridesResolver: (props, styles) => {
+    const { ownerState } = props;
+    return [
+      styles.root,
+      ownerState.position &&
+        styles[`position${capitalize(ownerState.position)}` as TimelineClassKey],
+    ];
   },
-)({
+})<{ ownerState: OwnerState }>({
   display: 'flex',
   flexDirection: 'column',
   padding: '6px 16px',
@@ -97,13 +89,13 @@ const TimelineRoot = experimentalStyled(
 const Timeline = React.forwardRef<HTMLUListElement, TimelineProps>(function Timeline(inProps, ref) {
   const props = useThemeProps({ props: inProps, name: 'MuiTimeline' });
   const { position = 'right', className, ...other } = props;
-  const styleProps = { ...props, position };
-  const classes = useUtilityClasses(styleProps);
+  const ownerState = { ...props, position };
+  const classes = useUtilityClasses(ownerState);
   return (
     <TimelineContext.Provider value={{ position }}>
       <TimelineRoot
         className={clsx(classes.root, className)}
-        styleProps={styleProps}
+        ownerState={ownerState}
         // @ts-expect-error TypeScript bug, need to keep unknown for DX
         ref={ref}
         {...other}

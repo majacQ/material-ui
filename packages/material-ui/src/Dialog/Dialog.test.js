@@ -1,16 +1,9 @@
 import * as React from 'react';
 import { expect } from 'chai';
 import { spy, useFakeTimers } from 'sinon';
-import {
-  createMount,
-  describeConformanceV5,
-  act,
-  createClientRender,
-  fireEvent,
-  screen,
-} from 'test/utils';
-import Modal from '@material-ui/core/Modal';
-import Dialog, { dialogClasses as classes } from '@material-ui/core/Dialog';
+import { describeConformance, act, createClientRender, fireEvent, screen } from 'test/utils';
+import Modal from '@mui/material/Modal';
+import Dialog, { dialogClasses as classes } from '@mui/material/Dialog';
 
 /**
  * more comprehensive simulation of a user click (mousedown + click)
@@ -48,10 +41,9 @@ describe('<Dialog />', () => {
     clock.restore();
   });
 
-  const mount = createMount();
   const render = createClientRender();
 
-  describeConformanceV5(
+  describeConformance(
     <Dialog open disablePortal>
       foo
     </Dialog>,
@@ -60,7 +52,6 @@ describe('<Dialog />', () => {
       inheritComponent: Modal,
       muiName: 'MuiDialog',
       render,
-      mount,
       testVariantProps: { variant: 'foo' },
       testDeepOverrides: { slotName: 'paper', slotClassName: classes.paper },
       refInstanceof: window.HTMLDivElement,

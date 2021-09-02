@@ -1,7 +1,8 @@
 import * as React from 'react';
 import PropTypes from 'prop-types';
 import clsx from 'clsx';
-import { deepmerge } from '@material-ui/utils';
+import { deepmerge } from '@mui/utils';
+import { unstable_composeClasses as composeClasses } from '@mui/core';
 import SelectInput from './SelectInput';
 import formControlState from '../FormControl/formControlState';
 import useFormControl from '../FormControl/useFormControl';
@@ -11,13 +12,24 @@ import NativeSelectInput from '../NativeSelect/NativeSelectInput';
 import FilledInput from '../FilledInput';
 import OutlinedInput from '../OutlinedInput';
 import useThemeProps from '../styles/useThemeProps';
+import { getSelectUtilityClasses } from './selectClasses';
+
+const useUtilityClasses = (ownerState) => {
+  const { classes } = ownerState;
+
+  const slots = {
+    root: ['root'],
+  };
+
+  return composeClasses(slots, getSelectUtilityClasses, classes);
+};
 
 const Select = React.forwardRef(function Select(inProps, ref) {
   const props = useThemeProps({ name: 'MuiSelect', props: inProps });
   const {
     autoWidth = false,
     children,
-    classes = {},
+    classes: classesProp = {},
     className,
     displayEmpty = false,
     IconComponent = ArrowDropDownIcon,
@@ -26,7 +38,6 @@ const Select = React.forwardRef(function Select(inProps, ref) {
     inputProps,
     label,
     labelId,
-    labelWidth = 0,
     MenuProps,
     multiple = false,
     native = false,
@@ -54,9 +65,13 @@ const Select = React.forwardRef(function Select(inProps, ref) {
     input ||
     {
       standard: <Input />,
-      outlined: <OutlinedInput label={label} labelWidth={labelWidth} />,
+      outlined: <OutlinedInput label={label} />,
       filled: <FilledInput />,
     }[variant];
+
+  const ownerState = { ...props, classes: classesProp };
+  const classes = useUtilityClasses(ownerState);
+  const { root, ...otherClasses } = classesProp;
 
   return React.cloneElement(InputComponent, {
     // Most of the logic is implemented in `SelectInput`.
@@ -82,12 +97,12 @@ const Select = React.forwardRef(function Select(inProps, ref) {
             SelectDisplayProps: { id, ...SelectDisplayProps },
           }),
       ...inputProps,
-      classes: inputProps ? deepmerge(classes, inputProps.classes) : classes,
+      classes: inputProps ? deepmerge(otherClasses, inputProps.classes) : otherClasses,
       ...(input ? input.props.inputProps : {}),
     },
     ...(multiple && native && variant === 'outlined' ? { notched: true } : {}),
     ref,
-    className: clsx(className, InputComponent.props.className),
+    className: clsx(classes.root, InputComponent.props.className, className),
     ...other,
   });
 });
@@ -162,11 +177,6 @@ Select.propTypes /* remove-proptypes */ = {
    */
   labelId: PropTypes.string,
   /**
-   * See [OutlinedInput#label](/api/outlined-input/#props)
-   * @default 0
-   */
-  labelWidth: PropTypes.number,
-  /**
    * Props applied to the [`Menu`](/api/menu/) element.
    */
   MenuProps: PropTypes.object,
@@ -183,9 +193,9 @@ Select.propTypes /* remove-proptypes */ = {
   /**
    * Callback fired when a menu item is selected.
    *
-   * @param {object} event The event source of the callback.
+   * @param {SelectChangeEvent<T>} event The event source of the callback.
    * You can pull out the new value by accessing `event.target.value` (any).
-   * **Warning**: This is a generic event not a change event.
+   * **Warning**: This is a generic event not a change event unless the change event is caused by browser autofill.
    * @param {object} [child] The react element that was selected when `native` is `false` (default).
    */
   onChange: PropTypes.func,

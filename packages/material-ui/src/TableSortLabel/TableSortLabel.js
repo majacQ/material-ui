@@ -1,16 +1,16 @@
-import { unstable_composeClasses as composeClasses } from '@material-ui/unstyled';
+import { unstable_composeClasses as composeClasses } from '@mui/core';
 import clsx from 'clsx';
 import PropTypes from 'prop-types';
 import * as React from 'react';
 import ButtonBase from '../ButtonBase';
 import ArrowDownwardIcon from '../internal/svg-icons/ArrowDownward';
-import experimentalStyled from '../styles/experimentalStyled';
+import styled from '../styles/styled';
 import useThemeProps from '../styles/useThemeProps';
 import capitalize from '../utils/capitalize';
 import tableSortLabelClasses, { getTableSortLabelUtilityClass } from './tableSortLabelClasses';
 
-const useUtilityClasses = (styleProps) => {
-  const { classes, direction, active } = styleProps;
+const useUtilityClasses = (ownerState) => {
+  const { classes, direction, active } = ownerState;
 
   const slots = {
     root: ['root', active && 'active'],
@@ -20,23 +20,15 @@ const useUtilityClasses = (styleProps) => {
   return composeClasses(slots, getTableSortLabelUtilityClass, classes);
 };
 
-const TableSortLabelRoot = experimentalStyled(
-  ButtonBase,
-  {},
-  {
-    name: 'MuiTableSortLabel',
-    slot: 'Root',
-    overridesResolver: (props, styles) => {
-      const { styleProps } = props;
+const TableSortLabelRoot = styled(ButtonBase, {
+  name: 'MuiTableSortLabel',
+  slot: 'Root',
+  overridesResolver: (props, styles) => {
+    const { ownerState } = props;
 
-      return {
-        ...styles.root,
-        ...(styleProps.active && styles.active),
-      };
-    },
+    return [styles.root, ownerState.active && styles.active];
   },
-)(({ theme }) => ({
-  /* Styles applied to the root element. */
+})(({ theme }) => ({
   cursor: 'pointer',
   display: 'inline-flex',
   justifyContent: 'flex-start',
@@ -60,23 +52,15 @@ const TableSortLabelRoot = experimentalStyled(
   },
 }));
 
-const TableSortLabelIcon = experimentalStyled(
-  'span',
-  {},
-  {
-    name: 'MuiTableSortLabel',
-    slot: 'Icon',
-    overridesResolver: (props, styles) => {
-      const { styleProps } = props;
+const TableSortLabelIcon = styled('span', {
+  name: 'MuiTableSortLabel',
+  slot: 'Icon',
+  overridesResolver: (props, styles) => {
+    const { ownerState } = props;
 
-      return {
-        ...styles.icon,
-        ...styles[`iconDirection${capitalize(styleProps.direction)}`],
-      };
-    },
+    return [styles.icon, styles[`iconDirection${capitalize(ownerState.direction)}`]];
   },
-)(({ theme, styleProps }) => ({
-  /* Styles applied to the icon component. */
+})(({ theme, ownerState }) => ({
   fontSize: 18,
   marginRight: 4,
   marginLeft: 4,
@@ -85,12 +69,10 @@ const TableSortLabelIcon = experimentalStyled(
     duration: theme.transitions.duration.shorter,
   }),
   userSelect: 'none',
-  /* Styles applied to the icon component if `direction="desc"`. */
-  ...(styleProps.direction === 'desc' && {
+  ...(ownerState.direction === 'desc' && {
     transform: 'rotate(0deg)',
   }),
-  /* Styles applied to the icon component if `direction="asc"`. */
-  ...(styleProps.direction === 'asc' && {
+  ...(ownerState.direction === 'asc' && {
     transform: 'rotate(180deg)',
   }),
 }));
@@ -110,7 +92,7 @@ const TableSortLabel = React.forwardRef(function TableSortLabel(inProps, ref) {
     ...other
   } = props;
 
-  const styleProps = {
+  const ownerState = {
     ...props,
     active,
     direction,
@@ -118,14 +100,14 @@ const TableSortLabel = React.forwardRef(function TableSortLabel(inProps, ref) {
     IconComponent,
   };
 
-  const classes = useUtilityClasses(styleProps);
+  const classes = useUtilityClasses(ownerState);
 
   return (
     <TableSortLabelRoot
       className={clsx(classes.root, className)}
       component="span"
       disableRipple
-      styleProps={styleProps}
+      ownerState={ownerState}
       ref={ref}
       {...other}
     >
@@ -134,7 +116,7 @@ const TableSortLabel = React.forwardRef(function TableSortLabel(inProps, ref) {
         <TableSortLabelIcon
           as={IconComponent}
           className={clsx(classes.icon)}
-          styleProps={styleProps}
+          ownerState={ownerState}
         />
       )}
     </TableSortLabelRoot>

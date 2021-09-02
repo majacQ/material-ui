@@ -2,10 +2,10 @@ import * as React from 'react';
 import { isFragment } from 'react-is';
 import PropTypes from 'prop-types';
 import clsx from 'clsx';
-import { unstable_composeClasses as composeClasses } from '@material-ui/unstyled';
-import experimentalStyled from '../styles/experimentalStyled';
+import { unstable_composeClasses as composeClasses } from '@mui/core';
+import styled from '../styles/styled';
 import useThemeProps from '../styles/useThemeProps';
-import { duration } from '../styles/transitions';
+import { duration } from '../styles/createTransitions';
 import Zoom from '../Zoom';
 import Fab from '../Fab';
 import capitalize from '../utils/capitalize';
@@ -14,8 +14,8 @@ import useForkRef from '../utils/useForkRef';
 import useControlled from '../utils/useControlled';
 import speedDialClasses, { getSpeedDialUtilityClass } from './speedDialClasses';
 
-const useUtilityClasses = (styleProps) => {
-  const { classes, open, direction } = styleProps;
+const useUtilityClasses = (ownerState) => {
+  const { classes, open, direction } = ownerState;
 
   const slots = {
     root: ['root', `direction${capitalize(direction)}`],
@@ -49,27 +49,20 @@ function clamp(value, min, max) {
 const dialRadius = 32;
 const spacingActions = 16;
 
-const SpeedDialRoot = experimentalStyled(
-  'div',
-  {},
-  {
-    name: 'MuiSpeedDial',
-    slot: 'Root',
-    overridesResolver: (props, styles) => {
-      const { styleProps } = props;
+const SpeedDialRoot = styled('div', {
+  name: 'MuiSpeedDial',
+  slot: 'Root',
+  overridesResolver: (props, styles) => {
+    const { ownerState } = props;
 
-      return {
-        ...styles.root,
-        ...styles[`direction${capitalize(styleProps.direction)}`],
-      };
-    },
+    return [styles.root, styles[`direction${capitalize(ownerState.direction)}`]];
   },
-)(({ theme, styleProps }) => ({
+})(({ theme, ownerState }) => ({
   zIndex: theme.zIndex.speedDial,
   display: 'flex',
   alignItems: 'center',
   pointerEvents: 'none',
-  ...(styleProps.direction === 'up' && {
+  ...(ownerState.direction === 'up' && {
     flexDirection: 'column-reverse',
     [`& .${speedDialClasses.actions}`]: {
       flexDirection: 'column-reverse',
@@ -77,7 +70,7 @@ const SpeedDialRoot = experimentalStyled(
       paddingBottom: spacingActions + dialRadius,
     },
   }),
-  ...(styleProps.direction === 'down' && {
+  ...(ownerState.direction === 'down' && {
     flexDirection: 'column',
     [`& .${speedDialClasses.actions}`]: {
       flexDirection: 'column',
@@ -85,7 +78,7 @@ const SpeedDialRoot = experimentalStyled(
       paddingTop: spacingActions + dialRadius,
     },
   }),
-  ...(styleProps.direction === 'left' && {
+  ...(ownerState.direction === 'left' && {
     flexDirection: 'row-reverse',
     [`& .${speedDialClasses.actions}`]: {
       flexDirection: 'row-reverse',
@@ -93,7 +86,7 @@ const SpeedDialRoot = experimentalStyled(
       paddingRight: spacingActions + dialRadius,
     },
   }),
-  ...(styleProps.direction === 'right' && {
+  ...(ownerState.direction === 'right' && {
     flexDirection: 'row',
     [`& .${speedDialClasses.actions}`]: {
       flexDirection: 'row',
@@ -103,33 +96,26 @@ const SpeedDialRoot = experimentalStyled(
   }),
 }));
 
-const SpeedDialFab = experimentalStyled(
-  Fab,
-  {},
-  { name: 'MuiSpeedDial', slot: 'Fab', overridesResolver: (props, styles) => styles.fab },
-)(() => ({
+const SpeedDialFab = styled(Fab, {
+  name: 'MuiSpeedDial',
+  slot: 'Fab',
+  overridesResolver: (props, styles) => styles.fab,
+})(() => ({
   pointerEvents: 'auto',
 }));
 
-const SpeedDialActions = experimentalStyled(
-  'div',
-  {},
-  {
-    name: 'MuiSpeedDial',
-    slot: 'Actions',
-    overridesResolver: (props, styles) => {
-      const { styleProps } = props;
+const SpeedDialActions = styled('div', {
+  name: 'MuiSpeedDial',
+  slot: 'Actions',
+  overridesResolver: (props, styles) => {
+    const { ownerState } = props;
 
-      return {
-        ...styles.actions,
-        ...(!styleProps.open && styles.actionsClosed),
-      };
-    },
+    return [styles.actions, !ownerState.open && styles.actionsClosed];
   },
-)(({ styleProps }) => ({
+})(({ ownerState }) => ({
   display: 'flex',
   pointerEvents: 'auto',
-  ...(!styleProps.open && {
+  ...(!ownerState.open && {
     transition: 'top 0s linear 0.2s',
     pointerEvents: 'none',
   }),
@@ -170,8 +156,8 @@ const SpeedDial = React.forwardRef(function SpeedDial(inProps, ref) {
     state: 'open',
   });
 
-  const styleProps = { ...props, open, direction };
-  const classes = useUtilityClasses(styleProps);
+  const ownerState = { ...props, open, direction };
+  const classes = useUtilityClasses(ownerState);
 
   const eventTimer = React.useRef();
 
@@ -390,7 +376,7 @@ const SpeedDial = React.forwardRef(function SpeedDial(inProps, ref) {
       onFocus={handleOpen}
       onMouseEnter={handleOpen}
       onMouseLeave={handleClose}
-      styleProps={styleProps}
+      ownerState={ownerState}
       {...other}
     >
       <TransitionComponent
@@ -409,7 +395,7 @@ const SpeedDial = React.forwardRef(function SpeedDial(inProps, ref) {
           onClick={handleClick}
           className={clsx(classes.fab, FabProps.className)}
           ref={handleFabRef}
-          styleProps={styleProps}
+          ownerState={ownerState}
         >
           {React.isValidElement(icon) && isMuiElement(icon, ['SpeedDialIcon'])
             ? React.cloneElement(icon, { open })
@@ -421,7 +407,7 @@ const SpeedDial = React.forwardRef(function SpeedDial(inProps, ref) {
         role="menu"
         aria-orientation={getOrientation(direction)}
         className={clsx(classes.actions, { [classes.actionsClosed]: !open })}
-        styleProps={styleProps}
+        ownerState={ownerState}
       >
         {children}
       </SpeedDialActions>

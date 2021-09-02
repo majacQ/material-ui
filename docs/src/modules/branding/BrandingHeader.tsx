@@ -1,18 +1,17 @@
 import * as React from 'react';
-import AppBar, { AppBarProps } from '@material-ui/core/AppBar';
-import * as CSS from 'csstype';
-import Box from '@material-ui/core/Box';
-import Toolbar from '@material-ui/core/Toolbar';
-import Fade from '@material-ui/core/Fade';
-import Modal from '@material-ui/core/Modal';
-import IconButton from '@material-ui/core/IconButton';
-import MenuIcon from '@material-ui/icons/Menu';
-import CloseIcon from '@material-ui/icons/Close';
+import AppBar, { AppBarProps } from '@mui/material/AppBar';
+import Box from '@mui/material/Box';
+import Toolbar from '@mui/material/Toolbar';
+import Fade from '@mui/material/Fade';
+import Modal from '@mui/material/Modal';
+import IconButton from '@mui/material/IconButton';
+import MenuIcon from '@mui/icons-material/Menu';
+import CloseIcon from '@mui/icons-material/Close';
 import Link from 'docs/src/modules/components/Link';
-import { experimentalStyled as styled } from '@material-ui/core/styles';
+import { styled, alpha, darken } from '@mui/material/styles';
 import BrandingLogo from 'docs/src/modules/branding/BrandingLogo';
 import t1 from 'docs/src/modules/branding/t1';
-import useScrollTrigger from '@material-ui/core/useScrollTrigger';
+import useScrollTrigger from '@mui/material/useScrollTrigger';
 
 const links = (
   <ul className="BrandingHeader-linksWrapper">
@@ -22,7 +21,13 @@ const links = (
       </Link>
     </li>
     <li>
-      <Link variant="body2" color="inherit" underline="none" activeClassName="Mui-active" href="/x">
+      <Link
+        variant="body2"
+        color="inherit"
+        underline="none"
+        activeClassName="Mui-active"
+        href="/branding/mui-x/"
+      >
         {t1('Material-UI X')}
       </Link>
     </li>
@@ -32,7 +37,7 @@ const links = (
         color="inherit"
         underline="none"
         activeClassName="Mui-active"
-        href="/branding/pricing"
+        href="/branding/pricing/"
       >
         {t1('Pricing')}
       </Link>
@@ -43,7 +48,7 @@ const links = (
         color="inherit"
         underline="none"
         activeClassName="Mui-active"
-        href="/getting-started/templates"
+        href="/getting-started/templates/"
       >
         {t1('Templates')}
       </Link>
@@ -54,7 +59,7 @@ const links = (
         color="inherit"
         underline="none"
         activeClassName="Mui-active"
-        href="/branding/about"
+        href="/branding/about/"
       >
         {t1('About Us')}
       </Link>
@@ -83,8 +88,7 @@ const StyledBrandingMobileLinks = styled('div')(({ theme }) => ({
   },
   '& .MuiTypography-root': {
     display: 'block',
-    // TODO withStyles removal
-    ...(theme.typography.h3 as CSS.Properties),
+    ...theme.typography.h3,
   },
 }));
 
@@ -174,8 +178,16 @@ interface StyledAppBarProps extends AppBarProps {
 const StyledAppBar = styled(AppBar, {
   shouldForwardProp: (prop) => prop !== 'mode' && prop !== 'trigger',
 })<StyledAppBarProps>(({ mode, trigger, theme }) => ({
-  borderBottom: trigger ? `1px solid ${theme.palette.divider}` : undefined,
-  boxShadow: trigger ? 'rgb(0 0 0 / 5%) 0px 3px 8px' : undefined,
+  borderBottom: trigger
+    ? `1px solid ${
+        mode === 'light' ? theme.palette.divider : darken(theme.palette.secondary.main, 0.35)
+      }`
+    : undefined,
+  boxShadow: trigger
+    ? `${
+        mode === 'light' ? 'rgb(0 0 0 / 5%)' : alpha(theme.palette.secondary.main, 0.15)
+      } 0px 3px 8px`
+    : undefined,
   color: mode === 'light' ? theme.palette.text.primary : theme.palette.secondary.contrastText,
   backgroundColor: mode === 'light' ? '#fff' : theme.palette.secondary.main,
   '& .BrandingHeader-linksWrapper': {

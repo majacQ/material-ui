@@ -1,9 +1,10 @@
 import * as React from 'react';
-import { SxProps } from '@material-ui/system';
+import { SxProps } from '@mui/system';
 import { Theme } from '../styles';
 import ButtonBase from '../ButtonBase';
 import { TabScrollButtonProps } from '../TabScrollButton';
 import { OverridableComponent, OverrideProps } from '../OverridableComponent';
+import { TabsClasses } from './tabsClasses';
 
 export interface TabsTypeMap<P = {}, D extends React.ElementType = typeof ButtonBase> {
   props: P & {
@@ -43,34 +44,7 @@ export interface TabsTypeMap<P = {}, D extends React.ElementType = typeof Button
     /**
      * Override or extend the styles applied to the component.
      */
-    classes?: {
-      /** Styles applied to the root element. */
-      root?: string;
-      /** Styles applied to the root element if `orientation="vertical"`. */
-      vertical?: string;
-      /** Styles applied to the flex container element. */
-      flexContainer?: string;
-      /** Styles applied to the flex container element if `orientation="vertical"`. */
-      flexContainerVertical?: string;
-      /** Styles applied to the flex container element if `centered={true}` & `!variant="scrollable"`. */
-      centered?: string;
-      /** Styles applied to the tablist element. */
-      scroller?: string;
-      /** Styles applied to the tablist element if `!variant="scrollable"`. */
-      fixed?: string;
-      /** Styles applied to the tablist element if `variant="scrollable"` and `orientation="horizontal"`. */
-      scrollableX?: string;
-      /** Styles applied to the tablist element if `variant="scrollable"` and `orientation="vertical"`. */
-      scrollableY?: string;
-      /** Styles applied to the tablist element if `variant="scrollable"` and `visibleScrollbar={false}`. */
-      hideScrollbar?: string;
-      /** Styles applied to the ScrollButtonComponent component. */
-      scrollButtons?: string;
-      /** Styles applied to the ScrollButtonComponent component if `allowScrollButtonsMobile={true}`. */
-      scrollButtonsHideMobile?: string;
-      /** Styles applied to the TabIndicator component. */
-      indicator?: string;
-    };
+    classes?: Partial<TabsClasses>;
     /**
      * Determines the color of the indicator.
      * @default 'primary'
@@ -79,7 +53,7 @@ export interface TabsTypeMap<P = {}, D extends React.ElementType = typeof Button
     /**
      * Callback fired when the value changes.
      *
-     * @param {object} event The event source of the callback. **Warning**: This is a generic event not a change event.
+     * @param {React.SyntheticEvent} event The event source of the callback. **Warning**: This is a generic event not a change event.
      * @param {any} value We default to the index of the child (number)
      */
     onChange?: (event: React.SyntheticEvent, value: any) => void;
@@ -167,8 +141,6 @@ export interface TabsTypeMap<P = {}, D extends React.ElementType = typeof Button
  */
 declare const Tabs: OverridableComponent<TabsTypeMap>;
 
-export type TabsClassKey = keyof NonNullable<TabsTypeMap['props']['classes']>;
-
 export interface TabsActions {
   updateIndicator(): void;
   updateScrollButtons(): void;
@@ -176,7 +148,7 @@ export interface TabsActions {
 
 export type TabsProps<
   D extends React.ElementType = TabsTypeMap['defaultComponent'],
-  P = {}
+  P = {},
 > = OverrideProps<TabsTypeMap<P, D>, D>;
 
 export default Tabs;

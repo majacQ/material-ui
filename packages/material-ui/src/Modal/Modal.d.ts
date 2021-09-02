@@ -1,10 +1,7 @@
 import * as React from 'react';
-import { SxProps } from '@material-ui/system';
-import {
-  ExtendModalUnstyledTypeMap,
-  ExtendModalUnstyled,
-  ModalUnstyledProps,
-} from '@material-ui/unstyled/ModalUnstyled';
+import { SxProps } from '@mui/system';
+import { OverrideProps } from '@mui/types';
+import { ExtendModalUnstyledTypeMap, ExtendModalUnstyled } from '@mui/core/ModalUnstyled';
 import { Theme } from '../styles';
 import { BackdropProps } from '../Backdrop';
 
@@ -12,7 +9,15 @@ export type ModalTypeMap<D extends React.ElementType = 'div', P = {}> = ExtendMo
   props: P & {
     /**
      * A backdrop component. This prop enables custom backdrop rendering.
-     * @default Backdrop
+     * @default styled(Backdrop, {
+     *   name: 'MuiModal',
+     *   slot: 'Backdrop',
+     *   overridesResolver: (props, styles) => {
+     *     return styles.backdrop;
+     *   },
+     * })({
+     *   zIndex: -1,
+     * })
      */
     BackdropComponent?: React.ElementType<BackdropProps>;
     /**
@@ -62,7 +67,7 @@ export const modalClasses: ModalClasses;
 
 export type ModalProps<
   D extends React.ElementType = ModalTypeMap['defaultComponent'],
-  P = {}
-> = ModalUnstyledProps<D, P>;
+  P = {},
+> = OverrideProps<ModalTypeMap<D, P>, D>;
 
 export default Modal;

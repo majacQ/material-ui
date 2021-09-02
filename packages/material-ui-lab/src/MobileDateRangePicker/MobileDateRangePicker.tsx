@@ -1,12 +1,14 @@
 import * as React from 'react';
 import PropTypes from 'prop-types';
-import { unstable_useThemeProps as useThemeProps } from '@material-ui/core/styles';
+import { useThemeProps } from '@mui/material/styles';
 import MobileWrapper, { MobileWrapperProps } from '../internal/pickers/wrappers/MobileWrapper';
-import { useUtils } from '../internal/pickers/hooks/useUtils';
-import { useParsedDate } from '../internal/pickers/hooks/date-helpers-hooks';
-import { defaultMinDate, defaultMaxDate } from '../internal/pickers/constants/prop-types';
+import { useDefaultDates, useUtils } from '../internal/pickers/hooks/useUtils';
 import { RangeInput, DateRange } from '../DateRangePicker/RangeTypes';
-import { makeValidationHook, ValidationProps } from '../internal/pickers/hooks/useValidation';
+import {
+  DateRangeValidationError,
+  useDateRangeValidation,
+  ValidationProps,
+} from '../internal/pickers/hooks/useValidation';
 import { usePickerState, PickerStateValueManager } from '../internal/pickers/hooks/usePickerState';
 import {
   DateRangePickerView,
@@ -15,17 +17,20 @@ import {
 import DateRangePickerInput, {
   ExportedDateRangePickerInputProps,
 } from '../DateRangePicker/DateRangePickerInput';
-import {
-  parseRangeInputValue,
-  validateDateRange,
-  DateRangeValidationError,
-} from '../internal/pickers/date-utils';
+import { parseRangeInputValue } from '../internal/pickers/date-utils';
 import { DateInputPropsLike } from '../internal/pickers/wrappers/WrapperProps';
 
 interface BaseDateRangePickerProps<TDate>
   extends ExportedDateRangePickerViewProps<TDate>,
     ValidationProps<DateRangeValidationError, RangeInput<TDate>>,
     ExportedDateRangePickerInputProps {
+  /**
+   * The components used for each slot.
+   * Either a string to use a HTML element or a component.
+   * @default {}
+   */
+  components?: ExportedDateRangePickerViewProps<TDate>['components'] &
+    ExportedDateRangePickerInputProps['components'];
   /**
    * Text for end input label and toolbar placeholder.
    * @default 'End'
@@ -61,16 +66,7 @@ interface BaseDateRangePickerProps<TDate>
   value: RangeInput<TDate>;
 }
 
-const useDateRangeValidation = makeValidationHook<
-  DateRangeValidationError,
-  RangeInput<unknown>,
-  BaseDateRangePickerProps<any>
->(validateDateRange, {
-  isSameError: (a, b) => b !== null && a[1] === b[1] && a[0] === b[0],
-});
-
-const KeyboardDateInputComponent = DateRangePickerInput as React.FC<DateInputPropsLike>;
-const PureDateInputComponent = DateRangePickerInput as React.FC<DateInputPropsLike>;
+const PureDateInputComponent = DateRangePickerInput as unknown as React.FC<DateInputPropsLike>;
 
 const rangePickerValueManager: PickerStateValueManager<any, any> = {
   emptyValue: [null, null],
@@ -110,14 +106,15 @@ const MobileDateRangePicker = React.forwardRef(function MobileDateRangePicker<TD
     startText = 'Start',
     endText = 'End',
     inputFormat: passedInputFormat,
-    minDate: minDateProp = defaultMinDate as TDate,
-    maxDate: maxDateProp = defaultMaxDate as TDate,
+    minDate: minDateProp,
+    maxDate: maxDateProp,
     ...other
   } = props;
 
   const utils = useUtils();
-  const minDate = useParsedDate(minDateProp);
-  const maxDate = useParsedDate(maxDateProp);
+  const defaultDates = useDefaultDates<TDate>();
+  const minDate = minDateProp ?? defaultDates.minDate;
+  const maxDate = maxDateProp ?? defaultDates.maxDate;
   const [currentlySelectingRangeEnd, setCurrentlySelectingRangeEnd] = React.useState<
     'start' | 'end'
   >('start');
@@ -126,7 +123,6 @@ const MobileDateRangePicker = React.forwardRef(function MobileDateRangePicker<TD
     ...other,
     value,
     onChange,
-    inputFormat: passedInputFormat || utils.formats.keyboardDate,
   };
 
   const restProps = {
@@ -140,12 +136,13 @@ const MobileDateRangePicker = React.forwardRef(function MobileDateRangePicker<TD
     DateRange<TDate>
   >(pickerStateProps, rangePickerValueManager);
 
-  const validationError = useDateRangeValidation(value, props);
+  const validationError = useDateRangeValidation(props);
 
   const DateInputProps = {
     ...inputProps,
     ...restProps,
     currentlySelectingRangeEnd,
+    inputFormat: passedInputFormat || utils.formats.keyboardDate,
     setCurrentlySelectingRangeEnd,
     startText,
     endText,
@@ -159,7 +156,6 @@ const MobileDateRangePicker = React.forwardRef(function MobileDateRangePicker<TD
       {...restProps}
       {...wrapperProps}
       DateInputProps={DateInputProps}
-      KeyboardDateInputComponent={KeyboardDateInputComponent}
       PureDateInputComponent={PureDateInputComponent}
     >
       <DateRangePickerView<any>
@@ -188,15 +184,14 @@ MobileDateRangePicker.propTypes /* remove-proptypes */ = {
    */
   acceptRegex: PropTypes.instanceOf(RegExp),
   /**
-   * Enables keyboard listener for moving between days in calendar.
-   * Defaults to `true` unless the `ClockPicker` is used inside a `Static*` picker component.
-   */
-  allowKeyboardControl: PropTypes.bool,
-  /**
    * If `true`, `onChange` is fired on click even if the same date is selected.
    * @default false
    */
   allowSameDateSelection: PropTypes.bool,
+  /**
+   * @ignore
+   */
+  autoFocus: PropTypes.bool,
   /**
    * The number of calendars that render on **desktop**.
    * @default 2
@@ -204,7 +199,7 @@ MobileDateRangePicker.propTypes /* remove-proptypes */ = {
   calendars: PropTypes.oneOf([1, 2, 3]),
   /**
    * Cancel text message.
-   * @default "CANCEL"
+   * @default 'Cancel'
    */
   cancelText: PropTypes.node,
   /**
@@ -222,7 +217,7 @@ MobileDateRangePicker.propTypes /* remove-proptypes */ = {
   clearable: PropTypes.bool,
   /**
    * Clear text message.
-   * @default "CLEAR"
+   * @default 'Clear'
    */
   clearText: PropTypes.node,
   /**
@@ -233,6 +228,7 @@ MobileDateRangePicker.propTypes /* remove-proptypes */ = {
   components: PropTypes.shape({
     LeftArrowButton: PropTypes.elementType,
     LeftArrowIcon: PropTypes.elementType,
+    OpenPickerIcon: PropTypes.elementType,
     RightArrowButton: PropTypes.elementType,
     RightArrowIcon: PropTypes.elementType,
     SwitchViewButton: PropTypes.elementType,
@@ -362,7 +358,7 @@ MobileDateRangePicker.propTypes /* remove-proptypes */ = {
   minDate: PropTypes.any,
   /**
    * Ok button text.
-   * @default "OK"
+   * @default 'OK'
    */
   okText: PropTypes.node,
   /**
@@ -408,10 +404,6 @@ MobileDateRangePicker.propTypes /* remove-proptypes */ = {
    * Props to pass to keyboard adornment button.
    */
   OpenPickerButtonProps: PropTypes.object,
-  /**
-   * Icon displaying for open picker button.
-   */
-  openPickerIcon: PropTypes.node,
   /**
    * Force rendering in particular orientation.
    */
@@ -492,7 +484,7 @@ MobileDateRangePicker.propTypes /* remove-proptypes */ = {
   startText: PropTypes.node,
   /**
    * Today text message.
-   * @default "TODAY"
+   * @default 'Today'
    */
   todayText: PropTypes.node,
   /**
@@ -505,12 +497,12 @@ MobileDateRangePicker.propTypes /* remove-proptypes */ = {
   toolbarFormat: PropTypes.string,
   /**
    * Mobile picker date value placeholder, displaying if `value` === `null`.
-   * @default "–"
+   * @default '–'
    */
   toolbarPlaceholder: PropTypes.node,
   /**
    * Mobile picker title, displaying in the toolbar.
-   * @default "SELECT DATE"
+   * @default 'Select date range'
    */
   toolbarTitle: PropTypes.node,
   /**

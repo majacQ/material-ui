@@ -1,12 +1,11 @@
 import * as React from 'react';
-import TextField from '@material-ui/core/TextField';
-import DateRangePicker from '@material-ui/lab/DateRangePicker';
+import TextField from '@mui/material/TextField';
+import DateRangePicker from '@mui/lab/DateRangePicker';
 import { describeConformance } from 'test/utils';
-import { createPickerMount, createPickerRender } from '../internal/pickers/test-utils';
+import { createPickerRender, wrapPickerMount } from '../internal/pickers/test-utils';
 
 describe('<DateRangePicker />', () => {
   const render = createPickerRender();
-  const mount = createPickerMount();
 
   describeConformance(
     <DateRangePicker
@@ -16,9 +15,20 @@ describe('<DateRangePicker />', () => {
     />,
     () => ({
       classes: {},
-      mount,
+      muiName: 'MuiDateRangePicker',
+      wrapMount: wrapPickerMount,
       refInstanceof: window.HTMLDivElement,
-      skip: ['componentProp', 'mergeClassName', 'propsSpread', 'rootClass', 'reactTestRenderer'],
+      skip: [
+        'componentProp',
+        'componentsProp',
+        'themeDefaultProps',
+        'themeStyleOverrides',
+        'themeVariants',
+        'mergeClassName',
+        'propsSpread',
+        'rootClass',
+        'reactTestRenderer',
+      ],
     }),
   );
 

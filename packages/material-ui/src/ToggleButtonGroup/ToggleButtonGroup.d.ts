@@ -1,10 +1,13 @@
 import * as React from 'react';
-import { SxProps } from '@material-ui/system';
-import { OverridableStringUnion } from '@material-ui/types';
+import { SxProps } from '@mui/system';
+import { OverridableStringUnion } from '@mui/types';
 import { InternalStandardProps as StandardProps } from '..';
 import { Theme } from '../styles';
+import { ToggleButtonGroupClasses } from './toggleButtonGroupClasses';
 
 export interface ToggleButtonGroupPropsSizeOverrides {}
+
+export interface ToggleButtonGroupPropsColorOverrides {}
 
 export interface ToggleButtonGroupProps
   extends StandardProps<React.HTMLAttributes<HTMLDivElement>, 'onChange' | 'children'> {
@@ -15,28 +18,25 @@ export interface ToggleButtonGroupProps
   /**
    * Override or extend the styles applied to the component.
    */
-  classes?: {
-    /** Styles applied to the root element. */
-    root?: string;
-    /** Styles applied to the root element if `orientation="vertical"`. */
-    vertical?: string;
-    /** Styles applied to the children. */
-    grouped?: string;
-    /** Styles applied to the children if `orientation="horizontal"`. */
-    groupedHorizontal?: string;
-    /** Styles applied to the children if `orientation="vertical"`. */
-    groupedVertical?: string;
-  };
+  classes?: Partial<ToggleButtonGroupClasses>;
   /**
    * The color of a button when it is selected.
    * @default 'standard'
    */
-  color?: 'standard' | 'primary' | 'secondary';
+  color?: OverridableStringUnion<
+    'standard' | 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning',
+    ToggleButtonGroupPropsColorOverrides
+  >;
   /**
    * If `true`, only allow one of the child ToggleButton values to be selected.
    * @default false
    */
   exclusive?: boolean;
+  /**
+   * If `true`, the component is disabled. This implies that all ToggleButton children will be disabled.
+   * @default false
+   */
+  disabled?: boolean;
   /**
    * If `true`, the button group will take up the full width of its container.
    * @default false
@@ -45,7 +45,7 @@ export interface ToggleButtonGroupProps
   /**
    * Callback fired when the value changes.
    *
-   * @param {object} event The event source of the callback.
+   * @param {React.MouseEvent<HTMLElement>} event The event source of the callback.
    * @param {any} value of the selected buttons. When `exclusive` is true
    * this is a single value; when false an array of selected values. If no value
    * is selected and `exclusive` is true the value is null; when false an empty array.
@@ -73,8 +73,6 @@ export interface ToggleButtonGroupProps
    */
   value?: any;
 }
-
-export type ToggleButtonGroupClassKey = keyof NonNullable<ToggleButtonGroupProps['classes']>;
 
 /**
  *

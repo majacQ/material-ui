@@ -14,7 +14,12 @@ import {
   within,
   RenderResult,
 } from '@testing-library/react/pure';
-import { unstable_trace, Interaction } from 'scheduler/tracing';
+
+interface Interaction {
+  id: number;
+  name: string;
+  timestamp: number;
+}
 
 const enableDispatchingProfiler = process.env.TEST_GATE === 'enable-dispatching-profiler';
 
@@ -29,10 +34,12 @@ function noTrace<T>(interactionName: string, callback: () => T): T {
  */
 let workspaceRoot: string;
 
+let interactionID = 0;
+const interactionStack: Interaction[] = [];
 /**
  * interactionName - Human readable label for this particular interaction.
  */
-function traceByStack<T>(interactionName: string, callback: () => T): T {
+function traceByStackSync<T>(interactionName: string, callback: () => T): T {
   const { stack } = new Error();
   const testLines = stack!
     .split(/\r?\n/)
@@ -55,7 +62,19 @@ function traceByStack<T>(interactionName: string, callback: () => T): T {
     });
   const originLine = testLines[testLines.length - 1] ?? 'unknown line';
 
-  return unstable_trace(`${originLine} (${interactionName})`, performance.now(), callback);
+  interactionID += 1;
+  const interaction: Interaction = {
+    id: interactionID,
+    name: `${originLine} (${interactionName})`,
+    timestamp: performance.now(),
+  };
+
+  interactionStack.push(interaction);
+  try {
+    return callback();
+  } finally {
+    interactionStack.pop();
+  }
 }
 
 interface Profiler {
@@ -81,7 +100,7 @@ type RenderMark = [
   baseDuration: number,
   startTime: number,
   commitTime: number,
-  interactions: Set<Interaction>,
+  interactions: Interaction[],
 ];
 
 class DispatchingProfiler implements Profiler {
@@ -100,7 +119,6 @@ class DispatchingProfiler implements Profiler {
     baseDuration,
     startTime,
     commitTime,
-    interactions,
   ) => {
     // Do minimal work here to keep the render fast.
     // Though it's unclear whether work here affects the profiler results.
@@ -112,7 +130,7 @@ class DispatchingProfiler implements Profiler {
       baseDuration,
       startTime,
       commitTime,
-      interactions,
+      interactionStack.slice(),
     ]);
   };
 
@@ -126,7 +144,7 @@ class DispatchingProfiler implements Profiler {
             baseDuration: entry[3],
             startTime: entry[4],
             commitTime: entry[5],
-            interactions: Array.from(entry[6]),
+            interactions: entry[6],
           };
         }),
       },
@@ -136,7 +154,7 @@ class DispatchingProfiler implements Profiler {
 }
 
 const UsedProfiler = enableDispatchingProfiler ? DispatchingProfiler : NoopProfiler;
-const trace = enableDispatchingProfiler ? traceByStack : noTrace;
+const traceSync = enableDispatchingProfiler ? traceByStackSync : noTrace;
 
 // holes are *All* selectors which aren't necessary for id selectors
 const [queryDescriptionOf, , getDescriptionOf, , findDescriptionOf] = buildQueries(
@@ -160,21 +178,16 @@ function queryAllByLabelText(element: any, label: string): HTMLElement[] {
     `*ByLabelText() relies on features that are not available in older browsers. Prefer \`*ByRole(someRole, { name: '${label}' })\` `,
   );
 }
-const [
-  queryByLabelText,
-  getAllByLabelText,
-  getByLabelText,
-  findAllByLabelText,
-  findByLabelText,
-] = buildQueries(
-  queryAllByLabelText,
-  function getMultipleError() {
-    throw new Error('not implemented');
-  },
-  function getMissingError() {
-    throw new Error('not implemented');
-  },
-);
+const [queryByLabelText, getAllByLabelText, getByLabelText, findAllByLabelText, findByLabelText] =
+  buildQueries(
+    queryAllByLabelText,
+    function getMultipleError() {
+      throw new Error('not implemented');
+    },
+    function getMissingError() {
+      throw new Error('not implemented');
+    },
+  );
 
 const customQueries = {
   queryDescriptionOf,
@@ -209,17 +222,25 @@ interface RenderConfiguration {
    * https://testing-library.com/docs/react-testing-library/api#hydrate
    */
   hydrate?: boolean;
+  /**
+   * Set to true if the test fails in React 18.
+   */
+  legacyRoot?: boolean;
   profiler: Profiler;
   /**
    * wrap in React.StrictMode?
    */
   strict?: boolean;
+  /**
+   * Set to `true` if the test fails due to [Strict Effects](https://github.com/reactwg/react-18/discussions/19).
+   */
+  strictEffects?: boolean;
   wrapper?: React.JSXElementConstructor<{}>;
 }
 
 export type RenderOptions = Omit<RenderConfiguration, 'emotionCache' | 'profiler'>;
 
-interface MuiRenderResult extends RenderResult<typeof queries & typeof customQueries> {
+export interface MuiRenderResult extends RenderResult<typeof queries & typeof customQueries> {
   forceUpdate(): void;
   /**
    * convenience helper. Better than repeating all props.
@@ -236,12 +257,15 @@ function clientRender(
     container,
     emotionCache,
     hydrate,
+    legacyRoot,
     strict = true,
+    strictEffects = strict,
     profiler,
     wrapper: InnerWrapper = React.Fragment,
   } = configuration;
 
-  const Mode = strict ? React.StrictMode : React.Fragment;
+  const usesLegacyRoot = !React.version.startsWith('18');
+  const Mode = strict && (strictEffects || usesLegacyRoot) ? React.StrictMode : React.Fragment;
   function Wrapper({ children }: { children?: React.ReactNode }) {
     return (
       <Mode>
@@ -255,11 +279,13 @@ function clientRender(
   }
   Wrapper.propTypes = { children: PropTypes.node };
 
-  const testingLibraryRenderResult = trace('render', () =>
+  const testingLibraryRenderResult = traceSync('render', () =>
     testingLibraryRender(element, {
       baseElement,
       container,
       hydrate,
+      // @ts-ignore Available in the `@testing-library/react` fork used when running with React 18
+      legacyRoot,
       queries: { ...queries, ...customQueries },
       wrapper: Wrapper,
     }),
@@ -267,7 +293,7 @@ function clientRender(
   const result: MuiRenderResult = {
     ...testingLibraryRenderResult,
     forceUpdate() {
-      trace('forceUpdate', () =>
+      traceSync('forceUpdate', () =>
         testingLibraryRenderResult.rerender(
           React.cloneElement(element, {
             'data-force-update': String(Math.random()),
@@ -276,7 +302,7 @@ function clientRender(
       );
     },
     setProps(props) {
-      trace('setProps', () =>
+      traceSync('setProps', () =>
         testingLibraryRenderResult.rerender(React.cloneElement(element, props)),
       );
     },
@@ -288,7 +314,11 @@ function clientRender(
 export function createClientRender(
   globalOptions: RenderOptions = {},
 ): (element: React.ReactElement, options?: RenderOptions) => MuiRenderResult {
-  const { strict: globalStrict } = globalOptions;
+  const {
+    legacyRoot: globalLegacyRoot,
+    strict: globalStrict,
+    strictEffects: globalStrictEffects,
+  } = globalOptions;
   // save stack to re-use in test-hooks
   const { stack: createClientRenderStack } = new Error();
 
@@ -379,21 +409,32 @@ export function createClientRender(
       );
     }
 
-    const { strict = globalStrict, ...localOptions } = options;
-
-    return clientRender(element, { ...localOptions, strict, profiler, emotionCache });
+    const {
+      legacyRoot = globalLegacyRoot,
+      strict = globalStrict,
+      strictEffects = globalStrictEffects,
+      ...localOptions
+    } = options;
+    return clientRender(element, {
+      ...localOptions,
+      legacyRoot,
+      strict,
+      strictEffects,
+      profiler,
+      emotionCache,
+    });
   };
 }
 
 const fireEvent = ((target, event, ...args) => {
-  return trace(`firEvent.${event.type}`, () => rtlFireEvent(target, event, ...args));
+  return traceSync(`firEvent.${event.type}`, () => rtlFireEvent(target, event, ...args));
 }) as typeof rtlFireEvent;
 
 Object.keys(rtlFireEvent).forEach(
   // @ts-expect-error
   (eventType: keyof typeof rtlFireEvent) => {
     fireEvent[eventType] = (...args) =>
-      trace(`firEvent.${eventType}`, () => rtlFireEvent[eventType](...args));
+      traceSync(`firEvent.${eventType}`, () => rtlFireEvent[eventType](...args));
   },
 );
 
@@ -420,7 +461,7 @@ fireEvent.keyDown = (desiredTarget, options = {}) => {
     throw error;
   }
 
-  return trace('fireEvent.keyDown', () => originalFireEventKeyDown(element, options));
+  return traceSync('fireEvent.keyDown', () => originalFireEventKeyDown(element, options));
 };
 
 const originalFireEventKeyUp = rtlFireEvent.keyUp;
@@ -446,7 +487,7 @@ fireEvent.keyUp = (desiredTarget, options = {}) => {
     throw error;
   }
 
-  return trace('fireEvent.keyUp', () => originalFireEventKeyUp(element, options));
+  return traceSync('fireEvent.keyUp', () => originalFireEventKeyUp(element, options));
 };
 
 export function fireTouchChangedEvent(
@@ -498,7 +539,7 @@ export function fireTouchChangedEvent(
 }
 
 export function act(callback: () => void) {
-  return trace('act', () => rtlAct(callback));
+  return traceSync('act', () => rtlAct(callback));
 }
 
 export * from '@testing-library/react/pure';

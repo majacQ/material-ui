@@ -1,61 +1,47 @@
 import * as React from 'react';
 import PropTypes from 'prop-types';
 import clsx from 'clsx';
-import { unstable_composeClasses as composeClasses } from '@material-ui/unstyled';
-import experimentalStyled from '../styles/experimentalStyled';
+import { unstable_composeClasses as composeClasses } from '@mui/core';
+import styled from '../styles/styled';
 import useThemeProps from '../styles/useThemeProps';
 import Collapse from '../Collapse';
 import StepperContext from '../Stepper/StepperContext';
 import StepContext from '../Step/StepContext';
 import { getStepContentUtilityClass } from './stepContentClasses';
 
-const useUtilityClasses = (styleProps) => {
-  const { classes, last } = styleProps;
+const useUtilityClasses = (ownerState) => {
+  const { classes, last } = ownerState;
 
   const slots = { root: ['root', last && 'last'], transition: ['transition'] };
 
   return composeClasses(slots, getStepContentUtilityClass, classes);
 };
 
-const StepContentRoot = experimentalStyled(
-  'div',
-  {},
-  {
-    name: 'MuiStepContent',
-    slot: 'Root',
-    overridesResolver: (props, styles) => {
-      const { styleProps } = props;
+const StepContentRoot = styled('div', {
+  name: 'MuiStepContent',
+  slot: 'Root',
+  overridesResolver: (props, styles) => {
+    const { ownerState } = props;
 
-      return {
-        ...styles.root,
-        ...(styleProps.last && styles.last),
-      };
-    },
+    return [styles.root, ownerState.last && styles.last];
   },
-)(({ styleProps, theme }) => ({
-  /* Styles applied to the root element. */
+})(({ ownerState, theme }) => ({
   marginLeft: 12, // half icon
   paddingLeft: 8 + 12, // margin + half icon
   paddingRight: 8,
   borderLeft: `1px solid ${
     theme.palette.mode === 'light' ? theme.palette.grey[400] : theme.palette.grey[600]
   }`,
-  /* Styles applied to the root element if `last={true}` (controlled by `Step`). */
-  ...(styleProps.last && {
+  ...(ownerState.last && {
     borderLeft: 'none',
   }),
 }));
 
-/* Styles applied to the Transition component. */
-const StepContentTransition = experimentalStyled(
-  Collapse,
-  {},
-  {
-    name: 'MuiStepContent',
-    slot: 'Transition',
-    overridesResolver: (props, styles) => styles.transition,
-  },
-)();
+const StepContentTransition = styled(Collapse, {
+  name: 'MuiStepContent',
+  slot: 'Transition',
+  overridesResolver: (props, styles) => styles.transition,
+})({});
 
 const StepContent = React.forwardRef(function StepContent(inProps, ref) {
   const props = useThemeProps({ props: inProps, name: 'MuiStepContent' });
@@ -71,8 +57,8 @@ const StepContent = React.forwardRef(function StepContent(inProps, ref) {
   const { orientation } = React.useContext(StepperContext);
   const { active, last, expanded } = React.useContext(StepContext);
 
-  const styleProps = { ...props, last };
-  const classes = useUtilityClasses(styleProps);
+  const ownerState = { ...props, last };
+  const classes = useUtilityClasses(ownerState);
 
   if (process.env.NODE_ENV !== 'production') {
     if (orientation !== 'vertical') {
@@ -92,14 +78,14 @@ const StepContent = React.forwardRef(function StepContent(inProps, ref) {
     <StepContentRoot
       className={clsx(classes.root, className)}
       ref={ref}
-      styleProps={styleProps}
+      ownerState={ownerState}
       {...other}
     >
       <StepContentTransition
         as={TransitionComponent}
         in={active || expanded}
         className={classes.transition}
-        styleProps={styleProps}
+        ownerState={ownerState}
         timeout={transitionDuration}
         unmountOnExit
         {...TransitionProps}

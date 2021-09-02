@@ -2,12 +2,12 @@ import * as React from 'react';
 import { expect } from 'chai';
 import { spy } from 'sinon';
 import { createClientRender } from 'test/utils';
-import Collapse from '@material-ui/core/Collapse';
-import Fade from '@material-ui/core/Fade';
-import Grow from '@material-ui/core/Grow';
-import Slide from '@material-ui/core/Slide';
-import Zoom from '@material-ui/core/Zoom';
-import Popper from '@material-ui/core/Popper';
+import Collapse from '@mui/material/Collapse';
+import Fade from '@mui/material/Fade';
+import Grow from '@mui/material/Grow';
+import Slide from '@mui/material/Slide';
+import Zoom from '@mui/material/Zoom';
+import Popper from '@mui/material/Popper';
 
 describe('<Popper />', () => {
   let isSafari;
@@ -221,12 +221,7 @@ describe('<Popper />', () => {
           setProps({ open: true });
 
           expect(handleFocus.callCount).to.equal(1);
-          if (isSafari) {
-            expect(window.scrollY, 'focus caused scroll').to.equal(scrollYBeforeOpen);
-          } else {
-            // FIXME: should equal
-            expect(window.scrollY, 'focus caused scroll').not.to.equal(scrollYBeforeOpen);
-          }
+          expect(window.scrollY, 'focus caused scroll').to.equal(scrollYBeforeOpen);
         });
       });
     });

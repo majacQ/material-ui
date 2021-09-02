@@ -1,18 +1,17 @@
 import * as React from 'react';
 import PropTypes from 'prop-types';
 import clsx from 'clsx';
-import { integerPropType } from '@material-ui/utils';
-import { unstable_composeClasses as composeClasses } from '@material-ui/unstyled';
+import { integerPropType } from '@mui/utils';
+import { unstable_composeClasses as composeClasses } from '@mui/core';
 import Paper from '../Paper';
 import capitalize from '../utils/capitalize';
 import LinearProgress from '../LinearProgress';
-
 import useThemeProps from '../styles/useThemeProps';
-import experimentalStyled from '../styles/experimentalStyled';
+import styled, { slotShouldForwardProp } from '../styles/styled';
 import { getMobileStepperUtilityClass } from './mobileStepperClasses';
 
-const useUtilityClasses = (styleProps) => {
-  const { classes, position } = styleProps;
+const useUtilityClasses = (ownerState) => {
+  const { classes, position } = ownerState;
 
   const slots = {
     root: ['root', `position${capitalize(position)}`],
@@ -25,39 +24,29 @@ const useUtilityClasses = (styleProps) => {
   return composeClasses(slots, getMobileStepperUtilityClass, classes);
 };
 
-const MobileStepperRoot = experimentalStyled(
-  Paper,
-  {},
-  {
-    name: 'MuiMobileStepper',
-    slot: 'Root',
-    overridesResolver: (props, styles) => {
-      const { styleProps } = props;
+const MobileStepperRoot = styled(Paper, {
+  name: 'MuiMobileStepper',
+  slot: 'Root',
+  overridesResolver: (props, styles) => {
+    const { ownerState } = props;
 
-      return {
-        ...styles.root,
-        ...styles[`position${capitalize(styleProps.position)}`],
-      };
-    },
+    return [styles.root, styles[`position${capitalize(ownerState.position)}`]];
   },
-)(({ theme, styleProps }) => ({
-  /* Styles applied to the root element. */
+})(({ theme, ownerState }) => ({
   display: 'flex',
   flexDirection: 'row',
   justifyContent: 'space-between',
   alignItems: 'center',
   background: theme.palette.background.default,
   padding: 8,
-  /* Styles applied to the root element if `position="bottom"`. */
-  ...(styleProps.position === 'bottom' && {
+  ...(ownerState.position === 'bottom' && {
     position: 'fixed',
     bottom: 0,
     left: 0,
     right: 0,
     zIndex: theme.zIndex.mobileStepper,
   }),
-  /* Styles applied to the root element if `position="top"`. */
-  ...(styleProps.position === 'top' && {
+  ...(ownerState.position === 'top' && {
     position: 'fixed',
     top: 0,
     left: 0,
@@ -66,36 +55,28 @@ const MobileStepperRoot = experimentalStyled(
   }),
 }));
 
-const MobileStepperDots = experimentalStyled(
-  'div',
-  {},
-  { name: 'MuiMobileStepper', slot: 'Dots', overridesResolver: (props, styles) => styles.dots },
-)(({ styleProps }) => ({
-  /* Styles applied to the dots container if `variant="dots"`. */
-  ...(styleProps.variant === 'dots' && {
+const MobileStepperDots = styled('div', {
+  name: 'MuiMobileStepper',
+  slot: 'Dots',
+  overridesResolver: (props, styles) => styles.dots,
+})(({ ownerState }) => ({
+  ...(ownerState.variant === 'dots' && {
     display: 'flex',
     flexDirection: 'row',
   }),
 }));
 
-const MobileStepperDot = experimentalStyled(
-  'div',
-  {},
-  {
-    name: 'MuiMobileStepper',
-    slot: 'Dot',
-    overridesResolver: (props, styles) => {
-      const { styleProps } = props;
+const MobileStepperDot = styled('div', {
+  name: 'MuiMobileStepper',
+  slot: 'Dot',
+  shouldForwardProp: (prop) => slotShouldForwardProp(prop) && prop !== 'dotActive',
+  overridesResolver: (props, styles) => {
+    const { dotActive } = props;
 
-      return {
-        ...styles.dot,
-        ...(styleProps.dotActive && styles.dotActive),
-      };
-    },
+    return [styles.dot, dotActive && styles.dotActive];
   },
-)(({ theme, styleProps }) => ({
-  /* Styles applied to each dot if `variant="dots"`. */
-  ...(styleProps.variant === 'dots' && {
+})(({ theme, ownerState, dotActive }) => ({
+  ...(ownerState.variant === 'dots' && {
     transition: theme.transitions.create('background-color', {
       duration: theme.transitions.duration.shortest,
     }),
@@ -104,24 +85,18 @@ const MobileStepperDot = experimentalStyled(
     width: 8,
     height: 8,
     margin: '0 2px',
-    /* Styles applied to a dot if `variant="dots"` and this is the active step. */
-    ...(styleProps.dotActive && {
+    ...(dotActive && {
       backgroundColor: theme.palette.primary.main,
     }),
   }),
 }));
 
-const MobileStepperProgress = experimentalStyled(
-  LinearProgress,
-  {},
-  {
-    name: 'MuiMobileStepper',
-    slot: 'Progress',
-    overridesResolver: (props, styles) => styles.progress,
-  },
-)(({ styleProps }) => ({
-  /* Styles applied to the Linear Progress component if `variant="progress"`. */
-  ...(styleProps.variant === 'progress' && {
+const MobileStepperProgress = styled(LinearProgress, {
+  name: 'MuiMobileStepper',
+  slot: 'Progress',
+  overridesResolver: (props, styles) => styles.progress,
+})(({ ownerState }) => ({
+  ...(ownerState.variant === 'progress' && {
     width: '50%',
   }),
 }));
@@ -140,14 +115,14 @@ const MobileStepper = React.forwardRef(function MobileStepper(inProps, ref) {
     ...other
   } = props;
 
-  const styleProps = {
+  const ownerState = {
     ...props,
     activeStep,
     position,
     variant,
   };
 
-  const classes = useUtilityClasses(styleProps);
+  const classes = useUtilityClasses(ownerState);
 
   return (
     <MobileStepperRoot
@@ -155,7 +130,7 @@ const MobileStepper = React.forwardRef(function MobileStepper(inProps, ref) {
       elevation={0}
       className={clsx(classes.root, className)}
       ref={ref}
-      styleProps={styleProps}
+      ownerState={ownerState}
       {...other}
     >
       {backButton}
@@ -166,12 +141,13 @@ const MobileStepper = React.forwardRef(function MobileStepper(inProps, ref) {
       )}
 
       {variant === 'dots' && (
-        <MobileStepperDots styleProps={styleProps} className={classes.dots}>
+        <MobileStepperDots ownerState={ownerState} className={classes.dots}>
           {[...new Array(steps)].map((_, index) => (
             <MobileStepperDot
               key={index}
               className={clsx(classes.dot, { [classes.dotActive]: index === activeStep })}
-              styleProps={{ ...styleProps, dotActive: index === activeStep }}
+              ownerState={ownerState}
+              dotActive={index === activeStep}
             />
           ))}
         </MobileStepperDots>
@@ -179,7 +155,7 @@ const MobileStepper = React.forwardRef(function MobileStepper(inProps, ref) {
 
       {variant === 'progress' && (
         <MobileStepperProgress
-          styleProps={styleProps}
+          ownerState={ownerState}
           className={classes.progress}
           variant="determinate"
           value={Math.ceil((activeStep / (steps - 1)) * 100)}

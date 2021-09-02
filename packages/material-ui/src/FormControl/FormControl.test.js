@@ -1,15 +1,14 @@
 import * as React from 'react';
 import { expect } from 'chai';
 import { spy } from 'sinon';
-import { createMount, describeConformanceV5, act, createClientRender } from 'test/utils';
-import FormControl, { formControlClasses as classes } from '@material-ui/core/FormControl';
-import Input from '@material-ui/core/Input';
-import Select from '@material-ui/core/Select';
+import { describeConformance, act, createClientRender } from 'test/utils';
+import FormControl, { formControlClasses as classes } from '@mui/material/FormControl';
+import Input from '@mui/material/Input';
+import Select from '@mui/material/Select';
 import useFormControl from './useFormControl';
 
 describe('<FormControl />', () => {
   const render = createClientRender();
-  const mount = createMount();
 
   function TestComponent(props) {
     const context = useFormControl();
@@ -19,11 +18,10 @@ describe('<FormControl />', () => {
     return null;
   }
 
-  describeConformanceV5(<FormControl />, () => ({
+  describeConformance(<FormControl />, () => ({
     classes,
     inheritComponent: 'div',
     render,
-    mount,
     refInstanceof: window.HTMLDivElement,
     testComponentPropWith: 'fieldset',
     muiName: 'MuiFormControl',
@@ -98,10 +96,10 @@ describe('<FormControl />', () => {
       act(() => {
         container.querySelector('input').focus();
       });
-      expect(readContext.args[1][0]).to.have.property('focused', true);
+      expect(readContext.lastCall.args[0]).to.have.property('focused', true);
 
       setProps({ disabled: true });
-      expect(readContext.args[2][0]).to.have.property('focused', false);
+      expect(readContext.lastCall.args[0]).to.have.property('focused', false);
     });
   });
 

@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import { SheetsRegistry } from 'jss';
 import { act } from 'react-dom/test-utils';
 import { createMount } from 'test/utils';
-import { createTheme } from '@material-ui/core/styles';
+import { createTheme } from '@mui/material/styles';
 import createGenerateClassName from '../createGenerateClassName';
 import makeStyles from './makeStyles';
 import useTheme from '../useTheme';
@@ -12,6 +12,7 @@ import StylesProvider from '../StylesProvider';
 import ThemeProvider from '../ThemeProvider';
 
 describe('makeStyles', () => {
+  // StrictModeViolation: uses `useSynchronousEffect`
   const mount = createMount({ strict: null });
 
   /**

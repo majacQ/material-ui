@@ -1,15 +1,15 @@
 import * as React from 'react';
 import PropTypes from 'prop-types';
 import clsx from 'clsx';
-import { unstable_composeClasses as composeClasses } from '@material-ui/unstyled';
+import { unstable_composeClasses as composeClasses } from '@mui/core';
+import { alpha } from '@mui/system';
 import Tablelvl2Context from '../Table/Tablelvl2Context';
-import { alpha } from '../styles/colorManipulator';
 import useThemeProps from '../styles/useThemeProps';
-import experimentalStyled from '../styles/experimentalStyled';
+import styled from '../styles/styled';
 import tableRowClasses, { getTableRowUtilityClass } from './tableRowClasses';
 
-const useUtilityClasses = (styleProps) => {
-  const { classes, selected, hover, head, footer } = styleProps;
+const useUtilityClasses = (ownerState) => {
+  const { classes, selected, hover, head, footer } = ownerState;
 
   const slots = {
     root: ['root', selected && 'selected', hover && 'hover', head && 'head', footer && 'footer'],
@@ -18,24 +18,15 @@ const useUtilityClasses = (styleProps) => {
   return composeClasses(slots, getTableRowUtilityClass, classes);
 };
 
-const TableRowRoot = experimentalStyled(
-  'tr',
-  {},
-  {
-    name: 'MuiTableRow',
-    slot: 'Root',
-    overridesResolver: (props, styles) => {
-      const { styleProps } = props;
+const TableRowRoot = styled('tr', {
+  name: 'MuiTableRow',
+  slot: 'Root',
+  overridesResolver: (props, styles) => {
+    const { ownerState } = props;
 
-      return {
-        ...styles.root,
-        ...(styleProps.head && styles.head),
-        ...(styleProps.footer && styles.footer),
-      };
-    },
+    return [styles.root, ownerState.head && styles.head, ownerState.footer && styles.footer];
   },
-)(({ theme }) => ({
-  /* Styles applied to the root element. */
+})(({ theme }) => ({
   color: 'inherit',
   display: 'table-row',
   verticalAlign: 'middle',
@@ -71,7 +62,7 @@ const TableRow = React.forwardRef(function TableRow(inProps, ref) {
   } = props;
   const tablelvl2 = React.useContext(Tablelvl2Context);
 
-  const styleProps = {
+  const ownerState = {
     ...props,
     component,
     hover,
@@ -80,7 +71,7 @@ const TableRow = React.forwardRef(function TableRow(inProps, ref) {
     footer: tablelvl2 && tablelvl2.variant === 'footer',
   };
 
-  const classes = useUtilityClasses(styleProps);
+  const classes = useUtilityClasses(ownerState);
 
   return (
     <TableRowRoot
@@ -88,7 +79,7 @@ const TableRow = React.forwardRef(function TableRow(inProps, ref) {
       ref={ref}
       className={clsx(classes.root, className)}
       role={component === defaultComponent ? null : 'row'}
-      styleProps={styleProps}
+      ownerState={ownerState}
       {...other}
     />
   );

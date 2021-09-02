@@ -9,8 +9,8 @@ The default locale of Material-UI is English (United States). If you want to use
 Use the theme to configure the locale text globally:
 
 ```jsx
-import { createTheme, ThemeProvider } from '@material-ui/core/styles';
-import { zhCN } from '@material-ui/core/locale';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { zhCN } from '@mui/material/locale';
 
 const theme = createTheme(
   {
@@ -35,12 +35,15 @@ const theme = createTheme(
 | Locale                  | BCP 47 language tag | Import name |
 | :---------------------- | :------------------ | :---------- |
 | Arabic (Egypt)          | ar-EG               | `arEG`      |
+| Arabic (Sudan)          | ar-SD               | `arSD`      |
 | Armenian                | hy-AM               | `hyAM`      |
 | Azerbaijani             | az-AZ               | `azAZ`      |
 | Bangla                  | bn-BD               | `bnBD`      |
 | Bulgarian               | bg-BG               | `bgBG`      |
 | Catalan                 | ca-ES               | `caES`      |
+| Chinese (Hong Kong)     | zh-HK               | `zhHK`      |
 | Chinese (Simplified)    | zh-CN               | `zhCN`      |
+| Chinese (Taiwan)        | zh-TW               | `zhTW`      |
 | Czech                   | cs-CZ               | `csCZ`      |
 | Dutch                   | nl-NL               | `nlNL`      |
 | English (United States) | en-US               | `enUS`      |
@@ -56,19 +59,21 @@ const theme = createTheme(
 | Indonesian              | id-ID               | `idID`      |
 | Italian                 | it-IT               | `itIT`      |
 | Japanese                | ja-JP               | `jaJP`      |
+| Khmer                   | kh-KH               | `khKH`      |
 | Kazakh                  | kz-KZ               | `kzKZ`      |
 | Korean                  | ko-KR               | `koKR`      |
 | Persian                 | fa-IR               | `faIR`      |
 | Polish                  | pl-PL               | `plPL`      |
-| Portuguese (Brazil)     | pt-BR               | `ptBR`      |
 | Portuguese              | pt-PT               | `ptPT`      |
+| Portuguese (Brazil)     | pt-BR               | `ptBR`      |
 | Romanian                | ro-RO               | `roRO`      |
 | Russian                 | ru-RU               | `ruRU`      |
+| Sinhalese               | si-LK               | `siLK`      |
 | Slovak                  | sk-SK               | `skSK`      |
 | Spanish                 | es-ES               | `esES`      |
 | Swedish                 | sv-SE               | `svSE`      |
-| Turkish                 | tr-TR               | `trTR`      |
 | Thai                    | th-TH               | `thTH`      |
+| Turkish                 | tr-TR               | `trTR`      |
 | Ukrainian               | uk-UA               | `ukUA`      |
 | Vietnamese              | vi-VN               | `viVN`      |
 

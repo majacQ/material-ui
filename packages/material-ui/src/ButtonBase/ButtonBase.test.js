@@ -3,8 +3,7 @@ import * as React from 'react';
 import { expect } from 'chai';
 import { spy, stub } from 'sinon';
 import {
-  createMount,
-  describeConformanceV5,
+  describeConformance,
   act,
   createClientRender,
   fireEvent,
@@ -14,15 +13,11 @@ import {
   programmaticFocusTriggersFocusVisible,
 } from 'test/utils';
 import PropTypes from 'prop-types';
-import { ThemeProvider, createTheme } from '@material-ui/core/styles';
-import ButtonBase, { buttonBaseClasses as classes } from '@material-ui/core/ButtonBase';
+import { ThemeProvider, createTheme } from '@mui/material/styles';
+import ButtonBase, { buttonBaseClasses as classes } from '@mui/material/ButtonBase';
 
 describe('<ButtonBase />', () => {
   const render = createClientRender();
-  /**
-   * @type {ReturnType<typeof createMount>}
-   */
-  const mount = createMount();
 
   // https://developer.microsoft.com/en-us/microsoft-edge/platform/issues/14156632/
   let canFireDragEvents = true;
@@ -38,11 +33,10 @@ describe('<ButtonBase />', () => {
     }
   });
 
-  describeConformanceV5(<ButtonBase />, () => ({
+  describeConformance(<ButtonBase />, () => ({
     classes,
     inheritComponent: 'button',
     render,
-    mount,
     refInstanceof: window.HTMLButtonElement,
     testComponentPropWith: 'a',
     muiName: 'MuiButtonBase',
@@ -133,16 +127,47 @@ describe('<ButtonBase />', () => {
       expect(button).not.to.have.attribute('type');
     });
 
-    it('should not use an anchor element if explicit component and href is passed', () => {
-      const { getByRole } = render(
-        // @ts-ignore
-        <ButtonBase component="span" href="https://google.com">
+    it('should not add role="button" if custom component and href are used', () => {
+      const CustomLink = React.forwardRef((props, ref) => {
+        return (
+          <a data-testid="customLink" ref={ref} {...props}>
+            {props.children}
+          </a>
+        );
+      });
+
+      const { container } = render(
+        // @ts-expect-error missing types in CustomLink
+        <ButtonBase component={CustomLink} href="https://google.com">
           Hello
         </ButtonBase>,
       );
-      const button = getByRole('button');
-      expect(button).to.have.property('nodeName', 'SPAN');
+      const button = container.firstChild;
+      expect(button).to.have.property('nodeName', 'A');
+      expect(button).to.have.attribute('data-testid', 'customLink');
       expect(button).to.have.attribute('href', 'https://google.com');
+      expect(button).not.to.have.attribute('role', 'button');
+    });
+
+    it('should not add role="button" if custom component and to are used', () => {
+      const CustomLink = React.forwardRef((props, ref) => {
+        // @ts-expect-error missing types in CustomLink
+        const { to, ...other } = props;
+        return (
+          <a data-testid="customLink" ref={ref} {...other} href={to}>
+            {props.children}
+          </a>
+        );
+      });
+
+      const { container } = render(
+        // @ts-expect-error missing types in CustomLink
+        <ButtonBase component={CustomLink} to="https://google.com">
+          Hello
+        </ButtonBase>,
+      );
+      const button = container.firstChild;
+      expect(button).not.to.have.attribute('role', 'button');
     });
   });
 
@@ -209,7 +234,9 @@ describe('<ButtonBase />', () => {
       fireEvent.click(button);
       expect(onClick.callCount).to.equal(1);
 
-      button.focus();
+      act(() => {
+        button.focus();
+      });
       expect(onFocus.callCount).to.equal(1);
 
       fireEvent.keyDown(button);
@@ -218,7 +245,9 @@ describe('<ButtonBase />', () => {
       fireEvent.keyUp(button);
       expect(onKeyUp.callCount).to.equal(1);
 
-      button.blur();
+      act(() => {
+        button.blur();
+      });
       expect(onBlur.callCount).to.equal(1);
 
       fireEvent.mouseLeave(button);
@@ -517,9 +546,9 @@ describe('<ButtonBase />', () => {
       const rippleRipple = container.querySelector('.touch-ripple-ripple');
       expect(rippleRipple).not.to.equal(null);
       // @ts-ignore
-      const rippleSyle = window.getComputedStyle(rippleRipple);
-      expect(rippleSyle).to.have.property('height', '101px');
-      expect(rippleSyle).to.have.property('width', '101px');
+      const rippleStyle = window.getComputedStyle(rippleRipple);
+      expect(rippleStyle).to.have.property('height', '101px');
+      expect(rippleStyle).to.have.property('width', '101px');
     });
 
     it('is disabled by default', () => {
@@ -542,9 +571,9 @@ describe('<ButtonBase />', () => {
       const rippleRipple = container.querySelector('.touch-ripple-ripple');
       expect(rippleRipple).not.to.equal(null);
       // @ts-ignore
-      const rippleSyle = window.getComputedStyle(rippleRipple);
-      expect(rippleSyle).not.to.have.property('height', '101px');
-      expect(rippleSyle).not.to.have.property('width', '101px');
+      const rippleStyle = window.getComputedStyle(rippleRipple);
+      expect(rippleStyle).not.to.have.property('height', '101px');
+      expect(rippleStyle).not.to.have.property('width', '101px');
     });
   });
 
@@ -689,8 +718,16 @@ describe('<ButtonBase />', () => {
       expect(button).not.to.have.class(classes.focusVisible);
     });
 
-    it('should use aria attributes for other components', () => {
-      const { getByRole } = render(
+    it('should not use aria-disabled with button host', () => {
+      const { getByRole } = render(<ButtonBase disabled>Hello</ButtonBase>);
+      const button = getByRole('button');
+
+      expect(button).to.have.attribute('disabled');
+      expect(button).not.to.have.attribute('aria-disabled');
+    });
+
+    it('should use aria-disabled for other components', () => {
+      const { getByRole, setProps } = render(
         <ButtonBase component="span" disabled>
           Hello
         </ButtonBase>,
@@ -699,6 +736,9 @@ describe('<ButtonBase />', () => {
 
       expect(button).not.to.have.attribute('disabled');
       expect(button).to.have.attribute('aria-disabled', 'true');
+
+      setProps({ disabled: false });
+      expect(button).not.to.have.attribute('aria-disabled');
     });
   });
 
@@ -739,7 +779,9 @@ describe('<ButtonBase />', () => {
 
       expect(button).not.to.have.class(classes.focusVisible);
 
-      button.focus();
+      act(() => {
+        button.focus();
+      });
 
       if (programmaticFocusTriggersFocusVisible()) {
         expect(button).to.have.class(classes.focusVisible);
@@ -752,7 +794,7 @@ describe('<ButtonBase />', () => {
       expect(button).to.have.class(classes.focusVisible);
     });
 
-    it('removes foucs-visible if focus is re-targetted', () => {
+    it('removes focus-visible if focus is re-targetted', () => {
       /**
        * @type {string[]}
        */
@@ -767,7 +809,7 @@ describe('<ButtonBase />', () => {
             onFocus={() => {
               const { current: focusRetarget } = focusRetargetRef;
               if (focusRetarget === null) {
-                throw new TypeError('Nothing to focous. Test cannot work.');
+                throw new TypeError('Nothing to focus. Test cannot work.');
               }
               focusRetarget.focus();
             }}

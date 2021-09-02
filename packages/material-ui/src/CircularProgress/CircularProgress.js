@@ -1,12 +1,12 @@
 import * as React from 'react';
 import PropTypes from 'prop-types';
 import clsx from 'clsx';
-import { chainPropTypes } from '@material-ui/utils';
-import { unstable_composeClasses as composeClasses } from '@material-ui/unstyled';
-import { keyframes, css } from '@material-ui/styled-engine';
+import { chainPropTypes } from '@mui/utils';
+import { unstable_composeClasses as composeClasses } from '@mui/core';
+import { keyframes, css } from '@mui/system';
 import capitalize from '../utils/capitalize';
 import useThemeProps from '../styles/useThemeProps';
-import experimentalStyled from '../styles/experimentalStyled';
+import styled from '../styles/styled';
 import { getCircularProgressUtilityClass } from './circularProgressClasses';
 
 const SIZE = 44;
@@ -38,8 +38,8 @@ const circularDashKeyframe = keyframes`
   }
 `;
 
-const useUtilityClasses = (styleProps) => {
-  const { classes, variant, color, disableShrink } = styleProps;
+const useUtilityClasses = (ownerState) => {
+  const { classes, variant, color, disableShrink } = ownerState;
 
   const slots = {
     root: ['root', variant, `color${capitalize(color)}`],
@@ -50,92 +50,72 @@ const useUtilityClasses = (styleProps) => {
   return composeClasses(slots, getCircularProgressUtilityClass, classes);
 };
 
-const CircularProgressRoot = experimentalStyled(
-  'span',
-  {},
-  {
-    name: 'MuiCircularProgress',
-    slot: 'Root',
-    overridesResolver: (props, styles) => {
-      const { styleProps } = props;
+const CircularProgressRoot = styled('span', {
+  name: 'MuiCircularProgress',
+  slot: 'Root',
+  overridesResolver: (props, styles) => {
+    const { ownerState } = props;
 
-      return {
-        ...styles.root,
-        ...styles[styleProps.variant],
-        ...styles[`color${capitalize(styleProps.color)}`],
-      };
-    },
+    return [
+      styles.root,
+      styles[ownerState.variant],
+      styles[`color${capitalize(ownerState.color)}`],
+    ];
   },
-)(
-  ({ styleProps, theme }) => ({
-    /* Styles applied to the root element. */
+})(
+  ({ ownerState, theme }) => ({
     display: 'inline-block',
-    /* Styles applied to the root element if `variant="determinate"`. */
-    ...(styleProps.variant === 'determinate' && {
+    ...(ownerState.variant === 'determinate' && {
       transition: theme.transitions.create('transform'),
     }),
-    /* Styles applied to the root element unless `color="inherit"`. */
-    ...(styleProps.color !== 'inherit' && {
-      color: theme.palette[styleProps.color].main,
+    ...(ownerState.color !== 'inherit' && {
+      color: theme.palette[ownerState.color].main,
     }),
   }),
-  /* Styles applied to the root element if `variant="indeterminate"`. */
-  ({ styleProps }) =>
-    styleProps.variant === 'indeterminate' &&
+  ({ ownerState }) =>
+    ownerState.variant === 'indeterminate' &&
     css`
       animation: ${circularRotateKeyframe} 1.4s linear infinite;
     `,
 );
 
-const CircularProgressSVG = experimentalStyled(
-  'svg',
-  {},
-  {
-    name: 'MuiCircularProgress',
-    slot: 'Svg',
-    overridesResolver: (props, styles) => styles.svg,
-  },
-)({
-  /* Styles applied to the svg element. */
+const CircularProgressSVG = styled('svg', {
+  name: 'MuiCircularProgress',
+  slot: 'Svg',
+  overridesResolver: (props, styles) => styles.svg,
+})({
   display: 'block', // Keeps the progress centered
 });
 
-const CircularProgressCircle = experimentalStyled(
-  'circle',
-  {},
-  {
-    name: 'MuiCircularProgress',
-    slot: 'Circle',
-    overridesResolver: (props, styles) => {
-      const { styleProps } = props;
+const CircularProgressCircle = styled('circle', {
+  name: 'MuiCircularProgress',
+  slot: 'Circle',
+  overridesResolver: (props, styles) => {
+    const { ownerState } = props;
 
-      return {
-        ...styles.circle,
-        ...styles[`circle${capitalize(styleProps.variant)}`],
-        ...(styleProps.disableShrink && styles.circleDisableShrink),
-      };
-    },
+    return [
+      styles.circle,
+      styles[`circle${capitalize(ownerState.variant)}`],
+      ownerState.disableShrink && styles.circleDisableShrink,
+    ];
   },
-)(
-  ({ styleProps, theme }) => ({
-    /* Styles applied to the `circle` svg path. */
+})(
+  ({ ownerState, theme }) => ({
     stroke: 'currentColor',
     // Use butt to follow the specification, by chance, it's already the default CSS value.
     // strokeLinecap: 'butt',
-    /* Styles applied to the `circle` svg path if `variant="determinate"`. */
-    ...(styleProps.variant === 'determinate' && {
+    ...(ownerState.variant === 'determinate' && {
       transition: theme.transitions.create('stroke-dashoffset'),
     }),
-    /* Styles applied to the `circle` svg path if `variant="indeterminate"`. */
-    ...(styleProps.variant === 'indeterminate' && {
+    ...(ownerState.variant === 'indeterminate' && {
       // Some default value that looks fine waiting for the animation to kicks in.
       strokeDasharray: '80px, 200px',
       strokeDashoffset: 0, // Add the unit to fix a Edge 16 and below bug.
     }),
   }),
-  ({ styleProps }) =>
-    styleProps.variant === 'indeterminate' &&
-    !styleProps.disableShrink &&
+  ({ ownerState }) =>
+    ownerState.variant === 'indeterminate' &&
+    !ownerState.disableShrink &&
     css`
       animation: ${circularDashKeyframe} 1.4s ease-in-out infinite;
     `,
@@ -162,7 +142,7 @@ const CircularProgress = React.forwardRef(function CircularProgress(inProps, ref
     ...other
   } = props;
 
-  const styleProps = {
+  const ownerState = {
     ...props,
     color,
     disableShrink,
@@ -172,7 +152,7 @@ const CircularProgress = React.forwardRef(function CircularProgress(inProps, ref
     variant,
   };
 
-  const classes = useUtilityClasses(styleProps);
+  const classes = useUtilityClasses(ownerState);
 
   const circleStyle = {};
   const rootStyle = {};
@@ -190,7 +170,7 @@ const CircularProgress = React.forwardRef(function CircularProgress(inProps, ref
     <CircularProgressRoot
       className={clsx(classes.root, className)}
       style={{ width: size, height: size, ...rootStyle, ...style }}
-      styleProps={styleProps}
+      ownerState={ownerState}
       ref={ref}
       role="progressbar"
       {...rootProps}
@@ -198,13 +178,13 @@ const CircularProgress = React.forwardRef(function CircularProgress(inProps, ref
     >
       <CircularProgressSVG
         className={classes.svg}
-        styleProps={styleProps}
+        ownerState={ownerState}
         viewBox={`${SIZE / 2} ${SIZE / 2} ${SIZE} ${SIZE}`}
       >
         <CircularProgressCircle
           className={classes.circle}
           style={circleStyle}
-          styleProps={styleProps}
+          ownerState={ownerState}
           cx={SIZE}
           cy={SIZE}
           r={(SIZE - thickness) / 2}
@@ -234,7 +214,7 @@ CircularProgress.propTypes /* remove-proptypes */ = {
    * @default 'primary'
    */
   color: PropTypes /* @typescript-to-proptypes-ignore */.oneOfType([
-    PropTypes.oneOf(['inherit', 'primary', 'secondary']),
+    PropTypes.oneOf(['inherit', 'primary', 'secondary', 'error', 'info', 'success', 'warning']),
     PropTypes.string,
   ]),
   /**

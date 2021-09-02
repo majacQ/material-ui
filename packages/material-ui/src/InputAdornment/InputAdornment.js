@@ -1,30 +1,28 @@
 import * as React from 'react';
 import PropTypes from 'prop-types';
 import clsx from 'clsx';
-import { deepmerge } from '@material-ui/utils';
-import { unstable_composeClasses as composeClasses } from '@material-ui/unstyled';
+import { unstable_composeClasses as composeClasses } from '@mui/core';
 import capitalize from '../utils/capitalize';
 import Typography from '../Typography';
-import FormControlContext, { useFormControl } from '../FormControl/FormControlContext';
-import experimentalStyled from '../styles/experimentalStyled';
+import FormControlContext from '../FormControl/FormControlContext';
+import useFormControl from '../FormControl/useFormControl';
+import styled from '../styles/styled';
 import inputAdornmentClasses, { getInputAdornmentUtilityClass } from './inputAdornmentClasses';
 import useThemeProps from '../styles/useThemeProps';
 
 const overridesResolver = (props, styles) => {
-  const { styleProps } = props;
+  const { ownerState } = props;
 
-  return deepmerge(
-    {
-      ...styles[`position${capitalize(styleProps.position)}`],
-      ...(styleProps.disablePointerEvents === true && styles.disablePointerEvents),
-      ...(styleProps.variant === 'filled' && styles.filled),
-    },
-    styles.root || {},
-  );
+  return [
+    styles.root,
+    styles[`position${capitalize(ownerState.position)}`],
+    ownerState.disablePointerEvents === true && styles.disablePointerEvents,
+    styles[ownerState.variant],
+  ];
 };
 
-const useUtilityClasses = (styleProps) => {
-  const { classes, disablePointerEvents, hiddenLabel, position, size, variant } = styleProps;
+const useUtilityClasses = (ownerState) => {
+  const { classes, disablePointerEvents, hiddenLabel, position, size, variant } = ownerState;
   const slots = {
     root: [
       'root',
@@ -39,36 +37,32 @@ const useUtilityClasses = (styleProps) => {
   return composeClasses(slots, getInputAdornmentUtilityClass, classes);
 };
 
-const InputAdornmentRoot = experimentalStyled(
-  'div',
-  {},
-  {
-    name: 'MuiInputAdornment',
-    slot: 'Root',
-    overridesResolver,
-  },
-)(({ theme, styleProps }) => ({
+const InputAdornmentRoot = styled('div', {
+  name: 'MuiInputAdornment',
+  slot: 'Root',
+  overridesResolver,
+})(({ theme, ownerState }) => ({
   display: 'flex',
   height: '0.01em', // Fix IE11 flexbox alignment. To remove at some point.
   maxHeight: '2em',
   alignItems: 'center',
   whiteSpace: 'nowrap',
   color: theme.palette.action.active,
-  ...(styleProps.variant === 'filled' && {
+  ...(ownerState.variant === 'filled' && {
     // Styles applied to the root element if `variant="filled"`.
     [`&.${inputAdornmentClasses.positionStart}&:not(.${inputAdornmentClasses.hiddenLabel})`]: {
       marginTop: 16,
     },
   }),
-  ...(styleProps.position === 'start' && {
+  ...(ownerState.position === 'start' && {
     // Styles applied to the root element if `position="start"`.
     marginRight: 8,
   }),
-  ...(styleProps.position === 'end' && {
+  ...(ownerState.position === 'end' && {
     // Styles applied to the root element if `position="end"`.
     marginLeft: 8,
   }),
-  ...(styleProps.disablePointerEvents === true && {
+  ...(ownerState.disablePointerEvents === true && {
     // Styles applied to the root element if `disablePointerEvents={true}`.
     pointerEvents: 'none',
   }),
@@ -106,7 +100,7 @@ const InputAdornment = React.forwardRef(function InputAdornment(inProps, ref) {
     variant = muiFormControl.variant;
   }
 
-  const styleProps = {
+  const ownerState = {
     ...props,
     hiddenLabel: muiFormControl.hiddenLabel,
     size: muiFormControl.size,
@@ -115,13 +109,13 @@ const InputAdornment = React.forwardRef(function InputAdornment(inProps, ref) {
     variant,
   };
 
-  const classes = useUtilityClasses(styleProps);
+  const classes = useUtilityClasses(ownerState);
 
   return (
     <FormControlContext.Provider value={null}>
       <InputAdornmentRoot
         as={component}
-        styleProps={styleProps}
+        ownerState={ownerState}
         className={clsx(classes.root, className)}
         ref={ref}
         {...other}

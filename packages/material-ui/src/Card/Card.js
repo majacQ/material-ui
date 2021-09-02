@@ -1,15 +1,15 @@
 import * as React from 'react';
 import PropTypes from 'prop-types';
 import clsx from 'clsx';
-import { chainPropTypes } from '@material-ui/utils';
-import { unstable_composeClasses as composeClasses } from '@material-ui/unstyled';
-import experimentalStyled from '../styles/experimentalStyled';
+import { chainPropTypes } from '@mui/utils';
+import { unstable_composeClasses as composeClasses } from '@mui/core';
+import styled from '../styles/styled';
 import useThemeProps from '../styles/useThemeProps';
 import Paper from '../Paper';
 import { getCardUtilityClass } from './cardClasses';
 
-const useUtilityClasses = (styleProps) => {
-  const { classes } = styleProps;
+const useUtilityClasses = (ownerState) => {
+  const { classes } = ownerState;
 
   const slots = {
     root: ['root'],
@@ -18,16 +18,11 @@ const useUtilityClasses = (styleProps) => {
   return composeClasses(slots, getCardUtilityClass, classes);
 };
 
-const CardRoot = experimentalStyled(
-  Paper,
-  {},
-  {
-    name: 'MuiCard',
-    slot: 'Root',
-    overridesResolver: (props, styles) => styles.root,
-  },
-)(() => {
-  /* Styles applied to the root element. */
+const CardRoot = styled(Paper, {
+  name: 'MuiCard',
+  slot: 'Root',
+  overridesResolver: (props, styles) => styles.root,
+})(() => {
   return {
     overflow: 'hidden',
   };
@@ -41,16 +36,16 @@ const Card = React.forwardRef(function Card(inProps, ref) {
 
   const { className, raised = false, ...other } = props;
 
-  const styleProps = { ...props, raised };
+  const ownerState = { ...props, raised };
 
-  const classes = useUtilityClasses(styleProps);
+  const classes = useUtilityClasses(ownerState);
 
   return (
     <CardRoot
       className={clsx(classes.root, className)}
       elevation={raised ? 8 : undefined}
       ref={ref}
-      styleProps={styleProps}
+      ownerState={ownerState}
       {...other}
     />
   );

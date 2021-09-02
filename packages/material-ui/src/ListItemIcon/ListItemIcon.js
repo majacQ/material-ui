@@ -1,14 +1,14 @@
 import * as React from 'react';
 import PropTypes from 'prop-types';
 import clsx from 'clsx';
-import { unstable_composeClasses as composeClasses } from '@material-ui/unstyled';
-import experimentalStyled from '../styles/experimentalStyled';
+import { unstable_composeClasses as composeClasses } from '@mui/core';
+import styled from '../styles/styled';
 import useThemeProps from '../styles/useThemeProps';
 import { getListItemIconUtilityClass } from './listItemIconClasses';
 import ListContext from '../List/ListContext';
 
-const useUtilityClasses = (styleProps) => {
-  const { alignItems, classes } = styleProps;
+const useUtilityClasses = (ownerState) => {
+  const { alignItems, classes } = ownerState;
 
   const slots = {
     root: ['root', alignItems === 'flex-start' && 'alignItemsFlexStart'],
@@ -17,29 +17,20 @@ const useUtilityClasses = (styleProps) => {
   return composeClasses(slots, getListItemIconUtilityClass, classes);
 };
 
-const ListItemIconRoot = experimentalStyled(
-  'div',
-  {},
-  {
-    name: 'MuiListItemIcon',
-    slot: 'Root',
-    overridesResolver: (props, styles) => {
-      const { styleProps } = props;
+const ListItemIconRoot = styled('div', {
+  name: 'MuiListItemIcon',
+  slot: 'Root',
+  overridesResolver: (props, styles) => {
+    const { ownerState } = props;
 
-      return {
-        ...styles.root,
-        ...(styleProps.alignItems === 'flex-start' && styles.alignItemsFlexStart),
-      };
-    },
+    return [styles.root, ownerState.alignItems === 'flex-start' && styles.alignItemsFlexStart];
   },
-)(({ theme, styleProps }) => ({
-  /* Styles applied to the root element. */
+})(({ theme, ownerState }) => ({
   minWidth: 56,
   color: theme.palette.action.active,
   flexShrink: 0,
   display: 'inline-flex',
-  /* Styles applied to the root element when the parent `ListItem` uses `alignItems="flex-start"`. */
-  ...(styleProps.alignItems === 'flex-start' && {
+  ...(ownerState.alignItems === 'flex-start' && {
     marginTop: 8,
   }),
 }));
@@ -55,13 +46,13 @@ const ListItemIcon = React.forwardRef(function ListItemIcon(inProps, ref) {
 
   const { className, ...other } = props;
   const context = React.useContext(ListContext);
-  const styleProps = { ...props, alignItems: context.alignItems };
-  const classes = useUtilityClasses(styleProps);
+  const ownerState = { ...props, alignItems: context.alignItems };
+  const classes = useUtilityClasses(ownerState);
 
   return (
     <ListItemIconRoot
       className={clsx(classes.root, className)}
-      styleProps={styleProps}
+      ownerState={ownerState}
       ref={ref}
       {...other}
     />
@@ -75,7 +66,7 @@ ListItemIcon.propTypes /* remove-proptypes */ = {
   // ----------------------------------------------------------------------
   /**
    * The content of the component, normally `Icon`, `SvgIcon`,
-   * or a `@material-ui/icons` SVG icon element.
+   * or a `@mui/icons-material` SVG icon element.
    */
   children: PropTypes.node,
   /**

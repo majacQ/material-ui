@@ -83,10 +83,10 @@ function Progress(props) {
 }
 ```
 
-## Customized progress
+## Customization
 
-Here are some examples of customizing the component. You can learn more about this in the
-[overrides documentation page](/customization/how-to-customize/).
+Here are some examples of customizing the component.
+You can learn more about this in the [overrides documentation page](/customization/how-to-customize/).
 
 {{"demo": "pages/components/progress/CustomizedProgressBars.js", "defaultCodeOpen": false}}
 
@@ -127,9 +127,10 @@ If you need to perform 30 re-renders per second or more, we recommend disabling 
 }
 ```
 
-### IE11
+### IE 11
 
-The circular progress component animation on IE11 is degraded. The stroke dash animation is not working (equivalent to `disableShrink`) and the circular animation wobbles.
+The circular progress component animation on IE 11 is degraded.
+The stroke dash animation is not working (equivalent to `disableShrink`) and the circular animation wobbles.
 You can solve the latter with:
 
 ```css

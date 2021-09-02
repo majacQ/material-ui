@@ -2,8 +2,8 @@ import * as React from 'react';
 import PropTypes from 'prop-types';
 import { TransitionGroup } from 'react-transition-group';
 import clsx from 'clsx';
-import { keyframes } from '@material-ui/styled-engine';
-import experimentalStyled from '../styles/experimentalStyled';
+import { keyframes } from '@mui/system';
+import styled from '../styles/styled';
 import useThemeProps from '../styles/useThemeProps';
 import Ripple from './Ripple';
 import touchRippleClasses from './touchRippleClasses';
@@ -47,11 +47,11 @@ const pulsateKeyframe = keyframes`
   }
 `;
 
-export const TouchRippleRoot = experimentalStyled(
-  'span',
-  {},
-  { name: 'MuiTouchRipple', slot: 'Root' },
-)({
+export const TouchRippleRoot = styled('span', {
+  name: 'MuiTouchRipple',
+  slot: 'Root',
+  skipSx: true,
+})({
   overflow: 'hidden',
   pointerEvents: 'none',
   position: 'absolute',
@@ -65,11 +65,10 @@ export const TouchRippleRoot = experimentalStyled(
 
 // This `styled()` function invokes keyframes. `styled-components` only supports keyframes
 // in string templates. Do not convert these styles in JS object as it will break.
-export const TouchRippleRipple = experimentalStyled(
-  Ripple,
-  {},
-  { name: 'MuiTouchRipple', slot: 'Ripple' },
-)`
+export const TouchRippleRipple = styled(Ripple, {
+  name: 'MuiTouchRipple',
+  slot: 'Ripple',
+})`
   opacity: 0;
   position: absolute;
 
@@ -103,7 +102,8 @@ export const TouchRippleRipple = experimentalStyled(
 
   & .${touchRippleClasses.childPulsate} {
     position: absolute;
-    left: 0;
+    /* @noflip */
+    left: 0px;
     top: 0;
     animation-name: ${pulsateKeyframe};
     animation-duration: 2500ms;
@@ -226,7 +226,7 @@ const TouchRipple = React.forwardRef(function TouchRipple(inProps, ref) {
       if (center) {
         rippleSize = Math.sqrt((2 * rect.width ** 2 + rect.height ** 2) / 3);
 
-        // For some reason the animation is broken on Mobile Chrome if the size if even.
+        // For some reason the animation is broken on Mobile Chrome if the size is even.
         if (rippleSize % 2 === 0) {
           rippleSize += 1;
         }

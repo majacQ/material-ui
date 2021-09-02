@@ -1,20 +1,21 @@
 import * as React from 'react';
-import { TabsTypeMap } from '@material-ui/core/Tabs';
-import { DistributiveOmit } from '@material-ui/types';
-import { OverridableComponent, OverrideProps } from '@material-ui/core/OverridableComponent';
+import { TabsTypeMap } from '@mui/material/Tabs';
+import { DistributiveOmit } from '@mui/types';
+import { OverridableComponent, OverrideProps } from '@mui/material/OverridableComponent';
 
 export interface TabListTypeMap<
   P = {},
-  D extends React.ElementType = TabsTypeMap['defaultComponent']
+  D extends React.ElementType = TabsTypeMap['defaultComponent'],
 > {
   props: P & {
     /**
      * A list of `<Tab />` elements.
      */
-    children?: React.ReactElement[];
+    children?: React.ReactNode;
   } & DistributiveOmit<TabsTypeMap['props'], 'children' | 'value'>;
   defaultComponent: D;
 }
+
 /**
  *
  * Demos:
@@ -32,7 +33,7 @@ export type TabListClassKey = keyof NonNullable<TabListTypeMap['props']['classes
 
 export type TabListProps<
   D extends React.ElementType = TabListTypeMap['defaultComponent'],
-  P = {}
+  P = {},
 > = OverrideProps<TabListTypeMap<P, D>, D>;
 
 export default TabList;

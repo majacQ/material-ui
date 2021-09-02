@@ -1,16 +1,16 @@
 import * as React from 'react';
 import PropTypes from 'prop-types';
 import clsx from 'clsx';
-import { unstable_composeClasses as composeClasses } from '@material-ui/unstyled';
+import { unstable_composeClasses as composeClasses } from '@mui/core';
 import formControlState from '../FormControl/formControlState';
 import useFormControl from '../FormControl/useFormControl';
 import capitalize from '../utils/capitalize';
 import useThemeProps from '../styles/useThemeProps';
-import experimentalStyled from '../styles/experimentalStyled';
+import styled from '../styles/styled';
 import formLabelClasses, { getFormLabelUtilityClasses } from './formLabelClasses';
 
-const useUtilityClasses = (styleProps) => {
-  const { classes, color, focused, disabled, error, filled, required } = styleProps;
+const useUtilityClasses = (ownerState) => {
+  const { classes, color, focused, disabled, error, filled, required } = ownerState;
   const slots = {
     root: [
       'root',
@@ -27,27 +27,24 @@ const useUtilityClasses = (styleProps) => {
   return composeClasses(slots, getFormLabelUtilityClasses, classes);
 };
 
-export const FormLabelRoot = experimentalStyled(
-  'label',
-  {},
-  {
-    name: 'MuiFormLabel',
-    slot: 'Root',
-    overridesResolver: ({ styleProps }, styles) => {
-      return {
-        ...styles.root,
-        ...(styleProps.color === 'secondary' && styles.colorSecondary),
-        ...(styleProps.filled && styles.filled),
-      };
-    },
+export const FormLabelRoot = styled('label', {
+  name: 'MuiFormLabel',
+  slot: 'Root',
+  overridesResolver: ({ ownerState }, styles) => {
+    return {
+      ...styles.root,
+      ...(ownerState.color === 'secondary' && styles.colorSecondary),
+      ...(ownerState.filled && styles.filled),
+    };
   },
-)(({ theme, styleProps }) => ({
+})(({ theme, ownerState }) => ({
   color: theme.palette.text.secondary,
   ...theme.typography.body1,
   lineHeight: '1.4375em',
   padding: 0,
+  position: 'relative',
   [`&.${formLabelClasses.focused}`]: {
-    color: theme.palette[styleProps.color].main,
+    color: theme.palette[ownerState.color].main,
   },
   [`&.${formLabelClasses.disabled}`]: {
     color: theme.palette.text.disabled,
@@ -57,11 +54,11 @@ export const FormLabelRoot = experimentalStyled(
   },
 }));
 
-const AsteriskComponent = experimentalStyled(
-  'span',
-  {},
-  { name: 'MuiFormLabel', slot: 'Asterisk', overridesResolver: (props, styles) => styles.asterisk },
-)(({ theme }) => ({
+const AsteriskComponent = styled('span', {
+  name: 'MuiFormLabel',
+  slot: 'Asterisk',
+  overridesResolver: (props, styles) => styles.asterisk,
+})(({ theme }) => ({
   [`&.${formLabelClasses.error}`]: {
     color: theme.palette.error.main,
   },
@@ -89,7 +86,7 @@ const FormLabel = React.forwardRef(function FormLabel(inProps, ref) {
     states: ['color', 'required', 'focused', 'disabled', 'error', 'filled'],
   });
 
-  const styleProps = {
+  const ownerState = {
     ...props,
     color: fcs.color || 'primary',
     component,
@@ -100,19 +97,19 @@ const FormLabel = React.forwardRef(function FormLabel(inProps, ref) {
     required: fcs.required,
   };
 
-  const classes = useUtilityClasses(styleProps);
+  const classes = useUtilityClasses(ownerState);
 
   return (
     <FormLabelRoot
       as={component}
-      styleProps={styleProps}
+      ownerState={ownerState}
       className={clsx(classes.root, className)}
       ref={ref}
       {...other}
     >
       {children}
       {fcs.required && (
-        <AsteriskComponent styleProps={styleProps} aria-hidden className={classes.asterisk}>
+        <AsteriskComponent ownerState={ownerState} aria-hidden className={classes.asterisk}>
           &thinsp;{'*'}
         </AsteriskComponent>
       )}
@@ -140,7 +137,10 @@ FormLabel.propTypes /* remove-proptypes */ = {
   /**
    * The color of the component. It supports those theme colors that make sense for this component.
    */
-  color: PropTypes.oneOf(['primary', 'secondary']),
+  color: PropTypes /* @typescript-to-proptypes-ignore */.oneOfType([
+    PropTypes.oneOf(['error', 'info', 'primary', 'secondary', 'success', 'warning']),
+    PropTypes.string,
+  ]),
   /**
    * The component used for the root node.
    * Either a string to use a HTML element or a component.

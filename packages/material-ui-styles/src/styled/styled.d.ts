@@ -1,13 +1,13 @@
-import { DistributiveOmit, Overwrite } from '@material-ui/types';
+import { DistributiveOmit, Overwrite } from '@mui/types';
 import {
   CreateCSSProperties,
   StyledComponentProps,
   WithStylesOptions,
-} from '@material-ui/styles/withStyles';
+} from '@mui/styles/withStyles';
 import * as React from 'react';
 import { DefaultTheme } from '../defaultTheme';
 
-// We don't want a union type here (like React.ComponentType) in order to support mapped types.
+// We don't want a union type here (like React.JSXElementConstructor) in order to support mapped types.
 export type StyledComponent<P extends {}> = (props: P) => React.ReactElement<P, any> | null;
 
 /**
@@ -15,7 +15,7 @@ export type StyledComponent<P extends {}> = (props: P) => React.ReactElement<P, 
  */
 export type ComponentCreator<Component extends React.ElementType> = <
   Theme = DefaultTheme,
-  Props extends {} = React.ComponentPropsWithoutRef<Component>
+  Props extends {} = React.ComponentPropsWithoutRef<Component>,
 >(
   styles:
     | CreateCSSProperties<Props>

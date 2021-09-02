@@ -1,18 +1,13 @@
 import * as React from 'react';
-import Box from '@material-ui/core/Box';
-import Button from '@material-ui/core/Button';
+import Button from '@mui/material/Button';
+import Stack from '@mui/material/Stack';
 
 export default function TextButtons() {
   return (
-    <Box
-      sx={{
-        '& > :not(style)': { m: 1 },
-      }}
-    >
+    <Stack direction="row" spacing={2}>
       <Button>Primary</Button>
-      <Button color="secondary">Secondary</Button>
       <Button disabled>Disabled</Button>
       <Button href="#text-buttons">Link</Button>
-    </Box>
+    </Stack>
   );
 }

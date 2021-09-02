@@ -33,7 +33,7 @@ A set of reusable components for design tools is available, designed to match th
 
 - [Material-UI Snippets](https://marketplace.visualstudio.com/items?itemName=vscodeshift.material-ui-snippets): VSCode extension providing snippets.
 - [Material-UI Codemorphs](https://marketplace.visualstudio.com/items?itemName=vscodeshift.material-ui-codemorphs): VSCode extension providing codemods.
-- [eslint: detect unused classes](https://github.com/jens-ox/eslint-plugin-material-ui-unused-classes): ESLint plugin to detect unused styling classes with `@material-ui/styles`.
+- [eslint: detect unused classes](https://github.com/jens-ox/eslint-plugin-material-ui-unused-classes): ESLint plugin to detect unused styling classes with `@mui/styles`.
 
 ## Components
 
@@ -83,9 +83,13 @@ This is a collection of third-party projects that extend Material-UI.
 
 - [material-ui-color](https://github.com/mikbry/material-ui-color): Collections of color components for material-ui. No dependencies, small, highly customizable and theming support!
 
+### Sparkline
+
+- [mui-plus](https://mui-plus.vercel.app/components/Sparkline): A sparkline is a tiny chart that can be used to indicate the trend of a value.
+
 ## Blocks
 
-- [components-extra](https://github.com/alexandre-lelain/components-extra): Provides a set of "molecule" components built on top of Material-UI like a Footer, a CookiesBanner, a BackToTop button and other complex elements highly customizable to help devs build the macro parts of their UI very quickly. Those components are often duplicated across sites - this library solves this exact problem.
+- [components-extra](https://github.com/alexandre-lelain/components-extra): Provides a set of "molecule" components built on top of Material-UI, such as a Footer, a CookiesBanner, a BackToTop button, and other highly customizable complex elements, to help devs build the macro parts of their UI very quickly. Those components are often duplicated across sites. This library solves this exact problem.
 
 ## Theming
 

@@ -4,6 +4,7 @@ export interface MuiPage {
   pathname: string;
   children?: MuiPage[];
   disableDrawer?: boolean;
+  icon?: string;
   /**
    * Pages are considered to be ordered depth-first.
    * If a page should be excluded from this order, set `order: false`.
@@ -28,6 +29,7 @@ export interface OrderedMuiPage extends MuiPage {
 const pages: readonly MuiPage[] = [
   {
     pathname: '/getting-started',
+    icon: 'DescriptionIcon',
     children: [
       { pathname: '/getting-started/installation' },
       { pathname: '/getting-started/usage' },
@@ -42,6 +44,7 @@ const pages: readonly MuiPage[] = [
   },
   {
     pathname: '/components',
+    icon: 'ToggleOnIcon',
     children: [
       {
         pathname: '/components',
@@ -51,8 +54,8 @@ const pages: readonly MuiPage[] = [
           { pathname: '/components/container' },
           { pathname: '/components/grid' },
           { pathname: '/components/stack' },
-          { pathname: '/components/hidden' },
           { pathname: '/components/image-list' },
+          { pathname: '/components/hidden' },
         ],
       },
       {
@@ -187,6 +190,7 @@ const pages: readonly MuiPage[] = [
               { pathname: '/components/time-picker' },
             ],
           },
+          { pathname: '/components/masonry' },
           { pathname: '/components/timeline' },
           { pathname: '/components/trap-focus' },
           { pathname: '/components/tree-view' },
@@ -197,9 +201,23 @@ const pages: readonly MuiPage[] = [
   {
     title: 'Component API',
     pathname: '/api-docs',
+    icon: 'CodeIcon',
     children: [
       ...pagesApi,
-      ...[{ pathname: '/api-docs/data-grid' }, { pathname: '/api-docs/x-grid' }],
+      {
+        pathname: '/api-docs/data-grid',
+        title: 'Data Grid',
+        children: [
+          { pathname: '/api-docs/data-grid', title: 'API Reference' },
+          { pathname: '/api-docs/data-grid/data-grid' },
+          { pathname: '/api-docs/data-grid/x-grid' },
+          { pathname: '/api-docs/data-grid/grid-api' },
+          { pathname: '/api-docs/data-grid/grid-col-def' },
+          { pathname: '/api-docs/data-grid/grid-cell-params' },
+          { pathname: '/api-docs/data-grid/grid-row-params' },
+          { pathname: '/api-docs/data-grid/grid-export-csv-options' },
+        ],
+      },
     ]
       .sort((a, b) =>
         a.pathname.replace('/api-docs/', '').localeCompare(b.pathname.replace('/api-docs/', '')),
@@ -210,9 +228,11 @@ const pages: readonly MuiPage[] = [
   },
   {
     pathname: '/system',
+    icon: 'BuildIcon',
     children: [
       { pathname: '/system/basics' },
       { pathname: '/system/properties' },
+      { pathname: '/system/the-sx-prop', title: 'The sx prop' },
       { pathname: '/system/borders' },
       { pathname: '/system/display' },
       { pathname: '/system/flexbox' },
@@ -225,18 +245,13 @@ const pages: readonly MuiPage[] = [
       { pathname: '/system/screen-readers' },
       { pathname: '/system/typography' },
       { pathname: '/system/advanced' },
-    ],
-  },
-  {
-    pathname: '/styles',
-    children: [
-      { pathname: '/styles/basics' },
-      { pathname: '/styles/advanced' },
-      { pathname: '/styles/api', title: 'API' },
+      { pathname: '/system/box' },
+      { pathname: '/system/styled', title: 'styled' },
     ],
   },
   {
     pathname: '/customization',
+    icon: 'CreateIcon',
     children: [
       {
         pathname: '/customization',
@@ -256,15 +271,18 @@ const pages: readonly MuiPage[] = [
       },
       { pathname: '/customization/how-to-customize' },
       { pathname: '/customization/color' },
+      { pathname: '/customization/unstyled-components' },
     ],
   },
   {
     pathname: '/guides',
     title: 'How To Guides',
+    icon: 'VisibilityIcon',
     children: [
       { pathname: '/guides/api', title: 'API Design Approach' },
       { pathname: '/guides/typescript', title: 'TypeScript' },
       { pathname: '/guides/interoperability', title: 'Style Library Interoperability' },
+      { pathname: '/guides/styled-engine' },
       { pathname: '/guides/minimizing-bundle-size' },
       { pathname: '/guides/composition' },
       { pathname: '/guides/routing' },
@@ -282,6 +300,16 @@ const pages: readonly MuiPage[] = [
     ],
   },
   {
+    pathname: '/styles',
+    title: 'Styles (legacy)',
+    icon: 'StyleIcon',
+    children: [
+      { pathname: '/styles/basics' },
+      { pathname: '/styles/advanced' },
+      { pathname: '/styles/api', title: 'API' },
+    ],
+  },
+  {
     pathname: 'https://material-ui.com/store/',
     title: 'Premium themes',
     linkProps: {
@@ -292,6 +320,7 @@ const pages: readonly MuiPage[] = [
   },
   {
     pathname: '/discover-more',
+    icon: 'AddIcon',
     children: [
       { pathname: '/discover-more/showcase' },
       { pathname: '/discover-more/related-projects' },

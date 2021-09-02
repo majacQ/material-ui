@@ -61,7 +61,7 @@ function moveFocus(
     // Prevent infinite loop.
     if (nextFocus === list.firstChild) {
       if (wrappedOnce) {
-        return;
+        return false;
       }
       wrappedOnce = true;
     }
@@ -80,9 +80,10 @@ function moveFocus(
       nextFocus = traversalFunction(list, nextFocus, disableListWrap);
     } else {
       nextFocus.focus();
-      return;
+      return true;
     }
   }
+  return false;
 }
 
 /**
@@ -129,9 +130,8 @@ const MenuList = React.forwardRef(function MenuList(props, ref) {
         const noExplicitWidth = !listRef.current.style.width;
         if (containerElement.clientHeight < listRef.current.clientHeight && noExplicitWidth) {
           const scrollbarSize = `${getScrollbarSize(ownerDocument(containerElement))}px`;
-          listRef.current.style[
-            theme.direction === 'rtl' ? 'paddingLeft' : 'paddingRight'
-          ] = scrollbarSize;
+          listRef.current.style[theme.direction === 'rtl' ? 'paddingLeft' : 'paddingRight'] =
+            scrollbarSize;
           listRef.current.style.width = `calc(100% + ${scrollbarSize})`;
         }
         return listRef.current;

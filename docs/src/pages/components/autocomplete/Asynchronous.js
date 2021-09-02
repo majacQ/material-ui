@@ -1,8 +1,7 @@
-/* eslint-disable @typescript-eslint/no-use-before-define */
 import * as React from 'react';
-import TextField from '@material-ui/core/TextField';
-import Autocomplete from '@material-ui/core/Autocomplete';
-import CircularProgress from '@material-ui/core/CircularProgress';
+import TextField from '@mui/material/TextField';
+import Autocomplete from '@mui/material/Autocomplete';
+import CircularProgress from '@mui/material/CircularProgress';
 
 function sleep(delay = 0) {
   return new Promise((resolve) => {
@@ -44,7 +43,7 @@ export default function Asynchronous() {
   return (
     <Autocomplete
       id="asynchronous-demo"
-      style={{ width: 300 }}
+      sx={{ width: 300 }}
       open={open}
       onOpen={() => {
         setOpen(true);
@@ -52,7 +51,7 @@ export default function Asynchronous() {
       onClose={() => {
         setOpen(false);
       }}
-      getOptionSelected={(option, value) => option.title === value.title}
+      isOptionEqualToValue={(option, value) => option.title === value.title}
       getOptionLabel={(option) => option.title}
       options={options}
       loading={loading}

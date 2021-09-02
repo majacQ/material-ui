@@ -1,9 +1,7 @@
 import * as React from 'react';
 import { expect } from 'chai';
-import { createMount, createClientRender, describeConformanceV5 } from 'test/utils';
-import TabScrollButton, {
-  tabScrollButtonClasses as classes,
-} from '@material-ui/core/TabScrollButton';
+import { createClientRender, describeConformance } from 'test/utils';
+import TabScrollButton, { tabScrollButtonClasses as classes } from '@mui/material/TabScrollButton';
 
 describe('<TabScrollButton />', () => {
   const defaultProps = {
@@ -11,13 +9,11 @@ describe('<TabScrollButton />', () => {
     orientation: 'horizontal',
   };
   const render = createClientRender();
-  const mount = createMount();
 
-  describeConformanceV5(<TabScrollButton {...defaultProps} />, () => ({
+  describeConformance(<TabScrollButton {...defaultProps} />, () => ({
     classes,
     inheritComponent: 'div',
     render,
-    mount,
     muiName: 'MuiTabScrollButton',
     testVariantProps: { orientation: 'vertical' },
     refInstanceof: window.HTMLDivElement,

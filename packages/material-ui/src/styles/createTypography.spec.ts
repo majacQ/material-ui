@@ -1,5 +1,5 @@
-import { createTheme } from '@material-ui/core/styles';
-import { expectType } from '@material-ui/types';
+import { styled, createTheme } from '@mui/material/styles';
+import { expectType } from '@mui/types';
 
 {
   // properties of the variants can be "unset"
@@ -25,4 +25,10 @@ import { expectType } from '@material-ui/types';
     | undefined,
     typeof maybeFontStyle
   >(maybeFontStyle);
+}
+
+{
+  const StyledComponents = styled('span')(({ theme }) => ({
+    ...theme.typography.body1,
+  }));
 }

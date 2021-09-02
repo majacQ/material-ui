@@ -2,21 +2,77 @@ import * as React from 'react';
 import { isFragment } from 'react-is';
 import PropTypes from 'prop-types';
 import clsx from 'clsx';
-import { refType } from '@material-ui/utils';
-import { unstable_composeClasses as composeClasses } from '@material-ui/unstyled';
-import experimentalStyled from '../styles/experimentalStyled';
+import { refType } from '@mui/utils';
+import { unstable_composeClasses as composeClasses } from '@mui/core';
+import styled from '../styles/styled';
 import useThemeProps from '../styles/useThemeProps';
 import useTheme from '../styles/useTheme';
 import debounce from '../utils/debounce';
-import ownerWindow from '../utils/ownerWindow';
 import { getNormalizedScrollLeft, detectScrollType } from '../utils/scrollLeft';
 import animate from '../internal/animate';
 import ScrollbarSize from './ScrollbarSize';
 import TabScrollButton from '../TabScrollButton';
 import useEventCallback from '../utils/useEventCallback';
 import tabsClasses, { getTabsUtilityClass } from './tabsClasses';
+import ownerDocument from '../utils/ownerDocument';
+import ownerWindow from '../utils/ownerWindow';
 
-const useUtilityClasses = (styleProps) => {
+const MockResizeObserver = () => {
+  return {
+    observe: () => {},
+    unobserve: () => {},
+    disconnect: () => {},
+  };
+};
+
+const nextItem = (list, item) => {
+  if (list === item) {
+    return list.firstChild;
+  }
+  if (item && item.nextElementSibling) {
+    return item.nextElementSibling;
+  }
+  return list.firstChild;
+};
+
+const previousItem = (list, item) => {
+  if (list === item) {
+    return list.lastChild;
+  }
+  if (item && item.previousElementSibling) {
+    return item.previousElementSibling;
+  }
+  return list.lastChild;
+};
+
+const moveFocus = (list, currentFocus, traversalFunction) => {
+  let wrappedOnce = false;
+  let nextFocus = traversalFunction(list, currentFocus);
+
+  while (nextFocus) {
+    // Prevent infinite loop.
+    if (nextFocus === list.firstChild) {
+      if (wrappedOnce) {
+        return;
+      }
+      wrappedOnce = true;
+    }
+
+    // Same logic as useAutocomplete.js
+    const nextFocusDisabled =
+      nextFocus.disabled || nextFocus.getAttribute('aria-disabled') === 'true';
+
+    if (!nextFocus.hasAttribute('tabindex') || nextFocusDisabled) {
+      // Move to the next element.
+      nextFocus = traversalFunction(list, nextFocus);
+    } else {
+      nextFocus.focus();
+      return;
+    }
+  }
+};
+
+const useUtilityClasses = (ownerState) => {
   const {
     vertical,
     fixed,
@@ -26,7 +82,7 @@ const useUtilityClasses = (styleProps) => {
     centered,
     scrollButtonsHideMobile,
     classes,
-  } = styleProps;
+  } = ownerState;
 
   const slots = {
     root: ['root', vertical && 'vertical'],
@@ -47,34 +103,32 @@ const useUtilityClasses = (styleProps) => {
   return composeClasses(slots, getTabsUtilityClass, classes);
 };
 
-const TabsRoot = experimentalStyled(
-  'div',
-  {},
-  {
-    name: 'MuiTabs',
-    slot: 'Root',
-    overridesResolver: (props, styles) => {
-      const { styleProps } = props;
+const TabsRoot = styled('div', {
+  name: 'MuiTabs',
+  slot: 'Root',
+  overridesResolver: (props, styles) => {
+    const { ownerState } = props;
 
-      return {
-        [`& .${tabsClasses.scrollButtons}`]: {
-          ...styles.scrollButtons,
-          ...(styleProps.scrollButtonsHideMobile && styles.scrollButtonsHideMobile),
-        },
-        ...styles.root,
-        ...(styleProps.vertical && styles.vertical),
-      };
-    },
+    return [
+      { [`& .${tabsClasses.scrollButtons}`]: styles.scrollButtons },
+      {
+        [`& .${tabsClasses.scrollButtons}`]:
+          ownerState.scrollButtonsHideMobile && styles.scrollButtonsHideMobile,
+      },
+      styles.root,
+      ownerState.vertical && styles.vertical,
+    ];
   },
-)(({ styleProps, theme }) => ({
+})(({ ownerState, theme }) => ({
   overflow: 'hidden',
   minHeight: 48,
-  WebkitOverflowScrolling: 'touch', // Add iOS momentum scrolling.
+  // Add iOS momentum scrolling for iOS < 13.0
+  WebkitOverflowScrolling: 'touch',
   display: 'flex',
-  ...(styleProps.vertical && {
+  ...(ownerState.vertical && {
     flexDirection: 'column',
   }),
-  ...(styleProps.scrollButtonsHideMobile && {
+  ...(ownerState.scrollButtonsHideMobile && {
     [`& .${tabsClasses.scrollButtons}`]: {
       [theme.breakpoints.down('sm')]: {
         display: 'none',
@@ -83,106 +137,93 @@ const TabsRoot = experimentalStyled(
   }),
 }));
 
-const TabsScroller = experimentalStyled(
-  'div',
-  {},
-  {
-    name: 'MuiTabs',
-    slot: 'Scroller',
-    overridesResolver: (props, styles) => {
-      const { styleProps } = props;
-      return {
-        ...styles.scroller,
-        ...(styleProps.fixed && styles.fixed),
-        ...(styleProps.hideScrollbar && styles.hideScrollbar),
-        ...(styleProps.scrollableX && styles.scrollableX),
-        ...(styleProps.scrollableY && styles.scrollableY),
-      };
-    },
+const TabsScroller = styled('div', {
+  name: 'MuiTabs',
+  slot: 'Scroller',
+  overridesResolver: (props, styles) => {
+    const { ownerState } = props;
+    return [
+      styles.scroller,
+      ownerState.fixed && styles.fixed,
+      ownerState.hideScrollbar && styles.hideScrollbar,
+      ownerState.scrollableX && styles.scrollableX,
+      ownerState.scrollableY && styles.scrollableY,
+    ];
   },
-)(({ styleProps }) => ({
+})(({ ownerState }) => ({
   position: 'relative',
   display: 'inline-block',
   flex: '1 1 auto',
   whiteSpace: 'nowrap',
-  ...(styleProps.fixed && {
+  ...(ownerState.fixed && {
     overflowX: 'hidden',
     width: '100%',
   }),
-  ...(styleProps.hideScrollbar && {
+  ...(ownerState.hideScrollbar && {
     // Hide dimensionless scrollbar on MacOS
     scrollbarWidth: 'none', // Firefox
     '&::-webkit-scrollbar': {
       display: 'none', // Safari + Chrome
     },
   }),
-  ...(styleProps.scrollableX && {
+  ...(ownerState.scrollableX && {
     overflowX: 'auto',
     overflowY: 'hidden',
   }),
-  ...(styleProps.scrollableY && {
+  ...(ownerState.scrollableY && {
     overflowY: 'auto',
     overflowX: 'hidden',
   }),
 }));
 
-const FlexContainer = experimentalStyled(
-  'div',
-  {},
-  {
-    name: 'MuiTabs',
-    slot: 'FlexContainer',
-    overridesResolver: (props, styles) => {
-      const { styleProps } = props;
-      return {
-        ...styles.flexContainer,
-        ...(styleProps.vertical && styles.flexContainerVertical),
-        ...(styleProps.centered && styles.centered),
-      };
-    },
+const FlexContainer = styled('div', {
+  name: 'MuiTabs',
+  slot: 'FlexContainer',
+  overridesResolver: (props, styles) => {
+    const { ownerState } = props;
+    return [
+      styles.flexContainer,
+      ownerState.vertical && styles.flexContainerVertical,
+      ownerState.centered && styles.centered,
+    ];
   },
-)(({ styleProps }) => ({
+})(({ ownerState }) => ({
   display: 'flex',
-  ...(styleProps.vertical && {
+  ...(ownerState.vertical && {
     flexDirection: 'column',
   }),
-  ...(styleProps.centered && {
+  ...(ownerState.centered && {
     justifyContent: 'center',
   }),
 }));
 
-const TabsIndicator = experimentalStyled(
-  'span',
-  {},
-  {
-    name: 'MuiTabs',
-    slot: 'Indicator',
-    overridesResolver: (props, styles) => styles.indicator,
-  },
-)(({ styleProps, theme }) => ({
+const TabsIndicator = styled('span', {
+  name: 'MuiTabs',
+  slot: 'Indicator',
+  overridesResolver: (props, styles) => styles.indicator,
+})(({ ownerState, theme }) => ({
   position: 'absolute',
   height: 2,
   bottom: 0,
   width: '100%',
   transition: theme.transitions.create(),
-  ...(styleProps.indicatorColor === 'primary' && {
+  ...(ownerState.indicatorColor === 'primary' && {
     backgroundColor: theme.palette.primary.main,
   }),
-  ...(styleProps.indicatorColor === 'secondary' && {
+  ...(ownerState.indicatorColor === 'secondary' && {
     backgroundColor: theme.palette.secondary.main,
   }),
-  ...(styleProps.vertical && {
+  ...(ownerState.vertical && {
     height: '100%',
     width: 2,
     right: 0,
   }),
 }));
 
-const TabsScrollbarSize = experimentalStyled(
-  ScrollbarSize,
-  {},
-  { name: 'MuiTabs', slot: 'ScrollbarSize' },
-)({
+const TabsScrollbarSize = styled(ScrollbarSize, {
+  name: 'MuiTabs',
+  slot: 'ScrollbarSize',
+})({
   overflowX: 'auto',
   overflowY: 'hidden',
   // Hide dimensionless scrollbar on MacOS
@@ -193,6 +234,8 @@ const TabsScrollbarSize = experimentalStyled(
 });
 
 const defaultIndicatorStyle = {};
+
+let warnedOnceTabPresent = false;
 
 const Tabs = React.forwardRef(function Tabs(inProps, ref) {
   const props = useThemeProps({ props: inProps, name: 'MuiTabs' });
@@ -230,7 +273,7 @@ const Tabs = React.forwardRef(function Tabs(inProps, ref) {
   const clientSize = vertical ? 'clientHeight' : 'clientWidth';
   const size = vertical ? 'height' : 'width';
 
-  const styleProps = {
+  const ownerState = {
     ...props,
     component,
     allowScrollButtonsMobile,
@@ -249,7 +292,7 @@ const Tabs = React.forwardRef(function Tabs(inProps, ref) {
     scrollButtonsHideMobile: !allowScrollButtonsMobile,
   };
 
-  const classes = useUtilityClasses(styleProps);
+  const classes = useUtilityClasses(ownerState);
 
   if (process.env.NODE_ENV !== 'production') {
     if (centered && scrollable) {
@@ -317,6 +360,27 @@ const Tabs = React.forwardRef(function Tabs(inProps, ref) {
           }
         }
         tabMeta = tab ? tab.getBoundingClientRect() : null;
+
+        if (process.env.NODE_ENV !== 'production') {
+          if (
+            process.env.NODE_ENV !== 'test' &&
+            !warnedOnceTabPresent &&
+            tabMeta &&
+            tabMeta.width === 0 &&
+            tabMeta.height === 0
+          ) {
+            tabsMeta = null;
+            console.error(
+              [
+                'Material-UI: The value provided to the Tabs component is invalid.',
+                `The Tab with this value (\`${value}\`) is not part of the document layout.`,
+                "Make sure the tab item is present in the document or that it's not display none.",
+              ].join('\n'),
+            );
+
+            warnedOnceTabPresent = true;
+          }
+        }
       }
     }
     return { tabsMeta, tabMeta };
@@ -325,30 +389,36 @@ const Tabs = React.forwardRef(function Tabs(inProps, ref) {
   const updateIndicatorState = useEventCallback(() => {
     const { tabsMeta, tabMeta } = getTabsMeta();
     let startValue = 0;
+    let startIndicator;
 
-    if (tabMeta && tabsMeta) {
-      if (vertical) {
+    if (vertical) {
+      startIndicator = 'top';
+      if (tabMeta && tabsMeta) {
         startValue = tabMeta.top - tabsMeta.top + tabsMeta.scrollTop;
-      } else {
+      }
+    } else {
+      startIndicator = isRtl ? 'right' : 'left';
+      if (tabMeta && tabsMeta) {
         const correction = isRtl
           ? tabsMeta.scrollLeftNormalized + tabsMeta.clientWidth - tabsMeta.scrollWidth
           : tabsMeta.scrollLeft;
-        startValue = tabMeta.left - tabsMeta.left + correction;
+        startValue =
+          (isRtl ? -1 : 1) * (tabMeta[startIndicator] - tabsMeta[startIndicator] + correction);
       }
     }
 
     const newIndicatorStyle = {
-      [start]: startValue,
+      [startIndicator]: startValue,
       // May be wrong until the font is loaded.
       [size]: tabMeta ? tabMeta[size] : 0,
     };
 
     // IE11 support, replace with Number.isNaN
     // eslint-disable-next-line no-restricted-globals
-    if (isNaN(indicatorStyle[start]) || isNaN(indicatorStyle[size])) {
+    if (isNaN(indicatorStyle[startIndicator]) || isNaN(indicatorStyle[size])) {
       setIndicatorStyle(newIndicatorStyle);
     } else {
-      const dStart = Math.abs(indicatorStyle[start] - newIndicatorStyle[start]);
+      const dStart = Math.abs(indicatorStyle[startIndicator] - newIndicatorStyle[startIndicator]);
       const dSize = Math.abs(indicatorStyle[size] - newIndicatorStyle[size]);
 
       if (dStart >= 1 || dSize >= 1) {
@@ -359,7 +429,9 @@ const Tabs = React.forwardRef(function Tabs(inProps, ref) {
 
   const scroll = (scrollValue, { animation = true } = {}) => {
     if (animation) {
-      animate(scrollStart, tabsRef.current, scrollValue);
+      animate(scrollStart, tabsRef.current, scrollValue, {
+        duration: theme.transitions.duration.standard,
+      });
     } else {
       tabsRef.current[scrollStart] = scrollValue;
     }
@@ -495,12 +567,23 @@ const Tabs = React.forwardRef(function Tabs(inProps, ref) {
       updateIndicatorState();
       updateScrollButtonState();
     });
-
     const win = ownerWindow(tabsRef.current);
     win.addEventListener('resize', handleResize);
+    let resizeObserver;
+    try {
+      resizeObserver = new ResizeObserver(handleResize);
+    } catch (err) {
+      resizeObserver = MockResizeObserver(); // Prevent crash for old browsers
+    }
+
+    Array.from(tabListRef.current.children).forEach((child) => {
+      resizeObserver.observe(child);
+    });
+
     return () => {
       handleResize.clear();
       win.removeEventListener('resize', handleResize);
+      resizeObserver.disconnect();
     };
   }, [updateIndicatorState, updateScrollButtonState]);
 
@@ -545,7 +628,7 @@ const Tabs = React.forwardRef(function Tabs(inProps, ref) {
     <TabsIndicator
       {...TabIndicatorProps}
       className={clsx(classes.indicator, TabIndicatorProps.className)}
-      styleProps={styleProps}
+      ownerState={ownerState}
       style={{
         ...indicatorStyle,
         ...TabIndicatorProps.style,
@@ -588,16 +671,16 @@ const Tabs = React.forwardRef(function Tabs(inProps, ref) {
   });
 
   const handleKeyDown = (event) => {
-    const { target } = event;
+    const list = tabListRef.current;
+    const currentFocus = ownerDocument(list).activeElement;
     // Keyboard navigation assumes that [role="tab"] are siblings
     // though we might warn in the future about nested, interactive elements
     // as a a11y violation
-    const role = target.getAttribute('role');
+    const role = currentFocus.getAttribute('role');
     if (role !== 'tab') {
       return;
     }
 
-    let newFocusTarget = null;
     let previousItemKey = orientation === 'horizontal' ? 'ArrowLeft' : 'ArrowUp';
     let nextItemKey = orientation === 'horizontal' ? 'ArrowRight' : 'ArrowDown';
     if (orientation === 'horizontal' && isRtl) {
@@ -608,24 +691,23 @@ const Tabs = React.forwardRef(function Tabs(inProps, ref) {
 
     switch (event.key) {
       case previousItemKey:
-        newFocusTarget = target.previousElementSibling || tabListRef.current.lastChild;
+        event.preventDefault();
+        moveFocus(list, currentFocus, previousItem);
         break;
       case nextItemKey:
-        newFocusTarget = target.nextElementSibling || tabListRef.current.firstChild;
+        event.preventDefault();
+        moveFocus(list, currentFocus, nextItem);
         break;
       case 'Home':
-        newFocusTarget = tabListRef.current.firstChild;
+        event.preventDefault();
+        moveFocus(list, null, nextItem);
         break;
       case 'End':
-        newFocusTarget = tabListRef.current.lastChild;
+        event.preventDefault();
+        moveFocus(list, null, previousItem);
         break;
       default:
         break;
-    }
-
-    if (newFocusTarget !== null) {
-      newFocusTarget.focus();
-      event.preventDefault();
     }
   };
 
@@ -634,7 +716,7 @@ const Tabs = React.forwardRef(function Tabs(inProps, ref) {
   return (
     <TabsRoot
       className={clsx(classes.root, className)}
-      styleProps={styleProps}
+      ownerState={ownerState}
       ref={ref}
       as={component}
       {...other}
@@ -643,7 +725,7 @@ const Tabs = React.forwardRef(function Tabs(inProps, ref) {
       {conditionalElements.scrollbarSizeListener}
       <TabsScroller
         className={classes.scroller}
-        styleProps={styleProps}
+        ownerState={ownerState}
         style={{
           overflow: scrollerStyle.overflow,
           [vertical ? `margin${isRtl ? 'Left' : 'Right'}` : 'marginBottom']: visibleScrollbar
@@ -659,7 +741,7 @@ const Tabs = React.forwardRef(function Tabs(inProps, ref) {
           aria-labelledby={ariaLabelledBy}
           aria-orientation={orientation === 'vertical' ? 'vertical' : null}
           className={classes.flexContainer}
-          styleProps={styleProps}
+          ownerState={ownerState}
           onKeyDown={handleKeyDown}
           ref={tabListRef}
           role="tablist"
@@ -732,7 +814,7 @@ Tabs.propTypes /* remove-proptypes */ = {
   /**
    * Callback fired when the value changes.
    *
-   * @param {object} event The event source of the callback. **Warning**: This is a generic event not a change event.
+   * @param {React.SyntheticEvent} event The event source of the callback. **Warning**: This is a generic event not a change event.
    * @param {any} value We default to the index of the child (number)
    */
   onChange: PropTypes.func,

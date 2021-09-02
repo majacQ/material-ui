@@ -1,8 +1,8 @@
 import * as React from 'react';
 import PropTypes from 'prop-types';
 import clsx from 'clsx';
-import { unstable_composeClasses as composeClasses } from '@material-ui/unstyled';
-import experimentalStyled from '../styles/experimentalStyled';
+import { unstable_composeClasses as composeClasses } from '@mui/core';
+import styled from '../styles/styled';
 import useThemeProps from '../styles/useThemeProps';
 import ButtonBase from '../ButtonBase';
 import StepLabel from '../StepLabel';
@@ -11,8 +11,8 @@ import StepperContext from '../Stepper/StepperContext';
 import StepContext from '../Step/StepContext';
 import stepButtonClasses, { getStepButtonUtilityClass } from './stepButtonClasses';
 
-const useUtilityClasses = (styleProps) => {
-  const { classes, orientation } = styleProps;
+const useUtilityClasses = (ownerState) => {
+  const { classes, orientation } = ownerState;
 
   const slots = {
     root: ['root', orientation],
@@ -22,36 +22,29 @@ const useUtilityClasses = (styleProps) => {
   return composeClasses(slots, getStepButtonUtilityClass, classes);
 };
 
-const StepButtonRoot = experimentalStyled(
-  ButtonBase,
-  {},
-  {
-    name: 'MuiStepButton',
-    slot: 'Root',
-    overridesResolver: (props, styles) => {
-      const { styleProps } = props;
+const StepButtonRoot = styled(ButtonBase, {
+  name: 'MuiStepButton',
+  slot: 'Root',
+  overridesResolver: (props, styles) => {
+    const { ownerState } = props;
 
-      return {
-        [`& .${stepButtonClasses.touchRipple}`]: styles.touchRipple,
-        ...styles.root,
-        ...styles[styleProps.orientation],
-      };
-    },
+    return [
+      { [`& .${stepButtonClasses.touchRipple}`]: styles.touchRipple },
+      styles.root,
+      styles[ownerState.orientation],
+    ];
   },
-)(({ styleProps }) => ({
-  /* Styles applied to the root element. */
+})(({ ownerState }) => ({
   width: '100%',
   padding: '24px 16px',
   margin: '-24px -16px',
   boxSizing: 'content-box',
-  /* Styles applied to the root element if `orientation="vertical"`. */
-  ...(styleProps.orientation === 'vertical' && {
+  ...(ownerState.orientation === 'vertical' && {
     justifyContent: 'flex-start',
     padding: '8px',
     margin: '-8px',
   }),
   [`& .${stepButtonClasses.touchRipple}`]: {
-    /* Styles applied to the `ButtonBase` touch-ripple. */
     color: 'rgba(0, 0, 0, 0.3)',
   },
 }));
@@ -63,9 +56,9 @@ const StepButton = React.forwardRef(function StepButton(inProps, ref) {
   const { disabled } = React.useContext(StepContext);
   const { orientation } = React.useContext(StepperContext);
 
-  const styleProps = { ...props, orientation };
+  const ownerState = { ...props, orientation };
 
-  const classes = useUtilityClasses(styleProps);
+  const classes = useUtilityClasses(ownerState);
 
   const childProps = {
     icon,
@@ -85,7 +78,7 @@ const StepButton = React.forwardRef(function StepButton(inProps, ref) {
       TouchRippleProps={{ className: classes.touchRipple }}
       className={clsx(classes.root, className)}
       ref={ref}
-      styleProps={styleProps}
+      ownerState={ownerState}
       {...other}
     >
       {child}

@@ -1,14 +1,14 @@
-import fs from 'fs';
 import path from 'path';
 import { expect } from 'chai';
 import jscodeshift from 'jscodeshift';
 import transform from './box-sx-prop';
+import readFile from '../util/readFile';
 
 function read(fileName) {
-  return fs.readFileSync(path.join(__dirname, fileName), 'utf8').toString();
+  return readFile(path.join(__dirname, fileName));
 }
 
-describe('@material-ui/codemod', () => {
+describe('@mui/codemod', () => {
   describe('v5.0.0', () => {
     describe('box-sx-prop', () => {
       it('transforms props as needed', () => {
@@ -17,7 +17,7 @@ describe('@material-ui/codemod', () => {
             source: read('./box-sx-prop.test/actual.js'),
             path: require.resolve('./box-sx-prop.test/actual.js'),
           },
-          { jscodeshift: jscodeshift },
+          { jscodeshift },
           {},
         );
 
@@ -31,7 +31,7 @@ describe('@material-ui/codemod', () => {
             source: read('./box-sx-prop.test/expected.js'),
             path: require.resolve('./box-sx-prop.test/expected.js'),
           },
-          { jscodeshift: jscodeshift },
+          { jscodeshift },
           {},
         );
 

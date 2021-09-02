@@ -1,15 +1,10 @@
 import * as React from 'react';
-import Grid from '@material-ui/core/Grid';
-import Paper from '@material-ui/core/Paper';
-import Box from '@material-ui/core/Box';
-import {
-  createTheme,
-  ThemeProvider,
-  experimentalStyled as styled,
-} from '@material-ui/core/styles';
+import Grid from '@mui/material/Grid';
+import Paper from '@mui/material/Paper';
+import Box from '@mui/material/Box';
+import { createTheme, ThemeProvider, styled } from '@mui/material/styles';
 
 const Item = styled(Paper)(({ theme }) => ({
-  // TODO withStyles removal
   ...theme.typography.body2,
   textAlign: 'center',
   color: theme.palette.text.secondary,

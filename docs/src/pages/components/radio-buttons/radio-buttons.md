@@ -63,10 +63,10 @@ In general, radio buttons should have a value selected by default. If this is no
 
 {{"demo": "pages/components/radio-buttons/ErrorRadios.js"}}
 
-## Customized radios
+## Customization
 
-Here is an example of customizing the component. You can learn more about this in the
-[overrides documentation page](/customization/how-to-customize/).
+Here is an example of customizing the component.
+You can learn more about this in the [overrides documentation page](/customization/how-to-customize/).
 
 {{"demo": "pages/components/radio-buttons/CustomizedRadios.js"}}
 
@@ -79,16 +79,16 @@ The Radio component uses this hook internally.
 ### API
 
 ```jsx
-import { useRadioGroup } from '@material-ui/core/RadioGroup';
+import { useRadioGroup } from '@mui/material/RadioGroup';
 ```
 
 #### Returns
 
-`value` (_Object_):
+`value` (_object_):
 
-- `value.name` (_String_ [optional]): The name used to reference the value of the control.
-- `value.onChange` (_Void_ [optional]): Callback fired when a radio button is selected.
-- `value.value` (_Any_ [optional]): Value of the selected radio button.
+- `value.name` (_string_ [optional]): The name used to reference the value of the control.
+- `value.onChange` (_func_ [optional]): Callback fired when a radio button is selected.
+- `value.value` (_any_ [optional]): Value of the selected radio button.
 
 #### Example
 

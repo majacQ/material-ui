@@ -1,18 +1,15 @@
 import * as React from 'react';
 import PropTypes from 'prop-types';
 import clsx from 'clsx';
-import { capitalize } from '@material-ui/core/utils';
-import {
-  experimentalStyled,
-  unstable_useThemeProps as useThemeProps,
-} from '@material-ui/core/styles';
-import { unstable_composeClasses as composeClasses } from '@material-ui/unstyled';
-import Typography from '@material-ui/core/Typography';
+import { capitalize } from '@mui/material/utils';
+import { styled, useThemeProps } from '@mui/material/styles';
+import { unstable_composeClasses as composeClasses } from '@mui/core';
+import Typography from '@mui/material/Typography';
 import TimelineContext from '../Timeline/TimelineContext';
 import { getTimelineContentUtilityClass } from './timelineContentClasses';
 
-const useUtilityClasses = (styleProps) => {
-  const { position, classes } = styleProps;
+const useUtilityClasses = (ownerState) => {
+  const { position, classes } = ownerState;
 
   const slots = {
     root: ['root', `position${capitalize(position)}`],
@@ -21,27 +18,18 @@ const useUtilityClasses = (styleProps) => {
   return composeClasses(slots, getTimelineContentUtilityClass, classes);
 };
 
-const TimelineContentRoot = experimentalStyled(
-  Typography,
-  {},
-  {
-    name: 'MuiTimelineContent',
-    slot: 'Root',
-    overridesResolver: (props, styles) => {
-      const { styleProps } = props;
-      return {
-        ...styles.root,
-        ...styles[`position${capitalize(styleProps.position)}`],
-      };
-    },
+const TimelineContentRoot = styled(Typography, {
+  name: 'MuiTimelineContent',
+  slot: 'Root',
+  overridesResolver: (props, styles) => {
+    const { ownerState } = props;
+    return [styles.root, styles[`position${capitalize(ownerState.position)}`]];
   },
-)(({ styleProps }) => ({
-  /* Styles applied to the root element. */
+})(({ ownerState }) => ({
   flex: 1,
   padding: '6px 16px',
   textAlign: 'left',
-  /* Styles applied to the root element if `position="left"`. */
-  ...(styleProps.position === 'left' && {
+  ...(ownerState.position === 'left' && {
     textAlign: 'right',
   }),
 }));
@@ -52,18 +40,18 @@ const TimelineContent = React.forwardRef(function TimelineContent(inProps, ref) 
 
   const { position: positionContext } = React.useContext(TimelineContext);
 
-  const styleProps = {
+  const ownerState = {
     ...props,
     position: positionContext || 'right',
   };
 
-  const classes = useUtilityClasses(styleProps);
+  const classes = useUtilityClasses(ownerState);
 
   return (
     <TimelineContentRoot
       component="div"
       className={clsx(classes.root, className)}
-      styleProps={styleProps}
+      ownerState={ownerState}
       ref={ref}
       {...other}
     />

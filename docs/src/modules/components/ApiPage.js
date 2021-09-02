@@ -1,13 +1,17 @@
-/* eslint-disable material-ui/no-hardcoded-labels, react/no-danger */
+/* eslint-disable react/no-danger */
 import * as React from 'react';
 import PropTypes from 'prop-types';
 import clsx from 'clsx';
-import { exactProp } from '@material-ui/utils';
-import Typography from '@material-ui/core/Typography';
+import { exactProp } from '@mui/utils';
+import { styled } from '@mui/material/styles';
+import Alert from '@mui/material/Alert';
+import Typography from '@mui/material/Typography';
 import { useTranslate, useUserLanguage } from 'docs/src/modules/utils/i18n';
 import HighlightedCode from 'docs/src/modules/components/HighlightedCode';
 import MarkdownElement from 'docs/src/modules/components/MarkdownElement';
 import AppLayoutDocs from 'docs/src/modules/components/AppLayoutDocs';
+
+const Asterisk = styled('abbr')(({ theme }) => ({ color: theme.palette.error.main }));
 
 function PropsTable(props) {
   const { componentProps, propDescriptions } = props;
@@ -33,11 +37,11 @@ function PropsTable(props) {
                 <td align="left">
                   <span className={clsx('prop-name', propData.required ? 'required' : null)}>
                     {propName}
-                    {propData.required ? (
+                    {propData.required && (
                       <sup>
-                        <abbr title="required">*</abbr>
+                        <Asterisk title="required">*</Asterisk>
                       </sup>
-                    ) : null}
+                    )}
                   </span>
                 </td>
                 <td align="left">
@@ -49,12 +53,26 @@ function PropsTable(props) {
                 <td align="left">
                   {propDefault && <span className="prop-default">{propDefault}</span>}
                 </td>
-                <td
-                  align="left"
-                  dangerouslySetInnerHTML={{
-                    __html: propDescriptions[propName] || '',
-                  }}
-                />
+                <td align="left">
+                  {propData.deprecated && (
+                    <Alert severity="warning" sx={{ mb: 1, py: 0 }}>
+                      <strong>{t('api-docs.deprecated')}</strong>
+                      {propData.deprecationInfo && ' - '}
+                      {propData.deprecationInfo && (
+                        <span
+                          dangerouslySetInnerHTML={{
+                            __html: propData.deprecationInfo,
+                          }}
+                        />
+                      )}
+                    </Alert>
+                  )}
+                  <div
+                    dangerouslySetInnerHTML={{
+                      __html: propDescriptions[propName] || '',
+                    }}
+                  />
+                </td>
               </tr>
             )
           );
@@ -175,6 +193,7 @@ function ApiDocs(props) {
     name: componentName,
     props: componentProps,
     spread,
+    // TODO: Drop once migration to emotion is complete since this will always be true.
     styledComponent,
     styles: componentStyles,
   } = pageContent;
@@ -188,12 +207,12 @@ function ApiDocs(props) {
   const description = t('api-docs.pageDescription').replace(/{{name}}/, componentName);
 
   const source = filename
-    .replace(
-      /\/packages\/material-ui(-(.+?))?\/src/,
-      (match, dash, pkg) => `@material-ui/${pkg || 'core'}`,
-    )
+    .replace(/\/packages\/material-ui(-(.+?))?\/src/, (match, dash, pkg) => `@mui/${pkg || 'core'}`)
     // convert things like `/Table/Table.js` to ``
     .replace(/\/([^/]+)\/\1\.(js|tsx)$/, '');
+
+  // Prefer linking the .tsx or .d.ts for the "Edit this page" link.
+  const apiSourceLocation = filename.replace('.js', '.d.ts');
 
   function createTocEntry(sectionName) {
     return {
@@ -244,7 +263,7 @@ function ApiDocs(props) {
       description={description}
       disableAd={false}
       disableToc={false}
-      location={filename}
+      location={apiSourceLocation}
       title={`${componentName} API – Material-UI`}
       toc={toc}
     >
@@ -283,6 +302,7 @@ import { ${componentName} } from '${source}';`}
           </React.Fragment>
         )}
         <Heading hash="props" />
+        <p dangerouslySetInnerHTML={{ __html: spreadHint }} />
         <PropsTable componentProps={componentProps} propDescriptions={propDescriptions} />
         <br />
         {cssComponent && (
@@ -297,8 +317,6 @@ import { ${componentName} } from '${source}';`}
           </React.Fragment>
         )}
         <span dangerouslySetInnerHTML={{ __html: refHint }} />
-        <br />
-        <span dangerouslySetInnerHTML={{ __html: spreadHint }} />
         {inheritance && (
           <React.Fragment>
             <Heading hash="inheritance" level="h3" />

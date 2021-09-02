@@ -9,6 +9,10 @@
         "description": "'primary'<br>&#124;&nbsp;'secondary'<br>&#124;&nbsp;string"
       }
     },
+    "components": {
+      "type": { "name": "shape", "description": "{ Input?: elementType, Root?: elementType }" },
+      "default": "{}"
+    },
     "defaultValue": { "type": { "name": "any" } },
     "disabled": { "type": { "name": "bool" } },
     "endAdornment": { "type": { "name": "node" } },
@@ -19,7 +23,6 @@
     "inputProps": { "type": { "name": "object" }, "default": "{}" },
     "inputRef": { "type": { "name": "custom", "description": "ref" } },
     "label": { "type": { "name": "node" } },
-    "labelWidth": { "type": { "name": "number" }, "default": "0" },
     "margin": { "type": { "name": "enum", "description": "'dense'<br>&#124;&nbsp;'none'" } },
     "maxRows": { "type": { "name": "union", "description": "number<br>&#124;&nbsp;string" } },
     "minRows": { "type": { "name": "union", "description": "number<br>&#124;&nbsp;string" } },

@@ -1,16 +1,12 @@
 import * as React from 'react';
-import TextField from '@material-ui/core/TextField';
+import TextField from '@mui/material/TextField';
 import { spy, useFakeTimers } from 'sinon';
 import { expect } from 'chai';
 import { act, describeConformance, fireEvent, screen, userEvent } from 'test/utils';
-import { TransitionProps } from '@material-ui/core/transitions';
-import { TimePickerProps } from '@material-ui/lab/TimePicker';
-import DesktopTimePicker from '@material-ui/lab/DesktopTimePicker';
-import {
-  createPickerMount,
-  createPickerRender,
-  adapterToUse,
-} from '../internal/pickers/test-utils';
+import { TransitionProps } from '@mui/material/transitions';
+import { TimePickerProps } from '@mui/lab/TimePicker';
+import DesktopTimePicker from '@mui/lab/DesktopTimePicker';
+import { wrapPickerMount, createPickerRender, adapterToUse } from '../internal/pickers/test-utils';
 
 describe('<DesktopTimePicker />', () => {
   let clock: ReturnType<typeof useFakeTimers>;
@@ -23,7 +19,6 @@ describe('<DesktopTimePicker />', () => {
   });
 
   const render = createPickerRender();
-  const mount = createPickerMount();
 
   describeConformance(
     <DesktopTimePicker
@@ -33,9 +28,20 @@ describe('<DesktopTimePicker />', () => {
     />,
     () => ({
       classes: {},
-      mount,
+      muiName: 'MuiDesktopTimePicker',
+      wrapMount: wrapPickerMount,
       refInstanceof: window.HTMLDivElement,
-      skip: ['componentProp', 'mergeClassName', 'propsSpread', 'rootClass', 'reactTestRenderer'],
+      skip: [
+        'componentProp',
+        'componentsProp',
+        'themeDefaultProps',
+        'themeStyleOverrides',
+        'themeVariants',
+        'mergeClassName',
+        'propsSpread',
+        'rootClass',
+        'reactTestRenderer',
+      ],
     }),
   );
 
@@ -55,7 +61,7 @@ describe('<DesktopTimePicker />', () => {
     );
   });
 
-  it('opens on click', () => {
+  it('opens when "Choose time" is clicked', () => {
     const handleClose = spy();
     const handleOpen = spy();
     render(
@@ -73,6 +79,28 @@ describe('<DesktopTimePicker />', () => {
 
     expect(handleClose.callCount).to.equal(0);
     expect(handleOpen.callCount).to.equal(1);
+  });
+
+  ['readOnly', 'disabled'].forEach((prop) => {
+    it(`cannot be opened when "Choose time" is clicked when ${prop}={true}`, () => {
+      const handleOpen = spy();
+      render(
+        <DesktopTimePicker
+          value={adapterToUse.date('2019-01-01T00:00:00.000')}
+          {...{ [prop]: true }}
+          onChange={() => {}}
+          onOpen={handleOpen}
+          open={false}
+          renderInput={(params) => <TextField {...params} />}
+        />,
+      );
+
+      act(() => {
+        userEvent.mousePress(screen.getByLabelText(/Choose time/));
+      });
+
+      expect(handleOpen.callCount).to.equal(0);
+    });
   });
 
   it('closes on clickaway', () => {
@@ -196,7 +224,7 @@ describe('<DesktopTimePicker />', () => {
 
         // we are running validation on value change
         function TimePickerInput() {
-          const [time, setTime] = React.useState(null);
+          const [time, setTime] = React.useState<Date | null>(null);
 
           return (
             <DesktopTimePicker

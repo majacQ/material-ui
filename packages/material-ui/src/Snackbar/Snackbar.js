@@ -1,10 +1,11 @@
 import * as React from 'react';
 import PropTypes from 'prop-types';
 import clsx from 'clsx';
-import { unstable_composeClasses as composeClasses } from '@material-ui/unstyled';
-import experimentalStyled from '../styles/experimentalStyled';
+import { unstable_composeClasses as composeClasses } from '@mui/core';
+import styled from '../styles/styled';
+import useTheme from '../styles/useTheme';
 import useThemeProps from '../styles/useThemeProps';
-import { duration } from '../styles/transitions';
+import { duration } from '../styles/createTransitions';
 import ClickAwayListener from '../ClickAwayListener';
 import useEventCallback from '../utils/useEventCallback';
 import capitalize from '../utils/capitalize';
@@ -12,8 +13,8 @@ import Grow from '../Grow';
 import SnackbarContent from '../SnackbarContent';
 import { getSnackbarUtilityClass } from './snackbarClasses';
 
-const useUtilityClasses = (styleProps) => {
-  const { classes, anchorOrigin } = styleProps;
+const useUtilityClasses = (ownerState) => {
+  const { classes, anchorOrigin } = ownerState;
 
   const slots = {
     root: [
@@ -25,30 +26,33 @@ const useUtilityClasses = (styleProps) => {
   return composeClasses(slots, getSnackbarUtilityClass, classes);
 };
 
-const SnackbarRoot = experimentalStyled(
-  'div',
-  {},
-  {
-    name: 'MuiSnackbar',
-    slot: 'Root',
-    overridesResolver: (props, styles) => {
-      const { styleProps } = props;
+const SnackbarRoot = styled('div', {
+  name: 'MuiSnackbar',
+  slot: 'Root',
+  overridesResolver: (props, styles) => {
+    const { ownerState } = props;
 
-      return {
-        ...styles.root,
-        ...styles[
-          `anchorOrigin${capitalize(styleProps.anchorOrigin.vertical)}${capitalize(
-            styleProps.anchorOrigin.horizontal,
-          )}`
-        ],
-      };
-    },
+    return [
+      styles.root,
+      styles[
+        `anchorOrigin${capitalize(ownerState.anchorOrigin.vertical)}${capitalize(
+          ownerState.anchorOrigin.horizontal,
+        )}`
+      ],
+    ];
   },
-)(({ theme, styleProps }) => {
+})(({ theme, ownerState }) => {
   const center = {
-    left: '50%',
-    right: 'auto',
-    transform: 'translateX(-50%)',
+    ...(!ownerState.isRtl && {
+      left: '50%',
+      right: 'auto',
+      transform: 'translateX(-50%)',
+    }),
+    ...(ownerState.isRtl && {
+      right: '50%',
+      left: 'auto',
+      transform: 'translateX(50%)',
+    }),
   };
 
   return {
@@ -59,14 +63,32 @@ const SnackbarRoot = experimentalStyled(
     right: 8,
     justifyContent: 'center',
     alignItems: 'center',
-    ...(styleProps.anchorOrigin.vertical === 'top' ? { top: 8 } : { bottom: 8 }),
-    ...(styleProps.anchorOrigin.horizontal === 'left' && { justifyContent: 'flex-start' }),
-    ...(styleProps.anchorOrigin.horizontal === 'right' && { justifyContent: 'flex-end' }),
+    ...(ownerState.anchorOrigin.vertical === 'top' ? { top: 8 } : { bottom: 8 }),
+    ...(ownerState.anchorOrigin.horizontal === 'left' && { justifyContent: 'flex-start' }),
+    ...(ownerState.anchorOrigin.horizontal === 'right' && { justifyContent: 'flex-end' }),
     [theme.breakpoints.up('sm')]: {
-      ...(styleProps.anchorOrigin.vertical === 'top' ? { top: 24 } : { bottom: 24 }),
-      ...(styleProps.anchorOrigin.horizontal === 'center' && center),
-      ...(styleProps.anchorOrigin.horizontal === 'left' && { left: 24, right: 'auto' }),
-      ...(styleProps.anchorOrigin.horizontal === 'right' && { right: 24, left: 'auto' }),
+      ...(ownerState.anchorOrigin.vertical === 'top' ? { top: 24 } : { bottom: 24 }),
+      ...(ownerState.anchorOrigin.horizontal === 'center' && center),
+      ...(ownerState.anchorOrigin.horizontal === 'left' && {
+        ...(!ownerState.isRtl && {
+          left: 24,
+          right: 'auto',
+        }),
+        ...(ownerState.isRtl && {
+          right: 24,
+          left: 'auto',
+        }),
+      }),
+      ...(ownerState.anchorOrigin.horizontal === 'right' && {
+        ...(!ownerState.isRtl && {
+          right: 24,
+          left: 'auto',
+        }),
+        ...(ownerState.isRtl && {
+          left: 24,
+          right: 'auto',
+        }),
+      }),
     },
   };
 });
@@ -97,8 +119,11 @@ const Snackbar = React.forwardRef(function Snackbar(inProps, ref) {
     ...other
   } = props;
 
-  const styleProps = { ...props, anchorOrigin: { vertical, horizontal } };
-  const classes = useUtilityClasses(styleProps);
+  const theme = useTheme();
+  const isRtl = theme.direction === 'rtl';
+
+  const ownerState = { ...props, anchorOrigin: { vertical, horizontal }, isRtl };
+  const classes = useUtilityClasses(ownerState);
 
   const timerAutoHide = React.useRef();
   const [exited, setExited] = React.useState(true);
@@ -206,7 +231,7 @@ const Snackbar = React.forwardRef(function Snackbar(inProps, ref) {
         className={clsx(classes.root, className)}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
-        styleProps={styleProps}
+        ownerState={ownerState}
         ref={ref}
         {...other}
       >
@@ -296,7 +321,7 @@ Snackbar.propTypes /* remove-proptypes */ = {
    * The `reason` parameter can optionally be used to control the response to `onClose`,
    * for example ignoring `clickaway`.
    *
-   * @param {object} event The event source of the callback.
+   * @param {React.SyntheticEvent<any>} event The event source of the callback.
    * @param {string} reason Can be: `"timeout"` (`autoHideDuration` expired), `"clickaway"`.
    */
   onClose: PropTypes.func,

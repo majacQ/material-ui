@@ -1,14 +1,14 @@
 import * as React from 'react';
 import PropTypes from 'prop-types';
 import clsx from 'clsx';
-import { chainPropTypes } from '@material-ui/utils';
-import { unstable_composeClasses as composeClasses } from '@material-ui/unstyled';
+import { chainPropTypes } from '@mui/utils';
+import { unstable_composeClasses as composeClasses } from '@mui/core';
 import useThemeProps from '../styles/useThemeProps';
-import experimentalStyled from '../styles/experimentalStyled';
+import styled from '../styles/styled';
 import { getCardMediaUtilityClass } from './cardMediaClasses';
 
-const useUtilityClasses = (styleProps) => {
-  const { classes, isMediaComponent, isImageComponent } = styleProps;
+const useUtilityClasses = (ownerState) => {
+  const { classes, isMediaComponent, isImageComponent } = ownerState;
 
   const slots = {
     root: ['root', isMediaComponent && 'media', isImageComponent && 'img'],
@@ -17,35 +17,24 @@ const useUtilityClasses = (styleProps) => {
   return composeClasses(slots, getCardMediaUtilityClass, classes);
 };
 
-const CardMediaRoot = experimentalStyled(
-  'div',
-  {},
-  {
-    name: 'MuiCardMedia',
-    slot: 'Root',
-    overridesResolver: (props, styles) => {
-      const { styleProps } = props;
-      const { isMediaComponent, isImageComponent } = styleProps;
+const CardMediaRoot = styled('div', {
+  name: 'MuiCardMedia',
+  slot: 'Root',
+  overridesResolver: (props, styles) => {
+    const { ownerState } = props;
+    const { isMediaComponent, isImageComponent } = ownerState;
 
-      return {
-        ...styles.root,
-        ...(isMediaComponent && styles.media),
-        ...(isImageComponent && styles.img),
-      };
-    },
+    return [styles.root, isMediaComponent && styles.media, isImageComponent && styles.img];
   },
-)(({ styleProps }) => ({
-  /* Styles applied to the root element. */
+})(({ ownerState }) => ({
   display: 'block',
   backgroundSize: 'cover',
   backgroundRepeat: 'no-repeat',
   backgroundPosition: 'center',
-  /* Styles applied to the root element if `component="video, audio, picture, iframe, or img"`. */
-  ...(styleProps.isMediaComponent && {
+  ...(ownerState.isMediaComponent && {
     width: '100%',
   }),
-  /* Styles applied to the root element if `component="picture or img"`. */
-  ...(styleProps.isImageComponent && {
+  ...(ownerState.isImageComponent && {
     // ⚠️ object-fit is not supported by IE11.
     objectFit: 'cover',
   }),
@@ -62,22 +51,23 @@ const CardMedia = React.forwardRef(function CardMedia(inProps, ref) {
   const composedStyle =
     !isMediaComponent && image ? { backgroundImage: `url("${image}")`, ...style } : style;
 
-  const styleProps = {
+  const ownerState = {
     ...props,
     component,
     isMediaComponent,
     isImageComponent: IMAGE_COMPONENTS.indexOf(component) !== -1,
   };
 
-  const classes = useUtilityClasses(styleProps);
+  const classes = useUtilityClasses(ownerState);
 
   return (
     <CardMediaRoot
       className={clsx(classes.root, className)}
       as={component}
+      role={!isMediaComponent && image ? 'image' : undefined}
       ref={ref}
       style={composedStyle}
-      styleProps={styleProps}
+      ownerState={ownerState}
       src={isMediaComponent ? image || src : undefined}
       {...other}
     >

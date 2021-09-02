@@ -1,15 +1,15 @@
 import * as React from 'react';
 import isWeekend from 'date-fns/isWeekend';
-import TextField from '@material-ui/core/TextField';
-import AdapterDateFns from '@material-ui/lab/AdapterDateFns';
-import LocalizaitonProvider from '@material-ui/lab/LocalizationProvider';
-import StaticDatePicker from '@material-ui/lab/StaticDatePicker';
+import TextField from '@mui/material/TextField';
+import AdapterDateFns from '@mui/lab/AdapterDateFns';
+import LocalizationProvider from '@mui/lab/LocalizationProvider';
+import StaticDatePicker from '@mui/lab/StaticDatePicker';
 
 export default function StaticDatePickerLandscape() {
   const [value, setValue] = React.useState<Date | null>(new Date());
 
   return (
-    <LocalizaitonProvider dateAdapter={AdapterDateFns}>
+    <LocalizationProvider dateAdapter={AdapterDateFns}>
       <StaticDatePicker<Date>
         orientation="landscape"
         openTo="day"
@@ -18,8 +18,8 @@ export default function StaticDatePickerLandscape() {
         onChange={(newValue) => {
           setValue(newValue);
         }}
-        renderInput={(params) => <TextField {...params} variant="standard" />}
+        renderInput={(params) => <TextField {...params} />}
       />
-    </LocalizaitonProvider>
+    </LocalizationProvider>
   );
 }

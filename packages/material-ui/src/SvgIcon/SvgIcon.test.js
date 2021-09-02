@@ -1,18 +1,18 @@
 import * as React from 'react';
 import { expect } from 'chai';
-import { createMount, describeConformanceV5, createClientRender } from 'test/utils';
-import SvgIcon, { svgIconClasses as classes } from '@material-ui/core/SvgIcon';
+import { describeConformance, createClientRender } from 'test/utils';
+import SvgIcon, { svgIconClasses as classes } from '@mui/material/SvgIcon';
 
 describe('<SvgIcon />', () => {
   const render = createClientRender();
-  const mount = createMount();
+
   let path;
 
   before(() => {
     path = <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" data-testid="test-path" />;
   });
 
-  describeConformanceV5(
+  describeConformance(
     <SvgIcon>
       <path />
     </SvgIcon>,
@@ -20,7 +20,6 @@ describe('<SvgIcon />', () => {
       classes,
       inheritComponent: 'svg',
       render,
-      mount,
       muiName: 'MuiSvgIcon',
       refInstanceof: window.SVGSVGElement,
       testComponentPropWith: (props) => (

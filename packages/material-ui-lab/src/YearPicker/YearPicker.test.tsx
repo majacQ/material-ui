@@ -1,21 +1,14 @@
 import * as React from 'react';
 import { spy } from 'sinon';
 import { expect } from 'chai';
-import { createMount, fireEvent, screen, describeConformanceV5 } from 'test/utils';
-import LocalizationProvider from '@material-ui/lab/LocalizationProvider';
-import AdapterDateFns from '@material-ui/lab/AdapterDateFns';
-import YearPicker, { yearPickerClasses as classes } from '@material-ui/lab/YearPicker';
-import { adapterToUse, createPickerRender } from '../internal/pickers/test-utils';
+import { fireEvent, screen, describeConformance } from 'test/utils';
+import YearPicker, { yearPickerClasses as classes } from '@mui/lab/YearPicker';
+import { adapterToUse, wrapPickerMount, createPickerRender } from '../internal/pickers/test-utils';
 
 describe('<YearPicker />', () => {
-  const mount = createMount();
   const render = createPickerRender();
 
-  const localizedMount = (node: React.ReactNode) => {
-    return mount(<LocalizationProvider dateAdapter={AdapterDateFns}>{node}</LocalizationProvider>);
-  };
-
-  describeConformanceV5(
+  describeConformance(
     <YearPicker
       minDate={adapterToUse.date('2019-01-01T00:00:00.000')}
       maxDate={adapterToUse.date('2029-01-01T00:00:00.000')}
@@ -26,7 +19,7 @@ describe('<YearPicker />', () => {
     () => ({
       classes,
       inheritComponent: 'div',
-      mount: localizedMount,
+      wrapMount: wrapPickerMount,
       render,
       muiName: 'MuiYearPicker',
       refInstanceof: window.HTMLDivElement,

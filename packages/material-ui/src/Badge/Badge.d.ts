@@ -1,10 +1,7 @@
 import * as React from 'react';
-import { SxProps } from '@material-ui/system';
-import { OverridableStringUnion } from '@material-ui/types';
-import {
-  ExtendBadgeUnstyledTypeMap,
-  BadgeUnstyledTypeMap,
-} from '@material-ui/unstyled/BadgeUnstyled';
+import { SxProps } from '@mui/system';
+import { OverridableStringUnion } from '@mui/types';
+import { ExtendBadgeUnstyledTypeMap, BadgeUnstyledTypeMap } from '@mui/core/BadgeUnstyled';
 import { Theme } from '../styles';
 import { OverridableComponent, OverrideProps } from '../OverridableComponent';
 
@@ -14,7 +11,7 @@ export interface BadgePropsColorOverrides {}
 
 export type BadgeTypeMap<
   D extends React.ElementType = 'span',
-  P = {}
+  P = {},
 > = ExtendBadgeUnstyledTypeMap<{
   props: P & {
     /**
@@ -27,13 +24,19 @@ export type BadgeTypeMap<
       colorSecondary?: string;
       /** Styles applied to the badge `span` element if `color="error"`. */
       colorError?: string;
+      /** Styles applied to the badge `span` element if `color="info"`. */
+      colorInfo?: string;
+      /** Styles applied to the badge `span` element if `color="success"`. */
+      colorSuccess?: string;
+      /** Styles applied to the badge `span` element if `color="warning"`. */
+      colorWarning?: string;
     };
     /**
      * The color of the component. It supports those theme colors that make sense for this component.
      * @default 'default'
      */
     color?: OverridableStringUnion<
-      'primary' | 'secondary' | 'default' | 'error',
+      'primary' | 'secondary' | 'default' | 'error' | 'info' | 'success' | 'warning',
       BadgePropsColorOverrides
     >;
     /**
@@ -76,7 +79,7 @@ export const badgeClasses: BadgeClasses;
 
 export type BadgeProps<
   D extends React.ElementType = BadgeTypeMap['defaultComponent'],
-  P = {}
+  P = {},
 > = OverrideProps<BadgeTypeMap<D, P>, D>;
 
 export default Badge;

@@ -1,14 +1,14 @@
 import * as React from 'react';
 import PropTypes from 'prop-types';
 import clsx from 'clsx';
-import { unstable_composeClasses as composeClasses } from '@material-ui/unstyled';
+import { unstable_composeClasses as composeClasses } from '@mui/core';
 import Typography from '../Typography';
 import useThemeProps from '../styles/useThemeProps';
-import experimentalStyled from '../styles/experimentalStyled';
+import styled from '../styles/styled';
 import cardHeaderClasses, { getCardHeaderUtilityClass } from './cardHeaderClasses';
 
-const useUtilityClasses = (styleProps) => {
-  const { classes } = styleProps;
+const useUtilityClasses = (ownerState) => {
+  const { classes } = ownerState;
 
   const slots = {
     root: ['root'],
@@ -22,50 +22,35 @@ const useUtilityClasses = (styleProps) => {
   return composeClasses(slots, getCardHeaderUtilityClass, classes);
 };
 
-const CardHeaderRoot = experimentalStyled(
-  'div',
-  {},
-  {
-    name: 'MuiCardHeader',
-    slot: 'Root',
-    overridesResolver: (props, styles) => ({
-      [`& .${cardHeaderClasses.title}`]: styles.title,
-      [`& .${cardHeaderClasses.subheader}`]: styles.subheader,
-      ...styles.root,
-    }),
-  },
-)({
-  /* Styles applied to the root element. */
+const CardHeaderRoot = styled('div', {
+  name: 'MuiCardHeader',
+  slot: 'Root',
+  overridesResolver: (props, styles) => ({
+    [`& .${cardHeaderClasses.title}`]: styles.title,
+    [`& .${cardHeaderClasses.subheader}`]: styles.subheader,
+    ...styles.root,
+  }),
+})({
   display: 'flex',
   alignItems: 'center',
   padding: 16,
 });
 
-const CardHeaderAvatar = experimentalStyled(
-  'div',
-  {},
-  {
-    name: 'MuiCardHeader',
-    slot: 'Avatar',
-    overridesResolver: (props, styles) => styles.avatar,
-  },
-)({
-  /* Styles applied to the avatar element. */
+const CardHeaderAvatar = styled('div', {
+  name: 'MuiCardHeader',
+  slot: 'Avatar',
+  overridesResolver: (props, styles) => styles.avatar,
+})({
   display: 'flex',
   flex: '0 0 auto',
   marginRight: 16,
 });
 
-const CardHeaderAction = experimentalStyled(
-  'div',
-  {},
-  {
-    name: 'MuiCardHeader',
-    slot: 'Action',
-    overridesResolver: (props, styles) => styles.action,
-  },
-)({
-  /* Styles applied to the action element. */
+const CardHeaderAction = styled('div', {
+  name: 'MuiCardHeader',
+  slot: 'Action',
+  overridesResolver: (props, styles) => styles.action,
+})({
   flex: '0 0 auto',
   alignSelf: 'flex-start',
   marginTop: -4,
@@ -73,16 +58,11 @@ const CardHeaderAction = experimentalStyled(
   marginBottom: -4,
 });
 
-const CardHeaderContent = experimentalStyled(
-  'div',
-  {},
-  {
-    name: 'MuiCardHeader',
-    slot: 'Content',
-    overridesResolver: (props, styles) => styles.content,
-  },
-)({
-  /* Styles applied to the content wrapper element. */
+const CardHeaderContent = styled('div', {
+  name: 'MuiCardHeader',
+  slot: 'Content',
+  overridesResolver: (props, styles) => styles.content,
+})({
   flex: '1 1 auto',
 });
 
@@ -101,13 +81,13 @@ const CardHeader = React.forwardRef(function CardHeader(inProps, ref) {
     ...other
   } = props;
 
-  const styleProps = {
+  const ownerState = {
     ...props,
     component,
     disableTypography,
   };
 
-  const classes = useUtilityClasses(styleProps);
+  const classes = useUtilityClasses(ownerState);
 
   let title = titleProp;
   if (title != null && title.type !== Typography && !disableTypography) {
@@ -145,21 +125,21 @@ const CardHeader = React.forwardRef(function CardHeader(inProps, ref) {
       className={clsx(classes.root, className)}
       as={component}
       ref={ref}
-      styleProps={styleProps}
+      ownerState={ownerState}
       {...other}
     >
       {avatar && (
-        <CardHeaderAvatar className={classes.avatar} styleProps={styleProps}>
+        <CardHeaderAvatar className={classes.avatar} ownerState={ownerState}>
           {avatar}
         </CardHeaderAvatar>
       )}
 
-      <CardHeaderContent className={classes.content} styleProps={styleProps}>
+      <CardHeaderContent className={classes.content} ownerState={ownerState}>
         {title}
         {subheader}
       </CardHeaderContent>
       {action && (
-        <CardHeaderAction className={classes.action} styleProps={styleProps}>
+        <CardHeaderAction className={classes.action} ownerState={ownerState}>
           {action}
         </CardHeaderAction>
       )}

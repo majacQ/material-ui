@@ -1,14 +1,14 @@
 import * as React from 'react';
 import PropTypes from 'prop-types';
 import clsx from 'clsx';
-import { unstable_composeClasses as composeClasses } from '@material-ui/unstyled';
-import experimentalStyled from '../styles/experimentalStyled';
+import { unstable_composeClasses as composeClasses } from '@mui/core';
+import styled from '../styles/styled';
 import useThemeProps from '../styles/useThemeProps';
 import capitalize from '../utils/capitalize';
 import { getIconUtilityClass } from './iconClasses';
 
-const useUtilityClasses = (styleProps) => {
-  const { color, fontSize, classes } = styleProps;
+const useUtilityClasses = (ownerState) => {
+  const { color, fontSize, classes } = ownerState;
 
   const slots = {
     root: [
@@ -21,24 +21,19 @@ const useUtilityClasses = (styleProps) => {
   return composeClasses(slots, getIconUtilityClass, classes);
 };
 
-const IconRoot = experimentalStyled(
-  'span',
-  {},
-  {
-    name: 'MuiIcon',
-    slot: 'Root',
-    overridesResolver: (props, styles) => {
-      const { styleProps } = props;
+const IconRoot = styled('span', {
+  name: 'MuiIcon',
+  slot: 'Root',
+  overridesResolver: (props, styles) => {
+    const { ownerState } = props;
 
-      return {
-        ...styles.root,
-        ...(styleProps.color !== 'inherit' && styles[`color${capitalize(styleProps.color)}`]),
-        ...styles[`fontSize${capitalize(styleProps.fontSize)}`],
-      };
-    },
+    return [
+      styles.root,
+      ownerState.color !== 'inherit' && styles[`color${capitalize(ownerState.color)}`],
+      styles[`fontSize${capitalize(ownerState.fontSize)}`],
+    ];
   },
-)(({ theme, styleProps }) => ({
-  /* Styles applied to the root element. */
+})(({ theme, ownerState }) => ({
   userSelect: 'none',
   width: '1em',
   height: '1em',
@@ -53,16 +48,19 @@ const IconRoot = experimentalStyled(
     small: theme.typography.pxToRem(20),
     medium: theme.typography.pxToRem(24),
     large: theme.typography.pxToRem(36),
-  }[styleProps.fontSize],
+  }[ownerState.fontSize],
   // TODO v5 deprecate, v6 remove for sx
   color: {
     primary: theme.palette.primary.main,
     secondary: theme.palette.secondary.main,
+    info: theme.palette.info.main,
+    success: theme.palette.success.main,
+    warning: theme.palette.warning.main,
     action: theme.palette.action.active,
     error: theme.palette.error.main,
     disabled: theme.palette.action.disabled,
     inherit: undefined,
-  }[styleProps.color],
+  }[ownerState.color],
 }));
 
 const Icon = React.forwardRef(function Icon(inProps, ref) {
@@ -76,7 +74,7 @@ const Icon = React.forwardRef(function Icon(inProps, ref) {
     ...other
   } = props;
 
-  const styleProps = {
+  const ownerState = {
     ...props,
     baseClassName,
     color,
@@ -84,7 +82,7 @@ const Icon = React.forwardRef(function Icon(inProps, ref) {
     fontSize,
   };
 
-  const classes = useUtilityClasses(styleProps);
+  const classes = useUtilityClasses(ownerState);
 
   return (
     <IconRoot
@@ -97,7 +95,7 @@ const Icon = React.forwardRef(function Icon(inProps, ref) {
         classes.root,
         className,
       )}
-      styleProps={styleProps}
+      ownerState={ownerState}
       aria-hidden
       ref={ref}
       {...other}
@@ -133,7 +131,17 @@ Icon.propTypes /* remove-proptypes */ = {
    * @default 'inherit'
    */
   color: PropTypes /* @typescript-to-proptypes-ignore */.oneOfType([
-    PropTypes.oneOf(['action', 'disabled', 'error', 'inherit', 'primary', 'secondary']),
+    PropTypes.oneOf([
+      'inherit',
+      'action',
+      'disabled',
+      'primary',
+      'secondary',
+      'error',
+      'info',
+      'success',
+      'warning',
+    ]),
     PropTypes.string,
   ]),
   /**

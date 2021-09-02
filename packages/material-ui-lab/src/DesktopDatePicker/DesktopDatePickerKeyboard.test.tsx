@@ -1,10 +1,10 @@
 import * as React from 'react';
 import { expect } from 'chai';
-import { spy } from 'sinon';
+import { spy, useFakeTimers } from 'sinon';
 import { isWeekend } from 'date-fns';
-import TextField from '@material-ui/core/TextField';
-import { fireEvent, screen, act } from 'test/utils';
-import DesktopDatePicker, { DesktopDatePickerProps } from '@material-ui/lab/DesktopDatePicker';
+import TextField from '@mui/material/TextField';
+import { fireEvent, screen } from 'test/utils';
+import DesktopDatePicker, { DesktopDatePickerProps } from '@mui/lab/DesktopDatePicker';
 import { adapterToUse, createPickerRender } from '../internal/pickers/test-utils';
 import { MakeOptional } from '../internal/pickers/typings/helpers';
 
@@ -26,6 +26,14 @@ function TestKeyboardDatePicker(
 }
 
 describe('<DesktopDatePicker /> keyboard interactions', () => {
+  let clock: ReturnType<typeof useFakeTimers>;
+  beforeEach(() => {
+    clock = useFakeTimers();
+  });
+  afterEach(() => {
+    clock.restore();
+  });
+
   const render = createPickerRender();
 
   it('closes on Escape press', () => {
@@ -39,11 +47,9 @@ describe('<DesktopDatePicker /> keyboard interactions', () => {
         onClose={handleClose}
       />,
     );
-    act(() => {
-      (document.activeElement as HTMLElement).blur();
-    });
 
-    fireEvent.keyDown(document.body, { key: 'Escape' });
+    // eslint-disable-next-line material-ui/disallow-active-element-as-key-event-target -- don't care
+    fireEvent.keyDown(document.activeElement!, { key: 'Escape' });
 
     expect(handleClose.callCount).to.equal(1);
   });
@@ -88,7 +94,9 @@ describe('<DesktopDatePicker /> keyboard interactions', () => {
         <TestKeyboardDatePicker
           mask="____"
           inputFormat="yyyy"
-          renderInput={(params) => <TextField {...params} id="test" />}
+          renderInput={(params) => (
+            <TextField {...params} id="test" helperText={params?.inputProps?.placeholder} />
+          )}
         />,
       );
 
@@ -192,20 +200,18 @@ describe('<DesktopDatePicker /> keyboard interactions', () => {
     });
   });
 
-  // TODO
-  // eslint-disable-next-line mocha/no-skipped-tests
-  it.skip('Opens calendar by keydown on the open button', () => {
+  it('Opens calendar by keydown on the open button', () => {
     render(<TestKeyboardDatePicker />);
     const openButton = screen.getByLabelText(/choose date/i);
 
-    act(() => {
-      openButton.focus();
-    });
+    // A native button implies Enter and Space keydown behavior
+    // These keydown events only trigger click behavior if they're trusted (programmatically dispatched events aren't trusted).
+    // If this breaks, make sure to add tests for
+    // - fireEvent.keyDown(targetDay, { key: 'Enter' })
+    // - fireEvent.keyUp(targetDay, { key: 'Space' })
+    expect(openButton.tagName).to.equal('BUTTON');
 
-    fireEvent.keyDown(openButton, {
-      key: 'Enter',
-      keyCode: 13,
-    });
+    fireEvent.click(openButton);
 
     expect(screen.queryByRole('dialog')).toBeVisible();
   });

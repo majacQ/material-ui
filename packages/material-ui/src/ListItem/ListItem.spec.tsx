@@ -1,5 +1,6 @@
 import * as React from 'react';
-import ListItem from '@material-ui/core/ListItem';
+import { styled } from '@mui/material/styles';
+import ListItem from '@mui/material/ListItem';
 
 // button: boolean
 function BooleanButtonTest() {
@@ -29,4 +30,13 @@ function MouseEnterTest() {
   // @ts-expect-error
   <ListItem onMouseEnter={handleMouseEnterButton} />; // desired: missing property button
   <ListItem button onMouseEnter={handleMouseEnterButton} />;
+}
+
+// https://github.com/mui-org/material-ui/issues/26469
+const StyledListItem = styled(ListItem)({});
+function StyledTest() {
+  <StyledListItem dense />;
+
+  // @ts-expect-error
+  <StyledListItem button />; // `button` is deprecated in v5, can be removed in v6
 }

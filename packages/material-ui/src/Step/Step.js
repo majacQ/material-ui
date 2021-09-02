@@ -1,16 +1,16 @@
 import * as React from 'react';
 import PropTypes from 'prop-types';
 import clsx from 'clsx';
-import { integerPropType } from '@material-ui/utils';
-import { unstable_composeClasses as composeClasses } from '@material-ui/unstyled';
+import { integerPropType } from '@mui/utils';
+import { unstable_composeClasses as composeClasses } from '@mui/core';
 import StepperContext from '../Stepper/StepperContext';
 import StepContext from './StepContext';
 import useThemeProps from '../styles/useThemeProps';
-import experimentalStyled from '../styles/experimentalStyled';
+import styled from '../styles/styled';
 import { getStepUtilityClass } from './stepClasses';
 
-const useUtilityClasses = (styleProps) => {
-  const { classes, orientation, alternativeLabel, completed } = styleProps;
+const useUtilityClasses = (ownerState) => {
+  const { classes, orientation, alternativeLabel, completed } = ownerState;
 
   const slots = {
     root: ['root', orientation, alternativeLabel && 'alternativeLabel', completed && 'completed'],
@@ -19,31 +19,25 @@ const useUtilityClasses = (styleProps) => {
   return composeClasses(slots, getStepUtilityClass, classes);
 };
 
-const StepRoot = experimentalStyled(
-  'div',
-  {},
-  {
-    name: 'MuiStep',
-    slot: 'Root',
-    overridesResolver: (props, styles) => {
-      const { styleProps } = props;
+const StepRoot = styled('div', {
+  name: 'MuiStep',
+  slot: 'Root',
+  overridesResolver: (props, styles) => {
+    const { ownerState } = props;
 
-      return {
-        ...styles.root,
-        ...styles[styleProps.orientation],
-        ...(styleProps.alternativeLabel && styles.alternativeLabel),
-        ...(styleProps.completed && styles.completed),
-      };
-    },
+    return [
+      styles.root,
+      styles[ownerState.orientation],
+      ownerState.alternativeLabel && styles.alternativeLabel,
+      ownerState.completed && styles.completed,
+    ];
   },
-)(({ styleProps }) => ({
-  /* Styles applied to the root element if `orientation="horizontal"`. */
-  ...(styleProps.orientation === 'horizontal' && {
+})(({ ownerState }) => ({
+  ...(ownerState.orientation === 'horizontal' && {
     paddingLeft: 8,
     paddingRight: 8,
   }),
-  /* Styles applied to the root element if `alternativeLabel={true}`. */
-  ...(styleProps.alternativeLabel && {
+  ...(ownerState.alternativeLabel && {
     flex: 1,
     position: 'relative',
   }),
@@ -63,9 +57,8 @@ const Step = React.forwardRef(function Step(inProps, ref) {
     ...other
   } = props;
 
-  const { activeStep, connector, alternativeLabel, orientation, nonLinear } = React.useContext(
-    StepperContext,
-  );
+  const { activeStep, connector, alternativeLabel, orientation, nonLinear } =
+    React.useContext(StepperContext);
 
   let [active = false, completed = false, disabled = false] = [
     activeProp,
@@ -86,7 +79,7 @@ const Step = React.forwardRef(function Step(inProps, ref) {
     [index, last, expanded, active, completed, disabled],
   );
 
-  const styleProps = {
+  const ownerState = {
     ...props,
     active,
     orientation,
@@ -96,13 +89,13 @@ const Step = React.forwardRef(function Step(inProps, ref) {
     expanded,
   };
 
-  const classes = useUtilityClasses(styleProps);
+  const classes = useUtilityClasses(ownerState);
 
   const newChildren = (
     <StepRoot
       className={clsx(classes.root, className)}
       ref={ref}
-      styleProps={styleProps}
+      ownerState={ownerState}
       {...other}
     >
       {connector && alternativeLabel && index !== 0 ? connector : null}

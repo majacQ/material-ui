@@ -1,17 +1,15 @@
 import * as React from 'react';
 import { expect } from 'chai';
-import { createMount, createClientRender, screen, describeConformanceV5 } from 'test/utils';
-import LinearProgress, { linearProgressClasses as classes } from '@material-ui/core/LinearProgress';
+import { createClientRender, screen, describeConformance } from 'test/utils';
+import LinearProgress, { linearProgressClasses as classes } from '@mui/material/LinearProgress';
 
 describe('<LinearProgress />', () => {
-  const mount = createMount();
   const render = createClientRender();
 
-  describeConformanceV5(<LinearProgress />, () => ({
+  describeConformance(<LinearProgress />, () => ({
     classes,
     inheritComponent: 'span',
     render,
-    mount,
     muiName: 'MuiLinearProgress',
     testDeepOverrides: { slotName: 'bar', slotClassName: classes.bar },
     testVariantProps: { variant: 'determinate', value: 25 },
